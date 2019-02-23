@@ -5,13 +5,13 @@ read_data <- function(dataset_directory_and_name) {
   dataset <- read.delim(dataset_directory_and_name, 
                         na.strings = c("NA", "NR"), stringsAsFactors = F)
   # filter out non-numerical stuff in RAF
-  dataset$RISK.ALLELE.FREQUENCY <- as.numeric(gsub(pattern = "[^0-9.]", replacement = "", 
-                                                   x = dataset$RISK.ALLELE.FREQUENCY))
+  dataset$RISK.ALLELE.FREQUENCY <- as.numeric(gsub("\\(.*\\)", "", dataset$RISK.ALLELE.FREQUENCY))
   # separate beta's from OR's
   beta.indicator <- grepl(pattern = "increase|decrease", x = dataset$X95..CI..TEXT.)
   dataset$OR <- ifelse(beta.indicator, exp(dataset$OR.or.BETA), dataset$OR.or.BETA)
   dataset
 }
+
 
 
 #### start of server ####
@@ -76,46 +76,46 @@ server <- function(input, output, session) {
   
   #### OR-RAF plot in base R  (deprecated) ####
   
-  # output$OR.RAF.plot <- renderPlot({
-  #   
-  #   #OR <- 1.3^(-50:50)
-  #   solution.vec <- OR.finder(phi = phi(), signal.size = 0.01)
-  #   #hist(rnorm(input$obs), col = 'darkgray', border = 'white')
-  #   par(mar = c(4,3,3,1))
-  #   options(scipen=0)
-  #   y.plot.max <- 100
-  #   plot(x = x.adj(solution.vec$f), y = y.adj(solution.vec$R), 
-  #        log = 'y', type = 'n', las = 1, xaxt = 'n', yaxt = 'n', 
-  #        xlim = x.adj(c(1e-4, 1-5e-3)), ylim = y.adj(c(1, y.plot.max)),
-  #        xaxs = "i", yaxs = "i", xlab = "", ylab = "")
-  #   mtext(text = "odds ratio", side = 3, at = x.adj(5e-5), 
-  #         las = 1, adj = 0, line = 1, cex = 1.5)
-  #   axis(side = 1, at = x.adj(c(0.5, 10^(-1:-4), 1-10^(-1:-2))), cex.lab = 1.5,
-  #        labels = c(0.5, 0.1, expression(10^{-2}), expression(10^{-3}), expression(10^{-4}),
-  #                   0.9, 0.99), cex.axis = 1.5)
-  #   mtext(text = "risk allele frequency (in control group)", side = 1, at = x.adj(0.93), 
-  #         las = 1, line = 2.5, cex = 1.5)
-  #   axis(side = 2, at = y.adj(c(1, 2, 5, 10, 20, 50, 100)), 
-  #        labels = c(1, 2, 5, 10, 20, 50, 100), las = 1, cex.axis = 1.5)
-  #   
-  #   text(x = x.adj(0.1), y = 20, labels = "Cases/Controls", cex = 5, pos = 1, col = "grey80")
-  #   text(x = x.adj(0.1), y = 10, labels = paste0(n1(), "/", n2()), cex = 5, pos = 1, col = "grey80")
-  #   
-  #   for (signal.size in signal.size.vec) {
-  #     solution.vec <- OR.finder(phi = phi(), signal.size)
-  #     lines(x = x.adj(solution.vec$f), y = y.adj(solution.vec$R), lty = 2)
-  #     if (signal.size %in% c(5e-4)) {lines(x = x.adj(solution.vec$f), y = y.adj(solution.vec$R), lty = 1, col = 2)}
-  #     if (signal.size >= 1e-4){
-  #       if (signal.size == 1e-1) {
-  #         text(x = x.adj(solution.vec$p[1]*1.03), y = y.plot.max*0.7, pos = 4, 
-  #              labels = bquote(paste(lambda/n, " = ", 10^{.(log10(signal.size))})))
-  #       } else if (signal.size %in% 10^(-4:-2)) {
-  #         text(x = x.adj(solution.vec$p[1]*0.9), y = y.plot.max*0.7, pos = 4, 
-  #              labels = bquote(10^{.(log10(signal.size))}))
-  #       }
-  #     }
-  #   }
-  # }, height = 800, width = 800)
+  output$OR.RAF.plot <- renderPlot({
+
+    #OR <- 1.3^(-50:50)
+    solution.vec <- OR.finder(phi = phi(), signal.size = 0.01)
+    #hist(rnorm(input$obs), col = 'darkgray', border = 'white')
+    par(mar = c(4,3,3,1))
+    options(scipen=0)
+    y.plot.max <- 100
+    plot(x = x.adj(solution.vec$f), y = y.adj(solution.vec$R),
+         log = 'y', type = 'n', las = 1, xaxt = 'n', yaxt = 'n',
+         xlim = x.adj(c(1e-4, 1-5e-3)), ylim = y.adj(c(1, y.plot.max)),
+         xaxs = "i", yaxs = "i", xlab = "", ylab = "")
+    mtext(text = "odds ratio", side = 3, at = x.adj(5e-5),
+          las = 1, adj = 0, line = 1, cex = 1.5)
+    axis(side = 1, at = x.adj(c(0.5, 10^(-1:-4), 1-10^(-1:-2))), cex.lab = 1.5,
+         labels = c(0.5, 0.1, expression(10^{-2}), expression(10^{-3}), expression(10^{-4}),
+                    0.9, 0.99), cex.axis = 1.5)
+    mtext(text = "risk allele frequency (in control group)", side = 1, at = x.adj(0.93),
+          las = 1, line = 2.5, cex = 1.5)
+    axis(side = 2, at = y.adj(c(1, 2, 5, 10, 20, 50, 100)),
+         labels = c(1, 2, 5, 10, 20, 50, 100), las = 1, cex.axis = 1.5)
+
+    text(x = x.adj(0.1), y = 20, labels = "Cases/Controls", cex = 5, pos = 1, col = "grey80")
+    text(x = x.adj(0.1), y = 10, labels = paste0(n1(), "/", n2()), cex = 5, pos = 1, col = "grey80")
+
+    for (signal.size in signal.size.vec) {
+      solution.vec <- OR.finder(phi = phi(), signal.size)
+      lines(x = x.adj(solution.vec$f), y = y.adj(solution.vec$R), lty = 2)
+      if (signal.size %in% c(5e-4)) {lines(x = x.adj(solution.vec$f), y = y.adj(solution.vec$R), lty = 1, col = 2)}
+      if (signal.size >= 1e-4){
+        if (signal.size == 1e-1) {
+          text(x = x.adj(solution.vec$p[1]*1.03), y = y.plot.max*0.7, pos = 4,
+               labels = bquote(paste(lambda/n, " = ", 10^{.(log10(signal.size))})))
+        } else if (signal.size %in% 10^(-4:-2)) {
+          text(x = x.adj(solution.vec$p[1]*0.9), y = y.plot.max*0.7, pos = 4,
+               labels = bquote(10^{.(log10(signal.size))}))
+        }
+      }
+    }
+  }, height = 750, width = 700)
   
   #### base OR-RAF plot in plotly ####
   # not pass to output
@@ -177,16 +177,40 @@ server <- function(input, output, session) {
                         "Coronary heart disease" = "./data/coronary_heart_disease.tsv", 
                         "Type II diabetes mellitus" = "./data/diabetes.tsv")
   
+  current_data_filename <- NULL
+  
+  
+  
   dataset <- reactive({
     if (input$overlay_example_dataset == T) {
-      read_data(list_of_datasets[input$choose_dataset])
-    }
+      # print(input$choose_dataset)
+      if (input$choose_dataset %in% names(list_of_datasets)) {
+        # print(list_of_datasets[input$choose_dataset])
+        read_data(list_of_datasets[input$choose_dataset])
+      } else {
+        # print(input$my_data_upload)
+        if (!is.null(input$my_data_upload)) {
+        req(input$my_data_upload)
+        tryCatch(
+          {
+            read_data(input$my_data_upload$datapath)
+          },
+          error = function(e) {
+            # return a safeError if a parsing error occurs
+            stop(safeError(e))
+          }
+        ) # end of try-catch data read
+        } else {
+          NULL
+        }
+      } # end of user upload
+    } # end of data overlay
   })
   
   #output$debug <- renderText({ dataset()[1,1] })
   
   output$OR.RAF.plotly <- renderPlotly({
-    if (input$overlay_example_dataset == T) {
+    if ( input$overlay_example_dataset == T && !is.null(dataset()) ) {
       with(data = dataset(), {
         OR_RAF_baseplot() %>% 
           add_trace(x = x.adj(RISK.ALLELE.FREQUENCY), 
@@ -208,10 +232,10 @@ server <- function(input, output, session) {
   
   #### display details of selected loci by capture click event ####
   
-  output$selection <- renderText({
+  selected_data_idx <- reactive({
     click_data <- event_data("plotly_click")
-    if (length(click_data) == 0) {
-      "Click on data points to display details"
+    if ( length(click_data) == 0 | is.null(dataset()) ) {
+      integer(0)
     } else {
       # there is no index or key values in plotly (although there is one in ggplot)
       # so we have to search for the selected gene in the data
@@ -219,20 +243,24 @@ server <- function(input, output, session) {
       search_y <- y.adj.plotly.inv(click_data$y)
       search_x_idx <- which(abs(dataset()$RISK.ALLELE.FREQUENCY-search_x) == min(abs(dataset()$RISK.ALLELE.FREQUENCY-search_x), na.rm =T))
       search_y_idx <- which(abs(dataset()$OR-search_y) == min(abs(dataset()$OR-search_y), na.rm =T))
-      search_idx <- intersect(search_x_idx, search_y_idx)
-      if (length(search_idx) > 0) {
-        paste("<b>Reported gene(s):</b> ", dataset()[search_idx, "REPORTED.GENE.S."], "<br>",
-              "<b>Mapped gene:</b> ", dataset()[search_idx, "MAPPED_GENE"], "<br>",
-              "<b>Estimated odds ratio:</b> ", dataset()[search_idx, "OR"], "<br>",
-              "<b>Estimated allele frequency:</b> ", dataset()[search_idx, "RISK.ALLELE.FREQUENCY"], "<br>",
-              "<b>Date added to catalog:</b> ", dataset()[search_idx, "DATE.ADDED.TO.CATALOG"], "<br>",
-              "<b>Study:</b> ", dataset()[search_idx, "STUDY"], "<br>",
-              "<b>Disease trait:</b> ", dataset()[search_idx, "DISEASE.TRAIT"], "<br>",
-              "<b>Initial sample size:</b> ", dataset()[search_idx, "INITIAL.SAMPLE.SIZE"], "<br>",
-              "<b>Replication sample size:</b> ", dataset()[search_idx, "REPLICATION.SAMPLE.SIZE"], "<br><br>")
-      } else {
-        "Click on data points to display details"
-      }
+      intersect(search_x_idx, search_y_idx)
+    }
+  })
+  
+  output$selection <- renderText({
+    if (length(selected_data_idx()) > 0) {
+      search_idx <- selected_data_idx()
+      paste("<b>Reported gene(s):</b> ", dataset()[search_idx, "REPORTED.GENE.S."], "<br>",
+            "<b>Mapped gene:</b> ", dataset()[search_idx, "MAPPED_GENE"], "<br>",
+            "<b>Estimated odds ratio:</b> ", dataset()[search_idx, "OR"], "<br>",
+            "<b>Estimated allele frequency:</b> ", dataset()[search_idx, "RISK.ALLELE.FREQUENCY"], "<br>",
+            "<b>Date added to catalog:</b> ", dataset()[search_idx, "DATE.ADDED.TO.CATALOG"], "<br>",
+            "<b>Study:</b> ", dataset()[search_idx, "STUDY"], "<br>",
+            "<b>Disease trait:</b> ", dataset()[search_idx, "DISEASE.TRAIT"], "<br>",
+            "<b>Initial sample size:</b> ", dataset()[search_idx, "INITIAL.SAMPLE.SIZE"], "<br>",
+            "<b>Replication sample size:</b> ", dataset()[search_idx, "REPLICATION.SAMPLE.SIZE"], "<br><br>")
+    } else {
+      "Click on data points to display details"
     }
   })
   

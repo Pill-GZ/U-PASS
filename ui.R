@@ -69,12 +69,25 @@ ui <- navbarPage("GWAS power calculator",
                                    wellPanel(checkboxInput("overlay_example_dataset", "Overlay data points", FALSE),
                                              conditionalPanel(
                                                condition = "input.overlay_example_dataset == true",
-                                               selectInput("choose_dataset", "Example dataset from EBI",
-                                                           list("Breast carcinoma", 
-                                                                "Coronary heart disease", 
-                                                                "Type II diabetes mellitus"))
-                                             )
-                                   )
+                                               selectInput("choose_dataset", "Choose a dataset", 
+                                                           list("Example dataset from EBI" = list("Breast carcinoma", 
+                                                                                                  "Coronary heart disease", 
+                                                                                                  "Type II diabetes mellitus"),
+                                                                "User upload" = list("Upload my own data")
+                                                                ) # end of drop-down menu options
+                                                           ), # end of drop-down menu to select input
+                                               conditionalPanel(
+                                                 condition = "input.choose_dataset == 'Upload my own data'", 
+                                                 # Input: Select a file ----
+                                                 fileInput("my_data_upload", "Choose TSV File",
+                                                           multiple = FALSE,
+                                                           accept = c("text/csv",
+                                                                      "text/comma-separated-values,text/plain",
+                                                                      ".tsv"))
+                                                 )
+                                             ) # end of conditional panel
+                                   ) # end of dataset overlay choices
+                                   
                             ), # end of first column
                             
                             #### OR-RAF diagram display ####
@@ -83,6 +96,7 @@ ui <- navbarPage("GWAS power calculator",
                                    # textOutput("debug"),
                                    div(style = "height:1200px;", 
                                        plotlyOutput("OR.RAF.plotly", height = "700px"),
+                                       # plotOutput("OR.RAF.plot", height = "700px"), 
                                        br(),
                                        conditionalPanel(
                                          condition = "input.overlay_example_dataset == true",
@@ -94,7 +108,6 @@ ui <- navbarPage("GWAS power calculator",
                             ) # end of second column
                             
                             #plotlyOutput("OR.RAF.heatmap.plotly")
-                            #plotOutput("OR.RAF.plot")
                             
                           ), # end of fluidRow
                           includeHTML("credits.html")
