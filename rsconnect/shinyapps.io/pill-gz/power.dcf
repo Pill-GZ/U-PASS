@@ -1,0 +1,12 @@
+name: power
+title:
+username:
+account: pill-gz
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 730059
+bundleId: 1888227
+url: https://pill-gz.shinyapps.io/power/
+when: 1550714826.42227
+asMultiple: FALSE
+asStatic: FALSE
