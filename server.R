@@ -21,15 +21,15 @@ server <- function(input, output, session) {
   #### calculate number of cases (n1) and controls (n2), and the fraction of cases (phi) ####
   
   n1 <- reactive({
-    ifelse(input$sample_size_specification == 'Total number of subjects + fraction of controls',
+    ifelse(input$sample_size_specification == 'Number of subjects + fraction of Cases',
            floor(input$n * input$phi), floor(input$n1))
   })
   n2 <- reactive({
-    ifelse(input$sample_size_specification == 'Total number of subjects + fraction of controls',
+    ifelse(input$sample_size_specification == 'Number of subjects + fraction of Cases',
            input$n - floor(input$n * input$phi), floor(input$n2))
   })
   phi <- reactive({
-    ifelse(input$sample_size_specification == 'Total number of subjects + fraction of controls',
+    ifelse(input$sample_size_specification == 'Number of subjects + fraction of Cases',
            input$phi, input$n1 / (input$n1 + input$n2))
   })
   
@@ -257,6 +257,8 @@ server <- function(input, output, session) {
             "<b>Disease trait:</b> ", dataset()[search_idx, "DISEASE.TRAIT"], "<br>",
             "<b>Initial sample size:</b> ", dataset()[search_idx, "INITIAL.SAMPLE.SIZE"], "<br>",
             "<b>Replication sample size:</b> ", dataset()[search_idx, "REPLICATION.SAMPLE.SIZE"], "<br><br>")
+    } else if (is.null(dataset())) {
+      "Choose a dataset in the EBI format."
     } else {
       "Click on data points to display details"
     }

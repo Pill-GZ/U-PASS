@@ -14,20 +14,19 @@ ui <- navbarPage("GWAS power calculator",
                             
                             column(3,
                                    br(),
-                                   
                                    #### sample sizes ####
                                    
                                    wellPanel(selectInput("sample_size_specification", "Sample size specification",
-                                                         list("Total number of subjects + fraction of controls", 
-                                                              "Number of cases + number of controls")),
+                                                         list("Number of subjects + fraction of Cases", 
+                                                              "Number of Cases + number of Controls")),
                                              conditionalPanel(
-                                               condition = "input.sample_size_specification == 'Total number of subjects + fraction of controls'",
-                                               numericInput("n", "Totoal number of subjects (cases + controls):", 
+                                               condition = "input.sample_size_specification == 'Number of subjects + fraction of Cases'",
+                                               numericInput("n", "Totoal number of subjects:", 
                                                             value = 20000, min = 500, max = 1000000, step = 100),
                                                sliderInput("phi", "Fraction of cases:", value = 1/2, min = 0.01, max = 0.99, step = .01)
                                              ),
                                              conditionalPanel(
-                                               condition = "input.sample_size_specification == 'Number of cases + number of controls'",
+                                               condition = "input.sample_size_specification == 'Number of Cases + number of Controls'",
                                                numericInput("n1", "Number of cases:", 
                                                             value = 10000, min = 250, max = 1000000, step = 50),
                                                numericInput("n2", "Number of controls:", 
@@ -99,16 +98,15 @@ ui <- navbarPage("GWAS power calculator",
                             
                             #### display OR-RAF diagram ####
                             
-                            column(6, # "fixing height to avoid automatic adjustments"
+                            column(8, # "fixing height to avoid automatic adjustments"
                                    # textOutput("debug"),
                                    div(style = "height:1200px;", 
                                        plotlyOutput("OR.RAF.plotly", height = "700px"),
                                        # plotOutput("OR.RAF.plot", height = "700px"), 
-                                       br(),
                                        conditionalPanel(
                                          condition = "input.overlay_example_dataset == true",
                                          id = "gene_info",
-                                         tags$style(type="text/css", '#gene_info { width:700px; }'),
+                                         tags$style(type="text/css", '#gene_info { width:730px; }'),
                                          wellPanel(htmlOutput("selection"))
                                        ) # end of gene_info box
                                    ) # end of "fixing height to avoid automatic adjustments"
@@ -129,22 +127,21 @@ ui <- navbarPage("GWAS power calculator",
                             
                             column(3,
                                    br(),
-                                   
                                    #### Step 1: target RAF and OR ####
                                    
-                                   wellPanel(selectInput("step1_target_OR_RAF", "Step 1: I want to target ...",
+                                   wellPanel(selectInput("step1_target_OR_RAF", "Step 1: I want to target a specific ...",
                                                          list("Select a target",
-                                                              "A specific allele frequency and odds ratio", 
-                                                              "A specific signal size (advanced user)")),
+                                                              "Allele frequency and odds ratio", 
+                                                              "Signal size per sample (advanced user)")),
                                              conditionalPanel(
-                                               condition = "input.step1_target_OR_RAF == 'A specific allele frequency and odds ratio'",
+                                               condition = "input.step1_target_OR_RAF == 'Allele frequency and odds ratio'",
                                                numericInput("target_RAF", "Target risk allele frequency:", 
                                                             value = 0.1, min = 0.001, max = 0.99999, step = 0.001),
                                                numericInput("target_OR", "Target odds ratio:", 
                                                             value = 1.5, min = 1.01, max = 1000000, step = 0.01)
                                              ),
                                              conditionalPanel(
-                                               condition = "input.step1_target_OR_RAF == 'A specific signal size (advanced user)'",
+                                               condition = "input.step1_target_OR_RAF == 'Signal size per sample (advanced user)'",
                                                shinyWidgets::sliderTextInput(inputId = "target_w2", 
                                                                              label = "Target signal size:",
                                                                              choices = c(as.vector(outer(c(1,2,5), 10^(-6:-2))),0.1),
@@ -162,21 +159,21 @@ ui <- navbarPage("GWAS power calculator",
                                      wellPanel(
                                        selectInput("step2_fixed_quantity", "Step 2: I have a fixed ...",
                                                    list("Select a contraint",
-                                                        "Budget, i.e., total number of subjects", 
-                                                        "Number of subjects in the Case group",
-                                                        "Fraction of Cases among all subjects")),
+                                                        "Budget / total number of subjects", 
+                                                        "Number of Cases",
+                                                        "Fraction of Cases")),
                                        conditionalPanel(
-                                         condition = "input.step2_fixed_quantity == 'Budget, i.e., total number of subjects'",
-                                         numericInput("fixed_budget", "Total subjects (Cases + Controls) in study:", 
+                                         condition = "input.step2_fixed_quantity == 'Budget / total number of subjects'",
+                                         numericInput("fixed_budget", "Total subjects (Cases + Controls):", 
                                                       value = 20000, min = 500, max = 1000000, step = 100)
                                        ),
                                        conditionalPanel(
-                                         condition = "input.step2_fixed_quantity == 'Number of subjects in the Case group'",
+                                         condition = "input.step2_fixed_quantity == 'Number of Cases'",
                                          numericInput("fixed_cases", "Number of Cases in study:", 
                                                       value = 10000, min = 500, max = 1000000, step = 100)
                                        ),
                                        conditionalPanel(
-                                         condition = "input.step2_fixed_quantity == 'Fraction of Cases among all subjects'",
+                                         condition = "input.step2_fixed_quantity == 'Fraction of Cases'",
                                          sliderInput("fixed_phi", "Fraction of cases in the study:", value = 1/2, min = 0.01, max = 0.99, step = .01)
                                        )
                                      ), # end of step 2: select a constraint
@@ -188,7 +185,7 @@ ui <- navbarPage("GWAS power calculator",
                                        
                                        condition = "input.step2_fixed_quantity != 'Select a contraint'",
                                        wellPanel(
-                                         selectInput("step3_type_I_error_criteria", "Step 3: Criteria for false discovery is ...",
+                                         selectInput("step3_type_I_error_criteria", "Step 3: Criteria for false discovery ...",
                                                      list("Select a criteria", "Type I error", "False discovery rate (FDR)", "Family-wise error rate (FWER)")),
                                          conditionalPanel(
                                            condition = "input.step3_type_I_error_criteria == 'Type I error'",
@@ -213,8 +210,37 @@ ui <- navbarPage("GWAS power calculator",
                                                                          label = "Target FWER:", 
                                                                          choices = c(as.vector(outer(c(1,5), 10^(-4:-2))),0.1),
                                                                          selected = 0.05))
-                                       ) # end of step 3: select a false discovery control
+                                       ), # end of step 3: select a false discovery control
                                        
+                                       conditionalPanel( 
+                                         
+                                         #### Step 4: choosing non-discovery control target ####
+                                         # only displayed if step 1, 2, and 3 are complete
+                                         
+                                         condition = "input.step3_type_I_error_criteria != 'Select a criteria'",
+                                         wellPanel(
+                                           selectInput("step4_type_II_error_criteria", "Step 4: Targert for non-discovery ...",
+                                                       list("Select a criteria", "Type II error / non-discovery proportion (NDP)", 
+                                                            "Family-wise non-discovery rate (FWNDR)")),
+                                           conditionalPanel(
+                                             condition = "input.step4_type_II_error_criteria == 'Type II error / non-discovery proportion (NDP)'",
+                                             shinyWidgets::sliderTextInput(inputId = "design_power", 
+                                                                           label = "Target type II error rate / (1-power) / NDP:", 
+                                                                           choices = as.vector(outer(c(1,2,5), 10^(-3:-1))),
+                                                                           selected = 0.2)
+                                           ),
+                                           conditionalPanel(
+                                             condition = "input.step4_type_II_error_criteria == 'Family-wise non-discovery rate (FWNDR)'",
+                                             numericInput("design_sparsity", "Sparsity / number of loci with equal signal or stronger:", 
+                                                          value = 100, min = 1, max = 100000, step = 1),
+                                             shinyWidgets::sliderTextInput(inputId = "design_FWNDR", 
+                                                                           label = "Target FWNDR:",
+                                                                           choices = as.vector(outer(c(1,2,5), 10^(-3:-1))),
+                                                                           selected = 0.2))
+                                         ) # end of step 4: select a non-discovery (type II error) goal
+                                         
+                                         
+                                       ) # end of panels conditional on step 3
                                      ) # end of panels conditional on step 2
                                    ) # end of panels conditional on step 1
                                    
@@ -222,7 +248,7 @@ ui <- navbarPage("GWAS power calculator",
                             
                             #### display results from power analysis ####
                             
-                            column(6, # "fixing height to avoid automatic adjustments"
+                            column(9, # "fixing height to avoid automatic adjustments"
                                    # textOutput("debug"),
                                    div(style = "height:1200px;", 
                                        textOutput("power.vec")
