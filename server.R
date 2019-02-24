@@ -43,7 +43,7 @@ server <- function(input, output, session) {
     } 
   })
   
-  signal.size.vec <- sort(c(10^(-5:-1), 5*10^(-5:-2)))
+  signal.size.vec <- as.vector(outer(c(1,2,5), 10^(-5:-2)))
   power.vec <- reactive({
     pchisq(q = cutoff(), df = 1, ncp = signal.size.vec * (n1() + n2()) , lower.tail = F)
   })
@@ -170,16 +170,12 @@ server <- function(input, output, session) {
   }) # end of OR-RAF local plot
   
   
-  #### overlay data points from EBI ####
+  #### select and load dataset ####
   # plot redered and passed to output
   
   list_of_datasets <- c("Breast carcinoma" = "./data/breast_cancer.tsv",
                         "Coronary heart disease" = "./data/coronary_heart_disease.tsv", 
                         "Type II diabetes mellitus" = "./data/diabetes.tsv")
-  
-  current_data_filename <- NULL
-  
-  
   
   dataset <- reactive({
     if (input$overlay_example_dataset == T) {
@@ -208,6 +204,8 @@ server <- function(input, output, session) {
   })
   
   #output$debug <- renderText({ dataset()[1,1] })
+  
+  #### overlay data points and render plotly ####
   
   output$OR.RAF.plotly <- renderPlotly({
     if ( input$overlay_example_dataset == T && !is.null(dataset()) ) {
