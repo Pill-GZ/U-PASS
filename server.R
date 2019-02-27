@@ -9,15 +9,15 @@ read_data <- function(dataset_directory_and_name) {
   # separate beta's from OR's
   beta.indicator <- grepl(pattern = "increase|decrease", x = dataset$X95..CI..TEXT.)
   dataset$OR <- ifelse(beta.indicator, exp(dataset$OR.or.BETA), dataset$OR.or.BETA)
+  dataset$index <- 1:nrow(dataset)
   dataset
 }
-
 
 
 #### start of server ####
 
 server <- function(input, output, session) {
-  
+#### first tab: OR-RAF diagram #### 
   #### calculate number of cases (n1) and controls (n2), and the fraction of cases (phi) ####
   
   n1 <- reactive({
@@ -47,7 +47,7 @@ server <- function(input, output, session) {
   power.vec <- reactive({
     pchisq(q = cutoff(), df = 1, ncp = signal.size.vec * (n1() + n2()) , lower.tail = F)
   })
-  output$power.vec <- renderText({ power.vec() })
+  output$power_vec <- renderText({ power.vec() })
   
   #### generate power matrix for heatmaps ####
   
@@ -125,15 +125,15 @@ server <- function(input, output, session) {
                  z = power.mat(), zmin = 0, zmax = 1,
                  colors = "Greys", type = "contour",
                  reversescale = T, hoverinfo = "none",
-                 width = 750, height = 700, 
+                 width = 750, height = 700,
                  contours = list(showlabels = TRUE)) %>%
       # config(displayModeBar = F) %>% 
-      layout(xaxis = list(range = x.adj(f.lim), fixedrange=TRUE,
+      layout(xaxis = list(range = x.adj(f.lim), # fixedrange=TRUE,
                           tickvals = x.adj(c(0.5, 10^(-1:-4), 1-10^(-1:-2))),
                           ticktext = c(0.5, 0.1, (10^{-2}), (10^{-3}), (10^{-4}),0.9, 0.99),
                           zeroline = FALSE, tickfont = list(size = 20),
                           showline = TRUE, linecolor = toRGB("black"), mirror = "ticks", linewidth = 3),
-             yaxis = list(range = y.adj.plotly(R.lim), fixedrange=TRUE,
+             yaxis = list(range = y.adj.plotly(R.lim), # fixedrange=TRUE,
                           tickvals = y.adj.plotly(c(1, 2, 5, 10, 20, 50, 100)),
                           ticktext = c(1, 2, 5, 10, 20, 50, 100), 
                           zeroline = FALSE, tickfont = list(size = 20),
@@ -208,21 +208,59 @@ server <- function(input, output, session) {
   #### overlay data points and render plotly ####
   
   output$OR.RAF.plotly <- renderPlotly({
+    # overlay data points
     if ( input$overlay_example_dataset == T && !is.null(dataset()) ) {
       with(data = dataset(), {
-        OR_RAF_baseplot() %>% 
-          add_trace(x = x.adj(RISK.ALLELE.FREQUENCY), 
-                    y = y.adj.plotly(OR), 
-                    marker = list(color = 'rgb(255, 255, 255)', size = 10, opacity = 0.7,
-                                  line = list(color = 'rgb(20, 100, 238)', width = 3)), 
-                    hoverinfo = "text",
-                    text = paste("RAF: ", RISK.ALLELE.FREQUENCY,
-                                 "OR: ", round(OR, digits = 3),
-                                 '<br>MAPPED GENE:', MAPPED_GENE,
-                                 "<br>PUBMEDID: ", PUBMEDID),
-                    type = "scatter", mode = 'markers', inherit = F, source = "dataset")
+        # separate layers for selected points (if any)
+        selected_idx_TF <- index %in% selected_data_idx()
+        not_selected_idx_TF <- !selected_idx_TF
+        p <- OR_RAF_baseplot() %>% 
+          add_markers(x = x.adj(RISK.ALLELE.FREQUENCY[not_selected_idx_TF]), 
+                      y = y.adj.plotly(OR[not_selected_idx_TF]), 
+                      marker = list(color = 'rgb(255, 255, 255)', size = 10, opacity = 0.6,
+                                    line = list(color = 'rgb(20, 100, 238)', width = 3)),
+                      hoverinfo = "text",
+                      text = paste("RAF: ", RISK.ALLELE.FREQUENCY[not_selected_idx_TF],
+                                   "OR: ", round(OR[not_selected_idx_TF], digits = 3),
+                                   '<br>MAPPED GENE:', MAPPED_GENE[not_selected_idx_TF],
+                                   "<br>PUBMEDID: ", PUBMEDID[not_selected_idx_TF]),
+                      type = "scatter", mode = 'markers', inherit = F) 
+        if (sum(selected_idx_TF) > 0) {
+          p <- p %>% add_markers(x = x.adj(RISK.ALLELE.FREQUENCY[selected_idx_TF]),
+                                 y = y.adj.plotly(OR[selected_idx_TF]),
+                                 marker = list(color = 'rgb(255, 165, 0)', size = 15, opacity = 0.9,
+                                               line = list(color = 'rgb(255, 0, 0)', width = 3)),
+                                 hoverinfo = "text",
+                                 text = paste("RAF: ", RISK.ALLELE.FREQUENCY[selected_idx_TF],
+                                              "OR: ", round(OR[selected_idx_TF], digits = 3),
+                                              '<br>MAPPED GENE:', MAPPED_GENE[selected_idx_TF],
+                                              "<br>PUBMEDID: ", PUBMEDID[selected_idx_TF]),
+                                 type = "scatter", mode = 'markers', inherit = F)
+        }
+          # add_markers(x = x.adj(RISK.ALLELE.FREQUENCY), 
+          #           y = y.adj.plotly(OR), 
+          #           color = index %in% selected_data_idx(), #ifelse(index %in% selected_data_idx(), 'red', 'white'),
+          #           marker = list(# color = 'rgb(255, 255, 255)',
+          #                         size = 10, opacity = 0.6,
+          #                         line = list(color = 'rgb(20, 100, 238)', width = 3)),
+          #           hoverinfo = "text",
+          #           text = paste("RAF: ", RISK.ALLELE.FREQUENCY,
+          #                        "OR: ", round(OR, digits = 3),
+          #                        '<br>MAPPED GENE:', MAPPED_GENE,
+          #                        "<br>PUBMEDID: ", PUBMEDID),
+          #           type = "scatter", mode = 'markers', inherit = F) %>%
+        # suppress warnings  
+        storeWarn<- getOption("warn")
+        options(warn = -1) 
+        p <- p %>% layout( source = "dataset" )
+        # restore warnings, delayed so plot is completed
+        shinyjs::delay(expr =({ 
+          options(warn = storeWarn) 
+        }) ,ms = 100) 
+        p
       })
-    } else {
+    } else { 
+      # don't overlay data points
       OR_RAF_baseplot()
     }
   }) # end of OR-RAF plotly output
@@ -264,5 +302,253 @@ server <- function(input, output, session) {
     }
   })
   
+#### second tab: design my study #### 
+  #### checking if design is complete ####
   
+  waiting_for_design <- reactive({
+    if (input$step1_target_OR_RAF != "Select a target" &&
+        input$step2_fixed_quantity != "Select a contraint" &&
+        input$step3_type_I_error_criteria != "Select a criteria" &&
+        input$step4_type_II_error_criteria != "Select a criteria") {
+      FALSE
+    } else {
+      TRUE
+    }
+  })
+  output$waiting_for_design <- reactive({waiting_for_design()})
+  outputOptions(output, 'waiting_for_design', suspendWhenHidden=FALSE)
+  
+  #### determine sample size specification ####
+  fixed_n_design <- reactive({
+    (!waiting_for_design()) && (input$step2_fixed_quantity == "Budget / total number of subjects")
+  })
+  output$fixed_n_design <- reactive({fixed_n_design()})
+  outputOptions(output, 'fixed_n_design', suspendWhenHidden=FALSE)
+  
+  fixed_n1_design <- reactive({
+    (!waiting_for_design()) && (input$step2_fixed_quantity == "Number of Cases")
+  })
+  output$fixed_n1_design <- reactive({fixed_n1_design()})
+  outputOptions(output, 'fixed_n1_design', suspendWhenHidden=FALSE)
+  
+  fixed_phi_design <- reactive({
+    (!waiting_for_design()) && (input$step2_fixed_quantity == "Fraction of Cases")
+  })
+  output$fixed_phi_design <- reactive({fixed_phi_design()})
+  outputOptions(output, 'fixed_phi_design', suspendWhenHidden=FALSE)
+  
+  #### calculate rejection region for the design ####
+  
+  design.cutoff <- reactive({
+    if (input$step3_type_I_error_criteria == 'Type I error') {
+      qchisq(p = 1 - input$design_alpha, df = 1, ncp = 0, lower.tail = T)
+    } else if (input$step3_type_I_error_criteria == 'Family-wise error rate (FWER)') {
+      qchisq(p = 1 - input$design_alpha_FWER / input$design_p_FWER, df = 1, ncp = 0, lower.tail = T)
+    } 
+  })
+  
+  #### calculate target power of the study ####
+  
+  design.power <- reactive({
+    if (input$step4_type_II_error_criteria == 'Type II error / non-discovery proportion (NDP)') {
+      1 - input$design_power
+    } else if (input$step4_type_II_error_criteria == 'Family-wise non-discovery rate (FWNDR)') {
+      1 - input$design_FWNDR / input$design_sparsity
+    } 
+  })
+  
+  #### fixed budget: power as a function of fraction variable.phi ####
+  
+  # input$fixed_budget
+  output$optimal_design_fixed_n <- renderPlotly({
+    if (fixed_n_design()) {
+      fixed.n <- input$fixed_budget
+      variable.phi <- 1:99/100
+      # calculate signal size of the design
+      design.signal.size.per.sample <- {
+        if (input$step1_target_OR_RAF == 'Allele frequency and odds ratio') {
+          signal.size.ana.sol.f(f = input$target_RAF, phi = variable.phi, R = input$target_OR)
+        } else if (input$step1_target_OR_RAF == 'Signal size per sample (advanced user)') {
+          input$target_w2
+        }
+      }
+      # calculate power as a function of Controls
+      variable.power <- pchisq(q = design.cutoff(), df = 1 , lower.tail = F, 
+                               ncp = design.signal.size.per.sample * fixed.n)
+      # calculate optimal fraction of Cases
+      optimal.fraction.of.cases <- variable.phi[which.max(design.signal.size.per.sample)]
+      optimal.fraction.of.cases.prompt <- ifelse(max(variable.power) > design.power(), 
+                                                 yes = paste("<b>Optimal Cases / Controls:</b>", 
+                                                             ceiling(fixed.n * optimal.fraction.of.cases), "/",
+                                                             fixed.n  - ceiling(fixed.n * optimal.fraction.of.cases)),
+                                                 no = "<b>cannot be achieved</b>")
+      
+      plot_ly(x = variable.phi, y = variable.power, 
+              type = 'scatter', mode = 'lines+markers',
+              line = list(width = 4), marker = list(size = 8), 
+              hoverinfo = 'text', 
+              text = paste('Fraction of Cases =', format(variable.phi, scientific = F), 
+                           '\n', 'Power =', round(variable.power, digits = 3)),
+              width = 700, height = 700) %>%
+        layout(xaxis = list(fixedrange=FALSE, range = c(-0.01, 1.01), 
+                            tickvals = 0:10/10, 
+                            ticktext = 0:10/10,
+                            zeroline = FALSE, tickfont = list(size = 20),
+                            showline = TRUE, linecolor = toRGB("black"), mirror = "ticks", linewidth = 3),
+               yaxis = list(range = c(-0.01,1.01), fixedrange=TRUE,
+                            tickvals = 0:10/10, ticktext = 0:10/10, 
+                            zeroline = FALSE, tickfont = list(size = 20),
+                            showline = TRUE, linecolor = toRGB("black"), mirror = "ticks", linewidth = 3),
+               shapes = list(list(type = "line", line = list(color = toRGB("grey70"), dash = "dash"),
+                                  xref = "x", yref = "y", 
+                                  x0 = optimal.fraction.of.cases, x1 = optimal.fraction.of.cases, 
+                                  y0 = 0, y1 = 1),
+                             list(type = "line", line = list(color = toRGB("grey70"), dash = "dash"),
+                                  xref = "x", yref = "y", 
+                                  x0 = 0, x1 = 1, 
+                                  y0 = design.power(), y1 = design.power())),
+               showlegend = FALSE,
+               margin = list(l = 50, r = 20, b = 80, t = 50, pad = 4)) %>%
+        add_annotations(yref = "paper", xref = "paper", y = 1.08, x = -0.07, 
+                        text = "power", showarrow = F, font=list(size = 25)) %>%
+        add_annotations(yref = "paper", xref = "paper", y = -0.12, x = 1, 
+                        text = "fraction of subjects in Case group", 
+                        showarrow = F, font = list(size = 25))  %>%
+        add_annotations(yref = "paper", xref = "paper", y = design.power() - 0.01, x = 0.05, 
+                        text = paste("<b>Target power:</b>", format(design.power(), scientific = F)),
+                        showarrow = F, font=list(size = 20, color = toRGB("grey60"))) %>%
+        add_annotations(yref = "paper", xref = "paper", y = design.power() - 0.05, x = 0.05, 
+                        text = optimal.fraction.of.cases.prompt,
+                        showarrow = F, font=list(size = 20, color = toRGB("grey60")))
+    }
+  }) # end of fixed Cases plotly output
+  
+  
+  #### fixed Cases: power as a function of number of Controls variable.n2 ####
+  
+  # input$fixed_cases
+  output$optimal_design_fixed_n1 <- renderPlotly({
+    if (fixed_n1_design()) {
+      variable.n2 <- as.vector(outer(c(1,1.5,2:9), 10^(1:6)))
+      variable.n <- input$fixed_cases + variable.n2
+      variable.phi <- input$fixed_cases / variable.n
+      # calculate signal size of the design
+      design.signal.size.per.sample <- {
+        if (input$step1_target_OR_RAF == 'Allele frequency and odds ratio') {
+          signal.size.ana.sol.f(f = input$target_RAF, phi = variable.phi, R = input$target_OR)
+        } else if (input$step1_target_OR_RAF == 'Signal size per sample (advanced user)') {
+          input$target_w2
+        }
+      }
+      # calculate power as a function of Controls
+      variable.power <- pchisq(q = design.cutoff(), df = 1 , lower.tail = F, 
+                               ncp = design.signal.size.per.sample * variable.n)
+      # calculate required number of controls
+      required.number.of.controls <- determine.intersection(variable.n2, variable.power, design.power())
+      required.number.of.controls.prompt <- ifelse(required.number.of.controls, 
+                                                   yes = paste("<b>Number of Controls needed:</b>", 
+                                                               format(required.number.of.controls, scientific = F)),
+                                                   no = "<b>cannot be achieved</b>")
+      
+      plot_ly(x = variable.n2, y = variable.power, 
+              type = 'scatter', mode = 'lines+markers',
+              line = list(width = 4), marker = list(size = 8), 
+              hoverinfo = 'text', 
+              text = paste('Number of Controls =', format(variable.n2, scientific = F), 
+                           '\n', 'Power =', round(variable.power, digits = 3)),
+              width = 700, height = 700) %>%
+        layout(xaxis = list(fixedrange=FALSE,  type = "log", #range = log(range(variable.n2)), 
+                            tickvals = c(as.vector(outer(c(1:9), 10^(1:6))), 1e7), 
+                            ticktext = c(as.vector(rbind(sapply(10^(1:6), format, scientific = F), matrix("", 8, 6))), ""),
+                            tickangle = 0,
+                            zeroline = FALSE, tickfont = list(size = 20),
+                            showline = TRUE, linecolor = toRGB("black"), mirror = "ticks", linewidth = 3),
+               yaxis = list(range = c(-0.01,1.01), fixedrange=TRUE,
+                            tickvals = 0:10/10, ticktext = 0:10/10, 
+                            zeroline = FALSE, tickfont = list(size = 20),
+                            showline = TRUE, linecolor = toRGB("black"), mirror = "ticks", linewidth = 3),
+               shapes = list(list(type = "line", line = list(color = toRGB("grey70"), dash = "dash"),
+                                  xref = "x", yref = "y", 
+                                  x0 = min(variable.n2), x1 = 1e7, 
+                                  y0 = design.power(), y1 = design.power())),
+               showlegend = FALSE,
+               margin = list(l = 50, r = 20, b = 80, t = 50, pad = 4)) %>%
+        add_annotations(yref = "paper", xref = "paper", y = 1.08, x = -0.07, 
+                        text = "power", showarrow = F, font=list(size = 25)) %>%
+        add_annotations(yref = "paper", xref = "paper", y = -0.12, x = 1, 
+                        text = "number of subjects in Control group", 
+                        showarrow = F, font = list(size = 25))  %>%
+        add_annotations(yref = "paper", xref = "paper", y = design.power() - 0.01, x = 0.05, 
+                        text = paste("<b>Target power:</b>", format(design.power(), scientific = F)),
+                        showarrow = F, font=list(size = 20, color = toRGB("grey60"))) %>%
+        add_annotations(yref = "paper", xref = "paper", y = design.power() - 0.05, x = 0.05, 
+                        text = required.number.of.controls.prompt,
+                        showarrow = F, font=list(size = 20, color = toRGB("grey60")))
+    }
+  }) # end of fixed Cases plotly output
+  
+  #### fixed fraction of cases: power as a function of total subjects variable.n ####
+  
+  # input$fixed_phi
+  output$optimal_design_fixed_phi <- renderPlotly({
+    if (fixed_phi_design()) {
+      # calculate signal size of the design
+      design.signal.size.per.sample <- {
+        if (input$step1_target_OR_RAF == 'Allele frequency and odds ratio') {
+          signal.size.ana.sol.f(f = input$target_RAF, phi = input$fixed_phi, R = input$target_OR)
+        } else if (input$step1_target_OR_RAF == 'Signal size per sample (advanced user)') {
+          input$target_w2
+        }
+      }
+      variable.n <- as.vector(outer(c(1,1.5,2:9), 10^(1:6)))
+      # calculate power as a function of total sample size
+      variable.power <- pchisq(q = design.cutoff(), df = 1 , lower.tail = F, 
+                               ncp = design.signal.size.per.sample * variable.n)
+      
+      # calculate required number of total samples
+      required.number.of.controls <- determine.intersection(variable.n, variable.power, design.power())
+      required.number.of.controls.prompt <- ifelse(required.number.of.controls, 
+                                                   yes = paste("<b>Number of samples needed:</b>", 
+                                                               format(required.number.of.controls, scientific = F)),
+                                                   no = "<b>cannot be achieved</b>")
+      
+      plot_ly(x = variable.n, y = variable.power, 
+              type = 'scatter', mode = 'lines+markers',
+              line = list(width = 4), marker = list(size = 8), 
+              hoverinfo = 'text', 
+              text = paste('Number of samples =', format(variable.n, scientific = F), 
+                           '\n', 'Power =', round(variable.power, digits = 3)),
+              width = 700, height = 700) %>%
+        layout(xaxis = list(fixedrange=FALSE,  type = "log", #range = log(range(variable.n)), 
+                            tickvals = c(as.vector(outer(c(1:9), 10^(1:6))), 1e7), 
+                            ticktext = c(as.vector(rbind(sapply(10^(1:6), format, scientific = F), matrix("", 8, 6))), ""),
+                            tickangle = 0,
+                            zeroline = FALSE, tickfont = list(size = 20),
+                            showline = TRUE, linecolor = toRGB("black"), mirror = "ticks", linewidth = 3),
+               yaxis = list(range = c(-0.01,1.01), fixedrange=TRUE,
+                            tickvals = 0:10/10, ticktext = 0:10/10, 
+                            zeroline = FALSE, tickfont = list(size = 20),
+                            showline = TRUE, linecolor = toRGB("black"), mirror = "ticks", linewidth = 3),
+               shapes = list(list(type = "line", line = list(color = toRGB("grey70"), dash = "dash"),
+                                  xref = "x", yref = "y", 
+                                  x0 = min(variable.n), x1 = 1e7, 
+                                  y0 = design.power(), y1 = design.power())),
+               showlegend = FALSE,
+               margin = list(l = 50, r = 20, b = 80, t = 50, pad = 4)) %>%
+        add_annotations(yref = "paper", xref = "paper", y = 1.08, x = -0.07, 
+                        text = "power", showarrow = F, font=list(size = 25)) %>%
+        add_annotations(yref = "paper", xref = "paper", y = -0.12, x = 1, 
+                        text = "number of subjects total", 
+                        showarrow = F, font = list(size = 25))  %>%
+        add_annotations(yref = "paper", xref = "paper", y = design.power() - 0.01, x = 0.05, 
+                        text = paste("<b>Target power:</b>", format(design.power(), scientific = F)),
+                        showarrow = F, font=list(size = 20, color = toRGB("grey60"))) %>%
+        add_annotations(yref = "paper", xref = "paper", y = design.power() - 0.05, x = 0.05, 
+                        text = required.number.of.controls.prompt,
+                        showarrow = F, font=list(size = 20, color = toRGB("grey60")))
+    }
+  }) # end of fixed phi plotly output
+  
+  
+#### end of server ####
 } # end of server

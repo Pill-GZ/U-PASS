@@ -38,7 +38,9 @@ ui <- navbarPage("GWAS power calculator",
                                    #### false discovery control ####
                                    
                                    wellPanel(selectInput("type_I_error_criteria", "Criteria for false discovery",
-                                                         list("Type I error", "False discovery rate (FDR)", "Family-wise error rate (FWER)")),
+                                                         list("Type I error", 
+                                                              #"False discovery rate (FDR)", 
+                                                              "Family-wise error rate (FWER)")),
                                              conditionalPanel(
                                                condition = "input.type_I_error_criteria == 'Type I error'",
                                                shinyWidgets::sliderTextInput(inputId = "alpha", 
@@ -136,9 +138,9 @@ ui <- navbarPage("GWAS power calculator",
                                              conditionalPanel(
                                                condition = "input.step1_target_OR_RAF == 'Allele frequency and odds ratio'",
                                                numericInput("target_RAF", "Target risk allele frequency:", 
-                                                            value = 0.1, min = 0.001, max = 0.99999, step = 0.001),
+                                                            value = 0.001, min = 0.001, max = 0.99999, step = 0.001),
                                                numericInput("target_OR", "Target odds ratio:", 
-                                                            value = 1.5, min = 1.01, max = 1000000, step = 0.01)
+                                                            value = 5, min = 1.01, max = 1000000, step = 0.01)
                                              ),
                                              conditionalPanel(
                                                condition = "input.step1_target_OR_RAF == 'Signal size per sample (advanced user)'",
@@ -165,12 +167,12 @@ ui <- navbarPage("GWAS power calculator",
                                        conditionalPanel(
                                          condition = "input.step2_fixed_quantity == 'Budget / total number of subjects'",
                                          numericInput("fixed_budget", "Total subjects (Cases + Controls):", 
-                                                      value = 20000, min = 500, max = 1000000, step = 100)
+                                                      value = 40000, min = 500, max = 1000000, step = 100)
                                        ),
                                        conditionalPanel(
                                          condition = "input.step2_fixed_quantity == 'Number of Cases'",
                                          numericInput("fixed_cases", "Number of Cases in study:", 
-                                                      value = 10000, min = 500, max = 1000000, step = 100)
+                                                      value = 20000, min = 500, max = 1000000, step = 100)
                                        ),
                                        conditionalPanel(
                                          condition = "input.step2_fixed_quantity == 'Fraction of Cases'",
@@ -186,7 +188,9 @@ ui <- navbarPage("GWAS power calculator",
                                        condition = "input.step2_fixed_quantity != 'Select a contraint'",
                                        wellPanel(
                                          selectInput("step3_type_I_error_criteria", "Step 3: Criteria for false discovery ...",
-                                                     list("Select a criteria", "Type I error", "False discovery rate (FDR)", "Family-wise error rate (FWER)")),
+                                                     list("Select a criteria", "Type I error", 
+                                                          #"False discovery rate (FDR)", 
+                                                          "Family-wise error rate (FWER)")),
                                          conditionalPanel(
                                            condition = "input.step3_type_I_error_criteria == 'Type I error'",
                                            shinyWidgets::sliderTextInput(inputId = "design_alpha", 
@@ -196,17 +200,17 @@ ui <- navbarPage("GWAS power calculator",
                                          ),
                                          conditionalPanel(
                                            condition = "input.step3_type_I_error_criteria == 'False discovery rate (FDR)'",
-                                           numericInput("p.FDR", "Effective dimension (number of loci):", 
+                                           numericInput("design_p_FDR", "Effective dimension (number of loci):", 
                                                         value = 100000, min = 250, max = 10000000, step = 50),
-                                           shinyWidgets::sliderTextInput(inputId = "design_alpha.FDR", 
+                                           shinyWidgets::sliderTextInput(inputId = "design_alpha_FDR", 
                                                                          label = "Target FDR:",
                                                                          choices = c(as.vector(outer(c(1,5), 10^(-4:-2))),0.1),
                                                                          selected = 0.05)),
                                          conditionalPanel(
                                            condition = "input.step3_type_I_error_criteria == 'Family-wise error rate (FWER)'",
-                                           numericInput("p.FWER", "Effective dimension (number of loci):", 
+                                           numericInput("design_p_FWER", "Effective dimension (number of loci):", 
                                                         value = 100000, min = 250, max = 10000000, step = 50),
-                                           shinyWidgets::sliderTextInput(inputId = "design_alpha.FWER", 
+                                           shinyWidgets::sliderTextInput(inputId = "design_alpha_FWER", 
                                                                          label = "Target FWER:", 
                                                                          choices = c(as.vector(outer(c(1,5), 10^(-4:-2))),0.1),
                                                                          selected = 0.05))
@@ -220,7 +224,8 @@ ui <- navbarPage("GWAS power calculator",
                                          condition = "input.step3_type_I_error_criteria != 'Select a criteria'",
                                          wellPanel(
                                            selectInput("step4_type_II_error_criteria", "Step 4: Targert for non-discovery ...",
-                                                       list("Select a criteria", "Type II error / non-discovery proportion (NDP)", 
+                                                       list("Select a criteria", 
+                                                            "Type II error / non-discovery proportion (NDP)", 
                                                             "Family-wise non-discovery rate (FWNDR)")),
                                            conditionalPanel(
                                              condition = "input.step4_type_II_error_criteria == 'Type II error / non-discovery proportion (NDP)'",
@@ -249,9 +254,22 @@ ui <- navbarPage("GWAS power calculator",
                             #### display results from power analysis ####
                             
                             column(9, # "fixing height to avoid automatic adjustments"
-                                   # textOutput("debug"),
+                                   #textOutput("debug"),
                                    div(style = "height:1200px;", 
-                                       textOutput("power.vec")
+                                       #textOutput("waiting_for_design2"),
+                                       #textOutput("power_vec"),
+                                       #textOutput("waiting_for_design"),
+                                       #textOutput("debug"),
+                                       conditionalPanel(condition = "output.waiting_for_design == true",
+                                                        br(),
+                                                        "Complete your study design on the left"),
+                                       conditionalPanel(condition = "output.fixed_n_design == true",
+                                                        plotlyOutput("optimal_design_fixed_n", height = "700px")),
+                                       conditionalPanel(condition = "output.fixed_n1_design == true",
+                                                        plotlyOutput("optimal_design_fixed_n1", height = "700px")),
+                                       conditionalPanel(condition = "output.fixed_phi_design == true",
+                                                        plotlyOutput("optimal_design_fixed_phi", height = "700px"))
+                                       #textOutput("waiting_for_design")
                                    ) # end of "fixing height to avoid automatic adjustments"
                             ) # end of second column
                           
