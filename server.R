@@ -32,16 +32,32 @@ server <- function(input, output, session) {
   #### calculate number of cases (n1) and controls (n2), and the fraction of cases (phi) ####
   
   n1 <- reactive({
-    ifelse(input$sample_size_specification == 'Number of subjects + fraction of Cases',
-           floor(input$n * input$phi), floor(input$n1))
+    if (input$sample_size_specification == 'Number of subjects + fraction of Cases') {
+      validate(need({is.integer(input$n); input$n > 0}, "Number of subjects must be a positive integer"))
+      floor(input$n * input$phi)
+    } else {
+      validate(need({is.integer(input$n1); input$n1 > 0}, "Number of cases must be a positive integer"))
+      floor(input$n1)
+    }
   })
   n2 <- reactive({
-    ifelse(input$sample_size_specification == 'Number of subjects + fraction of Cases',
-           input$n - floor(input$n * input$phi), floor(input$n2))
+    if (input$sample_size_specification == 'Number of subjects + fraction of Cases') {
+      validate(need({is.integer(input$n); input$n > 0}, "Number of subjects must be a positive integer"))
+      input$n - floor(input$n * input$phi)
+    } else {
+      validate(need({is.integer(input$n1); input$n1 > 0}, "Number of cases must be a positive integer"))
+      floor(input$n2)
+    }
   })
   phi <- reactive({
-    ifelse(input$sample_size_specification == 'Number of subjects + fraction of Cases',
-           input$phi, input$n1 / (input$n1 + input$n2))
+    if (input$sample_size_specification == 'Number of subjects + fraction of Cases') {
+      input$phi
+    } else {
+      validate(
+        need({is.integer(input$n1); input$n1 > 0}, "Number of cases must be a positive integer"),
+        need({is.integer(input$n2); input$n2 > 0}, "Number of controls must be a positive integer"))
+      input$n1 / (input$n1 + input$n2)
+    }
   })
   
   #### calculate power for the sample size inputs ####
@@ -50,6 +66,7 @@ server <- function(input, output, session) {
     if (input$type_I_error_criteria == 'Type I error') {
       qchisq(p = 1 - input$alpha, df = 1, ncp = 0, lower.tail = T)
     } else if (input$type_I_error_criteria == 'Family-wise error rate (FWER)') {
+      validate(need({is.integer(input$p.FWER); input$p.FWER > 0}, "Effective dimension must be a positive integer"))
       qchisq(p = 1 - input$alpha.FWER / input$p.FWER, df = 1, ncp = 0, lower.tail = T)
     } 
   })
@@ -414,6 +431,7 @@ server <- function(input, output, session) {
     if (input$step3_type_I_error_criteria == 'Type I error') {
       qchisq(p = 1 - input$design_alpha, df = 1, ncp = 0, lower.tail = T)
     } else if (input$step3_type_I_error_criteria == 'Family-wise error rate (FWER)') {
+      validate(need({is.integer(input$design_p_FWER); input$design_p_FWER > 0}, "Effective dimension must be a positive integer"))
       qchisq(p = 1 - input$design_alpha_FWER / input$design_p_FWER, df = 1, ncp = 0, lower.tail = T)
     } 
   })
@@ -424,6 +442,7 @@ server <- function(input, output, session) {
     if (input$step4_type_II_error_criteria == 'Type II error / non-discovery proportion (NDP)') {
       1 - input$design_power
     } else if (input$step4_type_II_error_criteria == 'Family-wise non-discovery rate (FWNDR)') {
+      validate(need({is.integer(input$design_sparsity); input$design_sparsity > 0}, "Sparsity must be a positive integer"))
       1 - input$design_FWNDR / input$design_sparsity
     } 
   })
@@ -433,11 +452,18 @@ server <- function(input, output, session) {
   # input$fixed_budget
   output$optimal_design_fixed_n <- renderPlotly({
     if (fixed_n_design()) {
+      validate(need({is.integer(input$fixed_budget); input$fixed_budget > 0}, "Number of subjects must be a positive integer"))
       fixed.n <- input$fixed_budget
       variable.phi <- 1:99/100
       # calculate signal size of the design
       design.signal.size.per.sample <- {
         if (input$step1_target_OR_RAF == 'Allele frequency and odds ratio') {
+          validate(
+            need({is.numeric(input$target_RAF); input$target_RAF > 0; input$target_RAF < 1}, 
+                 "Target risk allele frequency must be between 0 and 1"),
+            need({is.numeric(input$target_OR); input$target_OR > 1}, 
+                 "Target odds ratio must be greater than 1")
+          )
           signal.size.ana.sol.f(f = input$target_RAF, phi = variable.phi, R = input$target_OR)
         } else if (input$step1_target_OR_RAF == 'Signal size per sample (advanced user)') {
           input$target_w2
@@ -500,12 +526,19 @@ server <- function(input, output, session) {
   # input$fixed_cases
   output$optimal_design_fixed_n1 <- renderPlotly({
     if (fixed_n1_design()) {
+      validate(need({is.integer(input$fixed_cases); input$fixed_cases > 0}, "Number of cases must be a positive integer"))
       variable.n2 <- as.vector(outer(c(1,1.5,2:9), 10^(1:6)))
       variable.n <- input$fixed_cases + variable.n2
       variable.phi <- input$fixed_cases / variable.n
       # calculate signal size of the design
       design.signal.size.per.sample <- {
         if (input$step1_target_OR_RAF == 'Allele frequency and odds ratio') {
+          validate(
+            need({is.numeric(input$target_RAF); input$target_RAF > 0; input$target_RAF < 1}, 
+                 "Target risk allele frequency must be between 0 and 1"),
+            need({is.numeric(input$target_OR); input$target_OR > 1}, 
+                 "Target odds ratio must be greater than 1")
+          )
           signal.size.ana.sol.f(f = input$target_RAF, phi = variable.phi, R = input$target_OR)
         } else if (input$step1_target_OR_RAF == 'Signal size per sample (advanced user)') {
           input$target_w2
@@ -566,6 +599,12 @@ server <- function(input, output, session) {
       # calculate signal size of the design
       design.signal.size.per.sample <- {
         if (input$step1_target_OR_RAF == 'Allele frequency and odds ratio') {
+          validate(
+            need({is.numeric(input$target_RAF); input$target_RAF > 0; input$target_RAF < 1}, 
+                 "Target risk allele frequency must be between 0 and 1"),
+            need({is.numeric(input$target_OR); input$target_OR > 1}, 
+                 "Target odds ratio must be greater than 1")
+          )
           signal.size.ana.sol.f(f = input$target_RAF, phi = input$fixed_phi, R = input$target_OR)
         } else if (input$step1_target_OR_RAF == 'Signal size per sample (advanced user)') {
           input$target_w2
