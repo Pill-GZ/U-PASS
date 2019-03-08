@@ -113,14 +113,3 @@ OR.finder <- function(phi = 1/2, signal.size) {
   return(list(theta = theta, R = R, f = f))
 }
 
-#### determine intersection for power calculation ####
-
-determine.intersection <- function(x, y, target) {
-  if (target > max(y)) {
-    return(FALSE)
-  } else {
-    j <- min(which(y > target))
-    i <- j - 1
-    return(ceiling(exp(log(x[i]) + (target - y[i])/(y[j]-y[i])*(log(x[j]) - log(x[i])))))
-  }
-}

@@ -38,9 +38,9 @@ ui <- navbarPage("GWAS power calculator",
                                    #### false discovery control ####
                                    
                                    wellPanel(selectInput("type_I_error_criteria", "Criteria for false discovery",
-                                                         list("Type I error", 
+                                                         list("Family-wise error rate (FWER)", 
                                                               #"False discovery rate (FDR)", 
-                                                              "Family-wise error rate (FWER)")),
+                                                              "Type I error")),
                                              conditionalPanel(
                                                condition = "input.type_I_error_criteria == 'Type I error'",
                                                shinyWidgets::sliderTextInput(inputId = "alpha", 
@@ -51,7 +51,7 @@ ui <- navbarPage("GWAS power calculator",
                                              conditionalPanel(
                                                condition = "input.type_I_error_criteria == 'False discovery rate (FDR)'",
                                                numericInput("p.FDR", "Effective dimension (number of loci):", 
-                                                            value = 100000, min = 250, max = 10000000, step = 50),
+                                                            value = 1000, min = 250, max = 10000000, step = 50),
                                                shinyWidgets::sliderTextInput(inputId = "alpha.FDR", 
                                                                              label = "Target FDR:",
                                                                              choices = c(as.vector(outer(c(1,5), 10^(-4:-2))),0.1),
@@ -60,7 +60,7 @@ ui <- navbarPage("GWAS power calculator",
                                              conditionalPanel(
                                                condition = "input.type_I_error_criteria == 'Family-wise error rate (FWER)'",
                                                numericInput("p.FWER", "Effective dimension (number of loci):", 
-                                                            value = 100000, min = 250, max = 10000000, step = 50),
+                                                            value = 1000, min = 250, max = 10000000, step = 50),
                                                shinyWidgets::sliderTextInput(inputId = "alpha.FWER", 
                                                                              label = "Target FWER:", 
                                                                              choices = c(as.vector(outer(c(1,5), 10^(-4:-2))),0.1),
@@ -92,7 +92,12 @@ ui <- navbarPage("GWAS power calculator",
                                                            multiple = FALSE,
                                                            accept = c(".tsv" # "text/csv", "text/comma-separated-values,text/plain",
                                                                       ))
-                                                 )
+                                                 ), # end of upload my own data
+                                               radioButtons("adaptive_sample_size", 
+                                                            label = "Adaptive initial sample sizes and false discovery control according to study of selelected loci (experimental)",
+                                                            choices = list("Enabled (best guesses from reported text)" = TRUE, 
+                                                                           "Disabled (mannually override in boxes above)" = FALSE), 
+                                                            selected = TRUE)
                                              ) # end of conditional panel
                                    ) # end of dataset overlay choices
                                    
@@ -101,7 +106,7 @@ ui <- navbarPage("GWAS power calculator",
                             #### display OR-RAF diagram ####
                             
                             column(8, # "fixing height to avoid automatic adjustments"
-                                   # textOutput("debug"),
+                                   #textOutput("debug"),
                                    div(style = "height:1200px;", 
                                        plotlyOutput("OR.RAF.plotly", height = "700px"),
                                        # plotOutput("OR.RAF.plot", height = "700px"), 

@@ -13,6 +13,17 @@ read_data <- function(dataset_directory_and_name) {
   dataset
 }
 
+#### determine intersection for power calculation ####
+
+determine.intersection <- function(x, y, target) {
+  if (target > max(y)) {
+    return(FALSE)
+  } else {
+    j <- min(which(y > target))
+    i <- j - 1
+    return(ceiling(exp(log(x[i]) + (target - y[i])/(y[j]-y[i])*(log(x[j]) - log(x[i])))))
+  }
+}
 
 #### start of server ####
 
@@ -200,10 +211,105 @@ server <- function(input, output, session) {
           NULL
         }
       } # end of user upload
-    } # end of data overlay
+    } # end of data read
   })
   
-  #output$debug <- renderText({ dataset()[1,1] })
+  #### determine set of selected loci by capture click event ####
+  
+  selected_loci_idx <- reactive({
+    click_data <- event_data("plotly_click")
+    if ( length(click_data) == 0 | is.null(dataset()) ) {
+      integer(0)
+    } else {
+      # there is no index or key values in plotly (although there is one in ggplot)
+      # so we have to search for the selected gene in the data
+      search_x <- x.adj.inv(click_data$x)
+      search_y <- y.adj.plotly.inv(click_data$y)
+      search_x_idx <- which(abs(dataset()$RISK.ALLELE.FREQUENCY-search_x) == min(abs(dataset()$RISK.ALLELE.FREQUENCY-search_x), na.rm =T))
+      search_y_idx <- which(abs(dataset()$OR-search_y) == min(abs(dataset()$OR-search_y), na.rm =T))
+      intersect(search_x_idx, search_y_idx)
+    }
+  })
+  
+  #### determine paper of selected loci by capture click event ####
+  
+  selected_paper_idx <- reactive({
+    if (length(selected_loci_idx()) > 0) {
+      which(dataset()$PUBMEDID == dataset()[selected_loci_idx()[1], "PUBMEDID"])
+    }
+  })
+  
+  #### display details of selected loci by capture click event ####
+  
+  output$selection <- renderText({
+    if (length(selected_loci_idx()) > 0) {
+      search_idx <- selected_loci_idx()
+      paste("<b>Reported gene(s):</b> ", dataset()[search_idx, "REPORTED.GENE.S."], "<br>",
+            "<b>Mapped gene:</b> ", dataset()[search_idx, "MAPPED_GENE"], "<br>",
+            "<b>Estimated odds ratio:</b> ", dataset()[search_idx, "OR"], "<br>",
+            "<b>Estimated allele frequency:</b> ", dataset()[search_idx, "RISK.ALLELE.FREQUENCY"], "<br>",
+            "<b>p-value:</b> ", dataset()[search_idx, "P.VALUE"], "<br>",
+            "<b>Date added to catalog:</b> ", dataset()[search_idx, "DATE.ADDED.TO.CATALOG"], "<br>",
+            "<b>Study:</b> ", dataset()[search_idx, "STUDY"], "<br>",
+            "<b>Journal:</b> ", dataset()[search_idx, "JOURNAL"], "<br>",
+            "<b>First author:</b> ", dataset()[search_idx, "FIRST.AUTHOR"], "<br>",
+            "<b>Disease trait:</b> ", dataset()[search_idx, "DISEASE.TRAIT"], "<br>",
+            "<b>Initial sample size:</b> ", dataset()[search_idx, "INITIAL.SAMPLE.SIZE"], "<br>",
+            "<b>Replication sample size:</b> ", dataset()[search_idx, "REPLICATION.SAMPLE.SIZE"], "<br><br>")
+    } else if (is.null(dataset())) {
+      "Choose a dataset in the EBI format."
+    } else {
+      "Click on data points to display details"
+    }
+  })
+  
+  #### update base plot sample sizes and false discovery control according to selected loci ####
+  
+  observe({
+    if (input$adaptive_sample_size == T && length(selected_loci_idx()) > 0) {
+      # determine sample sizes
+      initial_sample_size <- strsplit(x = dataset()[selected_loci_idx()[1], "INITIAL.SAMPLE.SIZE"], split = ", ")
+      initial_sample_size <- sapply(initial_sample_size, gsub, pattern = ",", replacement = "")
+      cases_idx <- grepl(pattern = "cases", x = initial_sample_size)
+      controls_idx <- grepl(pattern = "controls", x = initial_sample_size)
+      n_cases <- sum(as.numeric(gsub(".*?([0-9]+).*", "\\1", initial_sample_size[cases_idx])))
+      n_controls <- sum(as.numeric(gsub(".*?([0-9]+).*", "\\1", initial_sample_size[controls_idx])))
+      # make changes to the inputs
+      if (n_cases > 0 && n_controls > 0) {
+        # Change the number of cases
+        updateNumericInput(session, "n1", value = n_cases)
+        # Change the number of controls
+        updateNumericInput(session, "n2", value = n_controls)
+        # Change selection for input$sample_size_specification
+        updateSelectInput(session, "sample_size_specification",
+                          selected = "Number of Cases + number of Controls")
+      } else {
+        showModal(modalDialog(
+          title = "Unable to automatically determine initial sample sizes",
+          paste("No information about number of", ifelse(n_cases > 0, "controls!", "cases!"))
+        ))
+      }
+      # determine p-value cutoff point
+      max_p_val <- max(dataset()[selected_paper_idx(), "P.VALUE"], na.rm = T)
+      #print(max_p_val)
+      if (max_p_val > -Inf) {
+        dim_guess <- min(0.1^(ceiling(log10(max_p_val)) + 1), 1e4)
+        FWER_guess <- max_p_val * dim_guess
+        FWER_guess <- ifelse(FWER_guess <= 0.05, 0.05, 0.1)
+        # Chage the FWER in UI
+        shinyWidgets::updateSliderTextInput(session, "alpha.FWER", selected = FWER_guess)
+        # Change the dimension of FWER control in UI
+        updateNumericInput(session, "p.FWER", value = dim_guess)
+        # Change false discovery control to FWER 
+        updateSelectInput(session, "type_I_error_criteria",
+                          selected = "Family-wise error rate (FWER)")
+      } else {
+        showModal(modalDialog(
+          title = "Unable to guess p-value cutoff point"
+        ))
+      }
+    }
+  })
   
   #### overlay data points and render plotly ####
   
@@ -211,44 +317,44 @@ server <- function(input, output, session) {
     # overlay data points
     if ( input$overlay_example_dataset == T && !is.null(dataset()) ) {
       with(data = dataset(), {
-        # separate layers for selected points (if any)
-        selected_idx_TF <- index %in% selected_data_idx()
-        not_selected_idx_TF <- !selected_idx_TF
+        # separate layers for selected points (if any), points in the same paper (if any),
+        # indexed by binary (T/F) vectors
+        selected_loci_TF <- index %in% selected_loci_idx()
+        selected_paper_TF <- index %in% selected_paper_idx()
+        not_selected_TF <- !selected_paper_TF
         p <- OR_RAF_baseplot() %>% 
-          add_markers(x = x.adj(RISK.ALLELE.FREQUENCY[not_selected_idx_TF]), 
-                      y = y.adj.plotly(OR[not_selected_idx_TF]), 
-                      marker = list(color = 'rgb(255, 255, 255)', size = 10, opacity = 0.6,
+          add_markers(x = x.adj(RISK.ALLELE.FREQUENCY[not_selected_TF]), 
+                      y = y.adj.plotly(OR[not_selected_TF]), 
+                      marker = list(color = 'rgb(255, 255, 255)', size = 10, opacity = 0.5,
                                     line = list(color = 'rgb(20, 100, 238)', width = 3)),
                       hoverinfo = "text",
-                      text = paste("RAF: ", RISK.ALLELE.FREQUENCY[not_selected_idx_TF],
-                                   "OR: ", round(OR[not_selected_idx_TF], digits = 3),
-                                   '<br>MAPPED GENE:', MAPPED_GENE[not_selected_idx_TF],
-                                   "<br>PUBMEDID: ", PUBMEDID[not_selected_idx_TF]),
+                      text = paste("RAF: ", RISK.ALLELE.FREQUENCY[not_selected_TF],
+                                   "OR: ", round(OR[not_selected_TF], digits = 3),
+                                   '<br>MAPPED GENE:', MAPPED_GENE[not_selected_TF],
+                                   "<br>PUBMEDID: ", PUBMEDID[not_selected_TF]),
                       type = "scatter", mode = 'markers', inherit = F) 
-        if (sum(selected_idx_TF) > 0) {
-          p <- p %>% add_markers(x = x.adj(RISK.ALLELE.FREQUENCY[selected_idx_TF]),
-                                 y = y.adj.plotly(OR[selected_idx_TF]),
-                                 marker = list(color = 'rgb(255, 165, 0)', size = 15, opacity = 0.9,
-                                               line = list(color = 'rgb(255, 0, 0)', width = 3)),
+        if (sum(selected_loci_TF) > 0) {
+          p <- p %>% add_markers(x = x.adj(RISK.ALLELE.FREQUENCY[selected_paper_TF]),
+                                 y = y.adj.plotly(OR[selected_paper_TF]),
+                                 marker = list(color = 'rgb(255, 255, 255)', size = 10, opacity = 0.6,
+                                               line = list(color = 'rgb(255, 165, 0)', width = 3)),
                                  hoverinfo = "text",
-                                 text = paste("RAF: ", RISK.ALLELE.FREQUENCY[selected_idx_TF],
-                                              "OR: ", round(OR[selected_idx_TF], digits = 3),
-                                              '<br>MAPPED GENE:', MAPPED_GENE[selected_idx_TF],
-                                              "<br>PUBMEDID: ", PUBMEDID[selected_idx_TF]),
-                                 type = "scatter", mode = 'markers', inherit = F)
+                                 text = paste("RAF: ", RISK.ALLELE.FREQUENCY[selected_paper_TF],
+                                              "OR: ", round(OR[selected_paper_TF], digits = 3),
+                                              '<br>MAPPED GENE:', MAPPED_GENE[selected_paper_TF],
+                                              "<br>PUBMEDID: ", PUBMEDID[selected_paper_TF]),
+                                 type = "scatter", mode = 'markers', inherit = F) %>% 
+            add_markers(x = x.adj(RISK.ALLELE.FREQUENCY[selected_loci_TF]),
+                        y = y.adj.plotly(OR[selected_loci_TF]),
+                        marker = list(color = 'rgb(255, 165, 0)', size = 15, opacity = 0.9,
+                                      line = list(color = 'rgb(255, 0, 0)', width = 3)),
+                        hoverinfo = "text",
+                        text = paste("RAF: ", RISK.ALLELE.FREQUENCY[selected_loci_TF],
+                                     "OR: ", round(OR[selected_loci_TF], digits = 3),
+                                     '<br>MAPPED GENE:', MAPPED_GENE[selected_loci_TF],
+                                     "<br>PUBMEDID: ", PUBMEDID[selected_loci_TF]),
+                        type = "scatter", mode = 'markers', inherit = F)
         }
-          # add_markers(x = x.adj(RISK.ALLELE.FREQUENCY), 
-          #           y = y.adj.plotly(OR), 
-          #           color = index %in% selected_data_idx(), #ifelse(index %in% selected_data_idx(), 'red', 'white'),
-          #           marker = list(# color = 'rgb(255, 255, 255)',
-          #                         size = 10, opacity = 0.6,
-          #                         line = list(color = 'rgb(20, 100, 238)', width = 3)),
-          #           hoverinfo = "text",
-          #           text = paste("RAF: ", RISK.ALLELE.FREQUENCY,
-          #                        "OR: ", round(OR, digits = 3),
-          #                        '<br>MAPPED GENE:', MAPPED_GENE,
-          #                        "<br>PUBMEDID: ", PUBMEDID),
-          #           type = "scatter", mode = 'markers', inherit = F) %>%
         # suppress warnings  
         storeWarn<- getOption("warn")
         options(warn = -1) 
@@ -266,41 +372,6 @@ server <- function(input, output, session) {
   }) # end of OR-RAF plotly output
   
   
-  #### display details of selected loci by capture click event ####
-  
-  selected_data_idx <- reactive({
-    click_data <- event_data("plotly_click")
-    if ( length(click_data) == 0 | is.null(dataset()) ) {
-      integer(0)
-    } else {
-      # there is no index or key values in plotly (although there is one in ggplot)
-      # so we have to search for the selected gene in the data
-      search_x <- x.adj.inv(click_data$x)
-      search_y <- y.adj.plotly.inv(click_data$y)
-      search_x_idx <- which(abs(dataset()$RISK.ALLELE.FREQUENCY-search_x) == min(abs(dataset()$RISK.ALLELE.FREQUENCY-search_x), na.rm =T))
-      search_y_idx <- which(abs(dataset()$OR-search_y) == min(abs(dataset()$OR-search_y), na.rm =T))
-      intersect(search_x_idx, search_y_idx)
-    }
-  })
-  
-  output$selection <- renderText({
-    if (length(selected_data_idx()) > 0) {
-      search_idx <- selected_data_idx()
-      paste("<b>Reported gene(s):</b> ", dataset()[search_idx, "REPORTED.GENE.S."], "<br>",
-            "<b>Mapped gene:</b> ", dataset()[search_idx, "MAPPED_GENE"], "<br>",
-            "<b>Estimated odds ratio:</b> ", dataset()[search_idx, "OR"], "<br>",
-            "<b>Estimated allele frequency:</b> ", dataset()[search_idx, "RISK.ALLELE.FREQUENCY"], "<br>",
-            "<b>Date added to catalog:</b> ", dataset()[search_idx, "DATE.ADDED.TO.CATALOG"], "<br>",
-            "<b>Study:</b> ", dataset()[search_idx, "STUDY"], "<br>",
-            "<b>Disease trait:</b> ", dataset()[search_idx, "DISEASE.TRAIT"], "<br>",
-            "<b>Initial sample size:</b> ", dataset()[search_idx, "INITIAL.SAMPLE.SIZE"], "<br>",
-            "<b>Replication sample size:</b> ", dataset()[search_idx, "REPLICATION.SAMPLE.SIZE"], "<br><br>")
-    } else if (is.null(dataset())) {
-      "Choose a dataset in the EBI format."
-    } else {
-      "Click on data points to display details"
-    }
-  })
   
 #### second tab: design my study #### 
   #### checking if design is complete ####
