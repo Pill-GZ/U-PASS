@@ -616,10 +616,15 @@ server <- function(input, output, session) {
                                ncp = design.signal.size.per.sample * variable.n)
       
       # calculate required number of total samples
-      required.number.of.controls <- determine.intersection(variable.n, variable.power, design.power())
-      required.number.of.controls.prompt <- ifelse(required.number.of.controls, 
+      required.number.of.total.samples <- determine.intersection(variable.n, variable.power, design.power())
+      required.number.of.total.samples.prompt <- ifelse(required.number.of.total.samples, 
                                                    yes = paste("<b>Number of samples needed:</b>", 
-                                                               format(required.number.of.controls, scientific = F)),
+                                                               format(required.number.of.total.samples, scientific = F),
+                                                               "<br><b>Cases:</b>", 
+                                                               ceiling(required.number.of.total.samples * input$fixed_phi), 
+                                                               " <b>Controls:</b>",
+                                                               required.number.of.total.samples - 
+                                                                 ceiling(required.number.of.total.samples * input$fixed_phi)),
                                                    no = "<b>cannot be achieved</b>")
       
       plot_ly(x = variable.n, y = variable.power, 
@@ -654,7 +659,7 @@ server <- function(input, output, session) {
                         text = paste("<b>Target power:</b>", format(design.power(), scientific = F)),
                         showarrow = F, font=list(size = 20, color = toRGB("grey60"))) %>%
         add_annotations(yref = "paper", xref = "paper", y = design.power() - 0.05, x = 0.05, 
-                        text = required.number.of.controls.prompt,
+                        text = required.number.of.total.samples.prompt,
                         showarrow = F, font=list(size = 20, color = toRGB("grey60")))
     }
   }) # end of fixed phi plotly output
