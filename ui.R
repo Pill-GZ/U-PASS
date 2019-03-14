@@ -165,7 +165,7 @@ ui <- navbarPage("GWAS power calculator",
                                      condition = "input.step1_target_OR_RAF != 'Select a target'",
                                      wellPanel(
                                        selectInput("step2_fixed_quantity", "Step 2: I have a fixed ...",
-                                                   list("Select a contraint",
+                                                   list("Select a constraint",
                                                         "Budget / total number of subjects", 
                                                         "Number of Cases",
                                                         "Fraction of Cases")),
@@ -190,10 +190,10 @@ ui <- navbarPage("GWAS power calculator",
                                        #### Step 3: choosing false discovery control criteria ####
                                        # only displayed if step 1 and 2 are complete
                                        
-                                       condition = "input.step2_fixed_quantity != 'Select a contraint'",
+                                       condition = "input.step2_fixed_quantity != 'Select a constraint'",
                                        wellPanel(
                                          selectInput("step3_type_I_error_criteria", "Step 3: Criteria for false discovery ...",
-                                                     list("Select a criteria", "Type I error", 
+                                                     list("Select a criterion", "Type I error", 
                                                           #"False discovery rate (FDR)", 
                                                           "Family-wise error rate (FWER)")),
                                          conditionalPanel(
@@ -226,10 +226,10 @@ ui <- navbarPage("GWAS power calculator",
                                          #### Step 4: choosing non-discovery control target ####
                                          # only displayed if step 1, 2, and 3 are complete
                                          
-                                         condition = "input.step3_type_I_error_criteria != 'Select a criteria'",
+                                         condition = "input.step3_type_I_error_criteria != 'Select a criterion'",
                                          wellPanel(
                                            selectInput("step4_type_II_error_criteria", "Step 4: Targert for non-discovery ...",
-                                                       list("Select a criteria", 
+                                                       list("Select a criterion", 
                                                             "Type II error / non-discovery proportion (NDP)", 
                                                             "Family-wise non-discovery rate (FWNDR)")),
                                            conditionalPanel(

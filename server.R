@@ -395,9 +395,9 @@ server <- function(input, output, session) {
   
   waiting_for_design <- reactive({
     if (input$step1_target_OR_RAF != "Select a target" &&
-        input$step2_fixed_quantity != "Select a contraint" &&
-        input$step3_type_I_error_criteria != "Select a criteria" &&
-        input$step4_type_II_error_criteria != "Select a criteria") {
+        input$step2_fixed_quantity != "Select a constraint" &&
+        input$step3_type_I_error_criteria != "Select a criterion" &&
+        input$step4_type_II_error_criteria != "Select a criterion") {
       FALSE
     } else {
       TRUE
