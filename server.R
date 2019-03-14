@@ -459,7 +459,7 @@ server <- function(input, output, session) {
       design.signal.size.per.sample <- {
         if (input$step1_target_OR_RAF == 'Allele frequency and odds ratio') {
           validate(
-            need({is.numeric(input$target_RAF); input$target_RAF > 0; input$target_RAF < 1}, 
+            need({is.numeric(input$target_RAF) & input$target_RAF > 0 & input$target_RAF < 1}, 
                  "Target risk allele frequency must be between 0 and 1"),
             need({is.numeric(input$target_OR); input$target_OR > 1}, 
                  "Target odds ratio must be greater than 1")
@@ -500,6 +500,10 @@ server <- function(input, output, session) {
                                   xref = "x", yref = "y", 
                                   x0 = optimal.fraction.of.cases, x1 = optimal.fraction.of.cases, 
                                   y0 = 0, y1 = 1),
+                             # list(type = "line", line = list(color = toRGB("grey20"), dash = "dash"),
+                             #      xref = "x", yref = "y", 
+                             #      x0 = 1/(1+sqrt(input$target_OR)), x1 = 1/(1+sqrt(input$target_OR)), 
+                             #      y0 = 0, y1 = 1),
                              list(type = "line", line = list(color = toRGB("grey70"), dash = "dash"),
                                   xref = "x", yref = "y", 
                                   x0 = 0, x1 = 1, 
@@ -534,7 +538,7 @@ server <- function(input, output, session) {
       design.signal.size.per.sample <- {
         if (input$step1_target_OR_RAF == 'Allele frequency and odds ratio') {
           validate(
-            need({is.numeric(input$target_RAF); input$target_RAF > 0; input$target_RAF < 1}, 
+            need({is.numeric(input$target_RAF) & input$target_RAF > 0 & input$target_RAF < 1}, 
                  "Target risk allele frequency must be between 0 and 1"),
             need({is.numeric(input$target_OR); input$target_OR > 1}, 
                  "Target odds ratio must be greater than 1")
@@ -600,7 +604,7 @@ server <- function(input, output, session) {
       design.signal.size.per.sample <- {
         if (input$step1_target_OR_RAF == 'Allele frequency and odds ratio') {
           validate(
-            need({is.numeric(input$target_RAF); input$target_RAF > 0; input$target_RAF < 1}, 
+            need({is.numeric(input$target_RAF) & input$target_RAF > 0 & input$target_RAF < 1}, 
                  "Target risk allele frequency must be between 0 and 1"),
             need({is.numeric(input$target_OR); input$target_OR > 1}, 
                  "Target odds ratio must be greater than 1")
