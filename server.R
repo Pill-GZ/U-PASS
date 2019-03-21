@@ -73,7 +73,7 @@ server <- function(input, output, session) {
   
   signal.size.vec <- as.vector(outer(c(1,2,5), 10^(-5:-2)))
   power.vec <- reactive({
-    pchisq(q = cutoff(), df = 1, ncp = signal.size.vec * (n1() + n2()) , lower.tail = F)
+    pchisq(q = cutoff(), df = 1, ncp = signal.size.vec * 2 * (n1() + n2()) , lower.tail = F)
   })
   output$power_vec <- renderText({ power.vec() })
   
@@ -92,7 +92,7 @@ server <- function(input, output, session) {
     temp.mat <- matrix(nrow = length(R.vec), ncol = length(f.vec))
     for (i in 1:length(R.vec)) {
       for (j in 1:length(f.vec)) {
-        temp.mat[i,j] <- signal.size.ana.sol.f(f.vec[j], phi(), R.vec[i]) * (n1() + n2())
+        temp.mat[i,j] <- signal.size.ana.sol.f(f.vec[j], phi(), R.vec[i]) * 2 * (n1() + n2())
       }
     }
     temp.mat
