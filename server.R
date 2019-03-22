@@ -60,16 +60,24 @@ server <- function(input, output, session) {
     }
   })
   
-  #### calculate power for the sample size inputs ####
+  #### calculate cutoff threshold for false discovery control ####
   
-  cutoff <- reactive({
+  p_val_cutoff <- reactive({
     if (input$type_I_error_criteria == 'Type I error') {
-      qchisq(p = 1 - input$alpha, df = 1, ncp = 0, lower.tail = T)
+      input$alpha
     } else if (input$type_I_error_criteria == 'Family-wise error rate (FWER)') {
       validate(need({is.integer(input$p.FWER); input$p.FWER > 0}, "Effective dimension must be a positive integer"))
-      qchisq(p = 1 - input$alpha.FWER / input$p.FWER, df = 1, ncp = 0, lower.tail = T)
+      input$alpha.FWER / input$p.FWER
     } 
   })
+  
+  output$p_val_cutoff <- renderText({ paste("<b>P-value threshold:</b>",p_val_cutoff()) })
+  
+  cutoff <- reactive({
+    qchisq(p = 1 - p_val_cutoff(), df = 1, ncp = 0, lower.tail = T)
+  })
+  
+  #### calculate power for the sample size inputs ####
   
   signal.size.vec <- as.vector(outer(c(1,2,5), 10^(-5:-2)))
   power.vec <- reactive({
@@ -149,51 +157,57 @@ server <- function(input, output, session) {
   # not pass to output
   
   OR_RAF_baseplot <- reactive({
-    p <- plot_ly(x = x.adj(f.vec), y = y.adj.plotly(R.vec), 
-                 z = power.mat(), zmin = 0, zmax = 1,
-                 colors = "Greys", type = "contour",
-                 reversescale = T, hoverinfo = "none",
-                 width = 750, height = 700,
-                 contours = list(showlabels = TRUE)) %>%
-      # config(displayModeBar = F) %>% 
-      layout(xaxis = list(range = x.adj(f.lim), # fixedrange=TRUE,
-                          tickvals = x.adj(c(0.5, 10^(-1:-4), 1-10^(-1:-2))),
-                          ticktext = c(0.5, 0.1, (10^{-2}), (10^{-3}), (10^{-4}),0.9, 0.99),
-                          zeroline = FALSE, tickfont = list(size = 20),
-                          showline = TRUE, linecolor = toRGB("black"), mirror = "ticks", linewidth = 3),
-             yaxis = list(range = y.adj.plotly(R.lim), # fixedrange=TRUE,
-                          tickvals = y.adj.plotly(c(1, 2, 5, 10, 20, 50, 100)),
-                          ticktext = c(1, 2, 5, 10, 20, 50, 100), 
-                          zeroline = FALSE, tickfont = list(size = 20),
-                          showline = TRUE, linecolor = toRGB("black"), mirror = "ticks", linewidth = 3),
-             showlegend = FALSE, 
-             margin = list(l = 50, r = 20, b = 80, t = 50, pad = 4)) %>%
-      add_annotations(yref = "paper", xref = "paper", y = 1.08, x = -0.07, 
-                      text = "odds ratio", showarrow = F, font=list(size = 25)) %>%
-      add_annotations(yref = "paper", xref = "paper", y = -0.12, x = 1, 
-                      text = "risk allele frequency (in control group)", 
-                      showarrow = F, font = list(size = 25)) %>%
-      add_annotations(yref = "paper", xref = "paper", y = 1.04, x = 1.14, 
-                      text = "power", 
-                      showarrow = F, font = list(size = 25)) %>%
-      add_annotations(yref = "paper", xref = "paper", y = 0.8, x = 0.5, 
-                      text = "<b>Cases/Controls</b>", showarrow = F, 
-                      font=list(size = 40, color = toRGB("grey70"))) %>%
-      add_annotations(yref = "paper", xref = "paper", y = 0.7, x = 0.5, 
-                      text = paste0("<b>", format(n1(), scientific = FALSE), 
-                                    "/", format(n2(), scientific = FALSE), "</b>"), showarrow = F, 
-                      font=list(size = 40, color = toRGB("grey70")))
-    
-    for (i in 1:length(signal.size.vec)) {
-      signal.size <- signal.size.vec[i]
-      solution.vec <- OR.finder(phi = phi(), signal.size)
-      p <- add_trace(p, x = x.adj(solution.vec$f), y = y.adj.plotly(solution.vec$R), 
-                     line = list(dash = 'dash', width = 1), type = "scatter", mode = "lines", 
-                     color = I("gray50"), hoverinfo = 'text', 
-                     text = paste('signal size / sample =', signal.size, 
-                                  '\n', 'power = ', round(power.vec()[i], digits = 3)),
-                     inherit = F) 
-    }
+    withProgress(message = 'Rendering OR-RAF phase diagram', detail = 'Rendering power heatmap',
+                 value = 0, {
+                   p <- plot_ly(x = x.adj(f.vec), y = y.adj.plotly(R.vec), 
+                                z = power.mat(), zmin = 0, zmax = 1,
+                                colors = "Greys", type = "contour",
+                                reversescale = T, hoverinfo = "none",
+                                width = 750, height = 700,
+                                contours = list(showlabels = TRUE)) %>%
+                     # config(displayModeBar = F) %>% 
+                     layout(xaxis = list(range = x.adj(f.lim), # fixedrange=TRUE,
+                                         tickvals = x.adj(c(0.5, 10^(-1:-4), 1-10^(-1:-2))),
+                                         ticktext = c(0.5, 0.1, (10^{-2}), (10^{-3}), (10^{-4}),0.9, 0.99),
+                                         zeroline = FALSE, tickfont = list(size = 20),
+                                         showline = TRUE, linecolor = toRGB("black"), mirror = "ticks", linewidth = 3),
+                            yaxis = list(range = y.adj.plotly(R.lim), # fixedrange=TRUE,
+                                         tickvals = y.adj.plotly(c(1, 2, 5, 10, 20, 50, 100)),
+                                         ticktext = c(1, 2, 5, 10, 20, 50, 100), 
+                                         zeroline = FALSE, tickfont = list(size = 20),
+                                         showline = TRUE, linecolor = toRGB("black"), mirror = "ticks", linewidth = 3),
+                            showlegend = FALSE, 
+                            margin = list(l = 50, r = 20, b = 80, t = 50, pad = 4)) %>%
+                     add_annotations(yref = "paper", xref = "paper", y = 1.08, x = -0.07, 
+                                     text = "odds ratio", showarrow = F, font=list(size = 25)) %>%
+                     add_annotations(yref = "paper", xref = "paper", y = -0.12, x = 1, 
+                                     text = "risk allele frequency (in control group)", 
+                                     showarrow = F, font = list(size = 25)) %>%
+                     add_annotations(yref = "paper", xref = "paper", y = 1.04, x = 1.14, 
+                                     text = "power", 
+                                     showarrow = F, font = list(size = 25)) %>%
+                     add_annotations(yref = "paper", xref = "paper", y = 0.8, x = 0.5, 
+                                     text = "<b>Cases/Controls</b>", showarrow = F, 
+                                     font=list(size = 40, color = toRGB("grey70"))) %>%
+                     add_annotations(yref = "paper", xref = "paper", y = 0.7, x = 0.5, 
+                                     text = paste0("<b>", format(n1(), scientific = FALSE), 
+                                                   "/", format(n2(), scientific = FALSE), "</b>"), showarrow = F, 
+                                     font=list(size = 40, color = toRGB("grey70")))
+                   
+                   setProgress(value = 0.8, detail = "Overlaying equi-power curves")
+                   
+                   for (i in 1:length(signal.size.vec)) {
+                     signal.size <- signal.size.vec[i]
+                     solution.vec <- OR.finder(phi = phi(), signal.size)
+                     p <- add_trace(p, x = x.adj(solution.vec$f), y = y.adj.plotly(solution.vec$R), 
+                                    line = list(dash = 'dash', width = 1), type = "scatter", mode = "lines", 
+                                    color = I("gray50"), hoverinfo = 'text', 
+                                    text = paste('signal size / sample =', signal.size, 
+                                                 '\n', 'power = ', round(power.vec()[i], digits = 3)),
+                                    inherit = F) 
+                   }
+                   setProgress(value = 1)
+                 }) # end of progress bar for base plot
     p
   }) # end of OR-RAF local plot
   
@@ -333,55 +347,69 @@ server <- function(input, output, session) {
   output$OR.RAF.plotly <- renderPlotly({
     # overlay data points
     if ( input$overlay_example_dataset == T && !is.null(dataset()) ) {
-      with(data = dataset(), {
-        # separate layers for selected points (if any), points in the same paper (if any),
-        # indexed by binary (T/F) vectors
-        selected_loci_TF <- index %in% selected_loci_idx()
-        selected_paper_TF <- index %in% selected_paper_idx()
-        not_selected_TF <- !selected_paper_TF
-        p <- OR_RAF_baseplot() %>% 
-          add_markers(x = x.adj(RISK.ALLELE.FREQUENCY[not_selected_TF]), 
-                      y = y.adj.plotly(OR[not_selected_TF]), 
-                      marker = list(color = 'rgb(255, 255, 255)', size = 10, opacity = 0.5,
-                                    line = list(color = 'rgb(20, 100, 238)', width = 3)),
-                      hoverinfo = "text",
-                      text = paste("RAF: ", RISK.ALLELE.FREQUENCY[not_selected_TF],
-                                   "OR: ", round(OR[not_selected_TF], digits = 3),
-                                   '<br>MAPPED GENE:', MAPPED_GENE[not_selected_TF],
-                                   "<br>PUBMEDID: ", PUBMEDID[not_selected_TF]),
-                      type = "scatter", mode = 'markers', inherit = F) 
-        if (sum(selected_loci_TF) > 0) {
-          p <- p %>% add_markers(x = x.adj(RISK.ALLELE.FREQUENCY[selected_paper_TF]),
-                                 y = y.adj.plotly(OR[selected_paper_TF]),
-                                 marker = list(color = 'rgb(255, 255, 255)', size = 10, opacity = 0.6,
-                                               line = list(color = 'rgb(255, 165, 0)', width = 3)),
-                                 hoverinfo = "text",
-                                 text = paste("RAF: ", RISK.ALLELE.FREQUENCY[selected_paper_TF],
-                                              "OR: ", round(OR[selected_paper_TF], digits = 3),
-                                              '<br>MAPPED GENE:', MAPPED_GENE[selected_paper_TF],
-                                              "<br>PUBMEDID: ", PUBMEDID[selected_paper_TF]),
-                                 type = "scatter", mode = 'markers', inherit = F) %>% 
-            add_markers(x = x.adj(RISK.ALLELE.FREQUENCY[selected_loci_TF]),
-                        y = y.adj.plotly(OR[selected_loci_TF]),
-                        marker = list(color = 'rgb(255, 165, 0)', size = 15, opacity = 0.9,
-                                      line = list(color = 'rgb(255, 0, 0)', width = 3)),
-                        hoverinfo = "text",
-                        text = paste("RAF: ", RISK.ALLELE.FREQUENCY[selected_loci_TF],
-                                     "OR: ", round(OR[selected_loci_TF], digits = 3),
-                                     '<br>MAPPED GENE:', MAPPED_GENE[selected_loci_TF],
-                                     "<br>PUBMEDID: ", PUBMEDID[selected_loci_TF]),
-                        type = "scatter", mode = 'markers', inherit = F)
-        }
-        # suppress warnings  
-        storeWarn<- getOption("warn")
-        options(warn = -1) 
-        p <- p %>% layout( source = "dataset" )
-        # restore warnings, delayed so plot is completed
-        shinyjs::delay(expr =({ 
-          options(warn = storeWarn) 
-        }) ,ms = 100) 
-        p
-      })
+      withProgress(message = 'Overlaying data points', detail = 'Locating selected loci/article',
+                   value = 0, {
+                     with(data = dataset(), {
+                       # separate layers for selected points (if any), points in the same paper (if any),
+                       # indexed by binary (T/F) vectors
+                       selected_loci_TF <- index %in% selected_loci_idx()
+                       selected_paper_TF <- index %in% selected_paper_idx()
+                       not_selected_TF <- !selected_paper_TF
+
+                       # Overlaying loci not selected / not in article
+                       setProgress(value = 0.2, detail = "Overlaying loci not selected / not in article")
+                       p <- OR_RAF_baseplot() %>% 
+                         add_markers(x = x.adj(RISK.ALLELE.FREQUENCY[not_selected_TF]), 
+                                     y = y.adj.plotly(OR[not_selected_TF]), 
+                                     marker = list(color = 'rgb(255, 255, 255)', size = 10, opacity = 0.5,
+                                                   line = list(color = 'rgb(20, 100, 238)', width = 3)),
+                                     hoverinfo = "text",
+                                     text = paste("RAF: ", RISK.ALLELE.FREQUENCY[not_selected_TF],
+                                                  "OR: ", round(OR[not_selected_TF], digits = 3),
+                                                  '<br>MAPPED GENE:', MAPPED_GENE[not_selected_TF],
+                                                  "<br>PUBMEDID: ", PUBMEDID[not_selected_TF]),
+                                     type = "scatter", mode = 'markers', inherit = F) 
+                       
+                       # Overlaying loci selected / in article
+                       if (sum(selected_loci_TF) > 0) {
+                         setProgress(value = 0.8, detail = "Overlaying loci selected / in article")
+                         p <- p %>% add_markers(x = x.adj(RISK.ALLELE.FREQUENCY[selected_paper_TF]),
+                                                y = y.adj.plotly(OR[selected_paper_TF]),
+                                                marker = list(color = 'rgb(255, 255, 255)', size = 10, opacity = 0.6,
+                                                              line = list(color = 'rgb(255, 165, 0)', width = 3)),
+                                                hoverinfo = "text",
+                                                text = paste("RAF: ", RISK.ALLELE.FREQUENCY[selected_paper_TF],
+                                                             "OR: ", round(OR[selected_paper_TF], digits = 3),
+                                                             '<br>MAPPED GENE:', MAPPED_GENE[selected_paper_TF],
+                                                             "<br>PUBMEDID: ", PUBMEDID[selected_paper_TF]),
+                                                type = "scatter", mode = 'markers', inherit = F) %>% 
+                           add_markers(x = x.adj(RISK.ALLELE.FREQUENCY[selected_loci_TF]),
+                                       y = y.adj.plotly(OR[selected_loci_TF]),
+                                       marker = list(color = 'rgb(255, 165, 0)', size = 15, opacity = 0.9,
+                                                     line = list(color = 'rgb(255, 0, 0)', width = 3)),
+                                       hoverinfo = "text",
+                                       text = paste("RAF: ", RISK.ALLELE.FREQUENCY[selected_loci_TF],
+                                                    "OR: ", round(OR[selected_loci_TF], digits = 3),
+                                                    '<br>MAPPED GENE:', MAPPED_GENE[selected_loci_TF],
+                                                    "<br>PUBMEDID: ", PUBMEDID[selected_loci_TF]),
+                                       type = "scatter", mode = 'markers', inherit = F)
+                       }
+                       
+                       # suppress warnings  
+                       storeWarn<- getOption("warn")
+                       options(warn = -1) 
+                       p <- p %>% layout( source = "dataset" )
+                       # restore warnings, delayed so plot is completed
+                       shinyjs::delay(expr =({ 
+                         options(warn = storeWarn) 
+                       }) ,ms = 100)
+                       
+                       # set progress bar to 1
+                       setProgress(value = 1)
+                       
+                       p
+                     }) # end of data overlay
+                   }) # end of progress bar
     } else { 
       # don't overlay data points
       OR_RAF_baseplot()

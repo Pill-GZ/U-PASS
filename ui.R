@@ -65,7 +65,8 @@ ui <- navbarPage("GWAS power calculator",
                                                                              label = "Target FWER:", 
                                                                              choices = c(as.vector(outer(c(1,5), 10^(-4:-2))),0.1),
                                                                              selected = 0.05)
-                                             )
+                                             ),
+                                             htmlOutput("p_val_cutoff")
                                    ),
                                    # br(),
                                    
