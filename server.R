@@ -347,7 +347,8 @@ server <- function(input, output, session) {
   output$OR.RAF.plotly <- renderPlotly({
     # overlay data points
     if ( input$overlay_example_dataset == T && !is.null(dataset()) ) {
-      withProgress(message = 'Overlaying data points', detail = 'Locating selected loci/article',
+      withProgress(message = 'Rendering phase diagram with points overlay', 
+                   detail = 'Locating selected loci/article',
                    value = 0, {
                      with(data = dataset(), {
                        # separate layers for selected points (if any), points in the same paper (if any),
@@ -355,24 +356,27 @@ server <- function(input, output, session) {
                        selected_loci_TF <- index %in% selected_loci_idx()
                        selected_paper_TF <- index %in% selected_paper_idx()
                        not_selected_TF <- !selected_paper_TF
-
+                       
                        # Overlaying loci not selected / not in article
-                       setProgress(value = 0.2, detail = "Overlaying loci not selected / not in article")
-                       p <- OR_RAF_baseplot() %>% 
-                         add_markers(x = x.adj(RISK.ALLELE.FREQUENCY[not_selected_TF]), 
-                                     y = y.adj.plotly(OR[not_selected_TF]), 
-                                     marker = list(color = 'rgb(255, 255, 255)', size = 10, opacity = 0.5,
-                                                   line = list(color = 'rgb(20, 100, 238)', width = 3)),
-                                     hoverinfo = "text",
-                                     text = paste("RAF: ", RISK.ALLELE.FREQUENCY[not_selected_TF],
-                                                  "OR: ", round(OR[not_selected_TF], digits = 3),
-                                                  '<br>MAPPED GENE:', MAPPED_GENE[not_selected_TF],
-                                                  "<br>PUBMEDID: ", PUBMEDID[not_selected_TF]),
-                                     type = "scatter", mode = 'markers', inherit = F) 
+                       setProgress(value = 0.2, detail = "Rendering base plot")
+                       p <- OR_RAF_baseplot() 
+                       
+                       # Overlaying loci not selected / not in article
+                       setProgress(value = 0.7, detail = "Overlaying loci not selected / not in article")
+                       p <- p %>% add_markers(x = x.adj(RISK.ALLELE.FREQUENCY[not_selected_TF]), 
+                                              y = y.adj.plotly(OR[not_selected_TF]), 
+                                              marker = list(color = 'rgb(255, 255, 255)', size = 10, opacity = 0.5,
+                                                            line = list(color = 'rgb(20, 100, 238)', width = 3)),
+                                              hoverinfo = "text",
+                                              text = paste("RAF: ", RISK.ALLELE.FREQUENCY[not_selected_TF],
+                                                           "OR: ", round(OR[not_selected_TF], digits = 3),
+                                                           '<br>MAPPED GENE:', MAPPED_GENE[not_selected_TF],
+                                                           "<br>PUBMEDID: ", PUBMEDID[not_selected_TF]),
+                                              type = "scatter", mode = 'markers', inherit = F) 
                        
                        # Overlaying loci selected / in article
                        if (sum(selected_loci_TF) > 0) {
-                         setProgress(value = 0.8, detail = "Overlaying loci selected / in article")
+                         setProgress(value = 0.9, detail = "Overlaying loci selected / in article")
                          p <- p %>% add_markers(x = x.adj(RISK.ALLELE.FREQUENCY[selected_paper_TF]),
                                                 y = y.adj.plotly(OR[selected_paper_TF]),
                                                 marker = list(color = 'rgb(255, 255, 255)', size = 10, opacity = 0.6,
