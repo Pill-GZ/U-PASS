@@ -30,28 +30,60 @@ determine.intersection <- function(x, y, target) {
 server <- function(input, output, session) {
 #### first tab: OR-RAF diagram #### 
   
-  # start introjs when button is pressed with custom options and events
-  #observeEvent(input$help, introjs(session, events = list("oncomplete"=I('alert("Glad that is over")'))))
-  observeEvent(input$help, {
+  #### quick start guided tours with IntroJS ####
+  
+  # OR-RAF tab
+  observeEvent(input$help_ORRAF, {
     rintrojs::introjs(session, options = list(
-        steps = data.frame(element = c("#sample_size", "#false_discovery_control", "#overlay_dataset", 
-                                       "#OR-RAF_diagram", "#gene_info", NA),
-                           intro = c("Specify <b>sample sizes</b> here.",
-                                     "Specify <b>false discovery control criteria</b> (Type I error rate / FWER) here.",
-                                     "Choose to <b>overlay reported findings</b> from the NHGRI-EBI GWAS Catalog, or upload your own data!",
-                                     "Statistical power for association tests is visualized in the <b>OR-RAF diagram</b>. 
+      steps = data.frame(element = c("#sample_size", "#false_discovery_control", "#overlay_dataset", 
+                                     "#OR-RAF_diagram", "#gene_info", NA),
+                         intro = c("Specify <b>sample sizes</b> here.",
+                                   "Specify <b>false discovery control criteria</b> (FWER / Type I error rate) here.",
+                                   "Choose to <b>overlay reported findings</b> from the NHGRI-EBI GWAS Catalog, or upload your own data!",
+                                   "Statistical power for association tests is visualized in the <b>OR-RAF diagram</b>. 
                                      Reported findings are also overlaid here.<br><br>
                                      It's fully interactive. Click on a reported loci to display detailed information.
                                      Sample sizes also automatically adapt to the study reporting the selected loci.<br><br>
                                      If a reported loci lies in the low power region (dark regions of the heatmap),
                                      or in the rare variant region (below the red line), the claim of statistical significance is dubious.",
-                                     "When you select a reported loci in the OR-RAF diagram, detailed information is displayed here below the diagram.",
-                                     "The power analysis is <b>model-free</b> and <b>test-independent</b>. 
+                                   "When you select a reported loci in the OR-RAF diagram, detailed information is displayed here below the diagram.",
+                                   "The power analysis is <b>model-free</b> and <b>test-independent</b>. 
                                      This means that you do not need to specify a disease model, or the test of association used.<br><br>
                                      Find out why in the Details tab."
-                                     ))
-      ))
+                         ))
+    ))
   })
+  
+  # OR-RAF tab
+  observeEvent(input$help_power_analysis, {
+    # Auto fill in Steps 1-4 for the IntroJS demo
+    updateSelectInput(session, "step1_target_OR_RAF", selected = "Allele frequency and odds ratio")
+    updateSelectInput(session, "step2_fixed_quantity", selected = "Budget / total number of subjects")
+    updateSelectInput(session, "step3_type_I_error_criteria", selected = "Family-wise error rate (FWER)")
+    updateSelectInput(session, "step4_type_II_error_criteria", selected = "Type II error / non-discovery proportion (NDP)")
+    # start IntroJS demo
+    rintrojs::introjs(session, options = list(
+      steps = data.frame(element = c("#step1", "#step2", "#step3", 
+                                     "#step4", "#power_analysis_results", NA),
+                         intro = c("Specify in here the <b>RAF</b> and <b>OR</b> of the loci you wish to target.",
+                                   "Specify <b>constraint on sample sizes</b> here.<br><br>
+                                     It could be total budget (i.e., total number of subjects), number of Cases, or fraction of Cases among recuited subjects.",
+                                   "Specify <b>false discovery control criteria</b> (FWER / Type I error rate) here.",
+                                   "Specify <b>non-discovery control criteria</b> (Type II error rate / FWNDR) here.",
+                                   "Results from the power calculation is displayed here.<br><br>
+                                     <ul>
+                                       <li>If the contraint is <b>total budget</b>, power is shown as a function of the fraction of Cases.</li>
+                                       <li>If the contraint is <b>number of Cases</b>, power is shown as a function of the number of Controls.</li>
+                                       <li>If the contraint is <b>fraction of Cases</b>, power is shown as a function of the total number of subjects.</li>
+                                     </ul>",
+                                   "The power analysis is <b>model-free</b> and <b>test-independent</b>. 
+                                     This means that you do not need to specify a disease model, or the test of association used.<br><br>
+                                     Find out why in the Details tab."
+                         ))
+    ))
+  })
+  
+  
   
   #### calculate number of cases (n1) and controls (n2), and the fraction of cases (phi) ####
   

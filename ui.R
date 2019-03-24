@@ -11,7 +11,7 @@ ui <- shinyUI(tagList(
                                  '.navbar-default .navbar-brand {font-size: 30px;}'),
                       tags$style(HTML(".introjs-tooltip {max-width: 50%; min-width: 300px;}")),
                       includeHTML("header.html"),
-                      actionButton("help", "Take a quick tour of the interface"),
+                      actionButton("help_ORRAF", "Take a quick tour of the interface"),
                       
                       fluidRow(
                         
@@ -78,7 +78,7 @@ ui <- shinyUI(tagList(
                                
                                #### datasets overlay ####
                                wellPanel(id = "overlay_dataset",
-                                         checkboxInput("overlay_example_dataset", "Overlay data points", FALSE),
+                                         checkboxInput("overlay_example_dataset", "Overlay reported findings from NHGRI-EBI GWAS Catalog", FALSE),
                                          conditionalPanel(
                                            condition = "input.overlay_example_dataset == true",
                                            selectInput("choose_dataset", "Choose a dataset", 
@@ -138,6 +138,8 @@ ui <- shinyUI(tagList(
              
              tabPanel("Design my study", id = "design_tab",
                       includeHTML("header.html"),
+                      actionButton("help_power_analysis", "Take a quick tour of the interface"),
+                      
                       fluidRow(
                         #### Study specifications ####
                         
@@ -146,7 +148,8 @@ ui <- shinyUI(tagList(
                                #### Step 1: target RAF and OR ####
                                
                                introBox(
-                                 wellPanel(selectInput("step1_target_OR_RAF", "Step 1: I want to target a specific ...",
+                                 wellPanel(id = "step1",
+                                           selectInput("step1_target_OR_RAF", "Step 1: I want to target a specific ...",
                                                        list("Select a target",
                                                             "Allele frequency and odds ratio", 
                                                             "Signal size per sample (advanced user)")),
@@ -175,7 +178,7 @@ ui <- shinyUI(tagList(
                                  # only displayed if step 1 is complete
                                  
                                  condition = "input.step1_target_OR_RAF != 'Select a target'",
-                                 wellPanel(
+                                 wellPanel(id = "step2",
                                    selectInput("step2_fixed_quantity", "Step 2: I have a fixed ...",
                                                list("Select a constraint",
                                                     "Budget / total number of subjects", 
@@ -203,11 +206,11 @@ ui <- shinyUI(tagList(
                                    # only displayed if step 1 and 2 are complete
                                    
                                    condition = "input.step2_fixed_quantity != 'Select a constraint'",
-                                   wellPanel(
+                                   wellPanel(id = "step3",
                                      selectInput("step3_type_I_error_criteria", "Step 3: Criteria for false discovery ...",
-                                                 list("Select a criterion", "Type I error", 
+                                                 list("Select a criterion", "Family-wise error rate (FWER)", 
                                                       #"False discovery rate (FDR)", 
-                                                      "Family-wise error rate (FWER)")),
+                                                      "Type I error")),
                                      conditionalPanel(
                                        condition = "input.step3_type_I_error_criteria == 'Type I error'",
                                        shinyWidgets::sliderTextInput(inputId = "design_alpha", 
@@ -239,7 +242,7 @@ ui <- shinyUI(tagList(
                                      # only displayed if step 1, 2, and 3 are complete
                                      
                                      condition = "input.step3_type_I_error_criteria != 'Select a criterion'",
-                                     wellPanel(
+                                     wellPanel(id = "step4",
                                        selectInput("step4_type_II_error_criteria", "Step 4: Targert for non-discovery ...",
                                                    list("Select a criterion", 
                                                         "Type II error / non-discovery proportion (NDP)", 
@@ -277,16 +280,19 @@ ui <- shinyUI(tagList(
                                    #textOutput("power_vec"),
                                    #textOutput("waiting_for_design"),
                                    #textOutput("debug"),
-                                   conditionalPanel(condition = "output.waiting_for_design == true",
-                                                    br(),
-                                                    "Complete your study design on the left"),
-                                   conditionalPanel(condition = "output.fixed_n_design == true",
-                                                    plotlyOutput("optimal_design_fixed_n", height = "700px")),
-                                   conditionalPanel(condition = "output.fixed_n1_design == true",
-                                                    plotlyOutput("optimal_design_fixed_n1", height = "700px")),
-                                   conditionalPanel(condition = "output.fixed_phi_design == true",
-                                                    plotlyOutput("optimal_design_fixed_phi", height = "700px"))
-                                   #textOutput("waiting_for_design")
+                                   div(id = "power_analysis_results",
+                                       tags$style(type="text/css", '#power_analysis_results { width:700px; }'),
+                                       conditionalPanel(condition = "output.waiting_for_design == true",
+                                                        br(),
+                                                        "Complete your study design on the left"),
+                                       conditionalPanel(condition = "output.fixed_n_design == true",
+                                                        plotlyOutput("optimal_design_fixed_n", height = "700px")),
+                                       conditionalPanel(condition = "output.fixed_n1_design == true",
+                                                        plotlyOutput("optimal_design_fixed_n1", height = "700px")),
+                                       conditionalPanel(condition = "output.fixed_phi_design == true",
+                                                        plotlyOutput("optimal_design_fixed_phi", height = "700px"))
+                                       #textOutput("waiting_for_design")
+                                   )
                                ) # end of "fixing height to avoid automatic adjustments"
                         ) # end of second column
                         
