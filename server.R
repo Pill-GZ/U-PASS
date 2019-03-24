@@ -29,6 +29,30 @@ determine.intersection <- function(x, y, target) {
 
 server <- function(input, output, session) {
 #### first tab: OR-RAF diagram #### 
+  
+  # start introjs when button is pressed with custom options and events
+  #observeEvent(input$help, introjs(session, events = list("oncomplete"=I('alert("Glad that is over")'))))
+  observeEvent(input$help, {
+    rintrojs::introjs(session, options = list(
+        steps = data.frame(element = c("#sample_size", "#false_discovery_control", "#overlay_dataset", 
+                                       "#OR-RAF_diagram", "#gene_info", NA),
+                           intro = c("Specify <b>sample sizes</b> here.",
+                                     "Specify <b>false discovery control criteria</b> (Type I error rate / FWER) here.",
+                                     "Choose to <b>overlay reported findings</b> from the NHGRI-EBI GWAS Catalog, or upload your own data!",
+                                     "Statistical power for association tests is visualized in the <b>OR-RAF diagram</b>. 
+                                     Reported findings are also overlaid here.<br><br>
+                                     It's fully interactive. Click on a reported loci to display detailed information.
+                                     Sample sizes also automatically adapt to the study reporting the selected loci.<br><br>
+                                     If a reported loci lies in the low power region (dark regions of the heatmap),
+                                     or in the rare variant region (below the red line), the claim of statistical significance is dubious.",
+                                     "When you select a reported loci in the OR-RAF diagram, detailed information is displayed here below the diagram.",
+                                     "The power analysis is <b>model-free</b> and <b>test-independent</b>. 
+                                     This means that you do not need to specify a disease model, or the test of association used.<br><br>
+                                     Find out why in the Details tab."
+                                     ))
+      ))
+  })
+  
   #### calculate number of cases (n1) and controls (n2), and the fraction of cases (phi) ####
   
   n1 <- reactive({
@@ -221,27 +245,32 @@ server <- function(input, output, session) {
   
   dataset <- reactive({
     if (input$overlay_example_dataset == T) {
-      # print(input$choose_dataset)
-      if (input$choose_dataset %in% names(list_of_datasets)) {
-        # print(list_of_datasets[input$choose_dataset])
-        read_data(list_of_datasets[input$choose_dataset])
-      } else {
-        # print(input$my_data_upload)
-        if (!is.null(input$my_data_upload)) {
-        req(input$my_data_upload)
-        tryCatch(
-          {
-            read_data(input$my_data_upload$datapath)
-          },
-          error = function(e) {
-            # return a safeError if a parsing error occurs
-            stop(safeError(e))
-          }
-        ) # end of try-catch data read
-        } else {
-          NULL
-        }
-      } # end of user upload
+      withProgress(message = 'Loading dataset', 
+                   value = 0, {
+                     if (input$choose_dataset %in% names(list_of_datasets)) {
+                       setProgress(value = 0.5, detail = 'Loading NHGRI-EBI GWAS Catalog')
+                       # print(list_of_datasets[input$choose_dataset])
+                       read_data(list_of_datasets[input$choose_dataset])
+                     } else {
+                       setProgress(value = 0.5, detail = 'Uploading user data')
+                       # print(input$my_data_upload)
+                       if (!is.null(input$my_data_upload)) {
+                         req(input$my_data_upload)
+                         tryCatch(
+                           {
+                             read_data(input$my_data_upload$datapath)
+                           },
+                           error = function(e) {
+                             # return a safeError if a parsing error occurs
+                             stop(safeError(e))
+                           }
+                         ) # end of try-catch data read
+                       } else {
+                         NULL
+                       }
+                       setProgress(value = 1)
+                     } # end of user upload
+                   }) # end of progess bar
     } # end of data read
   })
   

@@ -5,6 +5,7 @@ if (!require("shinyWidgets")) {
   install.packages("shinyWidgets")
   library("shinyWidgets")
 }
+library("rintrojs")
 
 #### adjustments made to x and y axis for plotting ####
 
