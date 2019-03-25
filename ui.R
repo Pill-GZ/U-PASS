@@ -1,4 +1,5 @@
 library("rintrojs")
+library("shinycssloaders")
 
 # user interface
 
@@ -134,7 +135,7 @@ ui <- shinyUI(tagList(
                                div(style = "height:1200px;", 
                                    div(id = "OR-RAF_diagram",
                                        tags$style(type="text/css", '#OR-RAF_diagram { width:750px; }'),
-                                       plotlyOutput("OR.RAF.plotly", height = "700px")),
+                                       withSpinner(plotlyOutput("OR.RAF.plotly", height = "700px"))),
                                    # plotOutput("OR.RAF.plot", height = "700px"), 
                                    div(id = "gene_info",
                                        tags$style(type="text/css", '#gene_info { width:730px; }'),
