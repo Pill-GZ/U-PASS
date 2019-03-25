@@ -106,10 +106,58 @@ OR.finder <- function(phi = 1/2, signal.size) {
                         theta = theta.vec.right[i], phi = phi, signal.size)
     OR.vec.right[i] <- solution$root
   }
-  
+  # combined
   theta <- c(theta.min, theta.vec.left, theta.vec.right, theta.max)
   R <- c(1e8, OR.vec.left, OR.vec.right, 1e8)
   f <- RAF_control(theta = theta, R = R, phi = phi)
   return(list(theta = theta, R = R, f = f))
 }
 
+#### function to calculate rare variant region based on sample sizes ####
+
+rare.variant.curves.calculator <- function(n1, n2, rare.variant.threshold,
+                                           f.lim = c(1e-4, 1-5e-3), R.lim = c(1,110)) {
+  n <- n1 + n2
+  phi <- n1 / n
+  # left branch
+  R.min <- 1
+  R.max <- R.lim[2]
+  f.rare.variant.root.finder.left <- function(f.RAF, OR, phi, n, rare.variant.threshold) {
+    f.RAF * n * (OR*phi/(f.RAF*OR+(1-f.RAF)) + (1-phi)) - rare.variant.threshold
+  }
+  OR.vec.left <- exp(log(R.min) + 0:20/20 * (log(R.max) - log(R.min)))
+  f.vec.left <- vector(mode = "numeric", length = 21)
+  for (i in 1:length(OR.vec.left)) {
+    if (f.rare.variant.root.finder.left(f.RAF = f.lim[1]/2, OR = OR.vec.left[i], 
+                                        phi, n, rare.variant.threshold) > 0) {
+      f.vec.left[i] <- NA
+    } else {
+      solution <- uniroot(f = f.rare.variant.root.finder.left, interval = c(f.lim[1]/2, 0.5),
+                          OR = OR.vec.left[i], phi, n, rare.variant.threshold,
+                          tol = .Machine$double.eps^0.5)
+      f.vec.left[i] <- solution$root
+    }
+  }
+  # right branch
+  R.min <- 1
+  R.max <- R.lim[2]
+  f.rare.variant.root.finder.right <- function(f.RAF, OR, phi, n, rare.variant.threshold) {
+    (1-f.RAF) * n * (OR*phi/(f.RAF*OR+(1-f.RAF)) + (1-phi)) - rare.variant.threshold
+  }
+  OR.vec.right <- exp(log(R.min) + 0:20/20 * (log(R.max) - log(R.min)))
+  f.vec.right <- vector(mode = "numeric", length = 21)
+  for (i in 1:length(OR.vec.right)) {
+    if (f.rare.variant.root.finder.right(f.RAF = f.lim[2], OR = OR.vec.right[i], 
+                                         phi, n, rare.variant.threshold) > 0) {
+      f.vec.right[i] <- NA
+    } else {
+      solution <- uniroot(f = f.rare.variant.root.finder.right, interval = c(0.5, f.lim[2]),
+                          OR = OR.vec.right[i], phi, n, rare.variant.threshold,
+                          tol = .Machine$double.eps^0.5)
+      f.vec.right[i] <- solution$root
+    }
+  }
+  # combined
+  return(list(f.vec.left = f.vec.left, OR.vec.left = OR.vec.left, 
+              f.vec.right = f.vec.right, OR.vec.right = OR.vec.right))
+}

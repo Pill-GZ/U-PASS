@@ -25,6 +25,12 @@ determine.intersection <- function(x, y, target) {
   }
 }
 
+#### set plot limits and resolution ####
+
+f.lim <- c(1e-4, 1-5e-3)
+R.lim <- c(1,110)
+resolution <- 100
+
 #### start of server ####
 
 server <- function(input, output, session) {
@@ -116,6 +122,12 @@ server <- function(input, output, session) {
     }
   })
   
+  #### calculate rare variant region ####
+  
+  rare.variant.curves <- reactive({
+    rare.variant.curves.calculator(n1 = n1(), n2 = n2(), rare.variant.threshold = 30, f.lim, R.lim)
+  })
+
   #### calculate cutoff threshold for false discovery control ####
   
   p_val_cutoff <- reactive({
@@ -143,9 +155,6 @@ server <- function(input, output, session) {
   
   #### generate power matrix for heatmaps ####
   
-  f.lim <- c(1e-4, 1-5e-3)
-  R.lim <- c(1,110)
-  resolution <- 100
   f.vec <- x.adj.inv(seq(from = x.adj(f.lim)[1], 
                          to = x.adj(f.lim)[2], 
                          length.out = resolution))
@@ -166,7 +175,7 @@ server <- function(input, output, session) {
     pchisq(q = cutoff(), df = 1, ncp = signal.mat(), lower.tail = F)
   })
   
-  #### OR-RAF plot in base R  (deprecated) ####
+  #### OR-RAF plot in base R  (deprecated, but useful reference) ####
   
   output$OR.RAF.plot <- renderPlot({
 
@@ -262,6 +271,21 @@ server <- function(input, output, session) {
                                                  '\n', 'power = ', round(power.vec()[i], digits = 3)),
                                     inherit = F) 
                    }
+                   
+                   setProgress(value = 0.9, detail = "Overlaying rare-variant region")
+                   
+                   p <- p %>% 
+                     add_trace(x = x.adj(rare.variant.curves()$f.vec.left),
+                               y = y.adj.plotly(rare.variant.curves()$OR.vec.left),
+                               line = list(dash = 'dash', width = 2), type = "scatter", mode = "lines",
+                               color = I("red"), hoverinfo = 'text',
+                               text = 'rare variant zone to the left', inherit = F) %>%
+                   add_trace(x = x.adj(rare.variant.curves()$f.vec.right),
+                             y = y.adj.plotly(rare.variant.curves()$OR.vec.right),
+                             line = list(dash = 'dash', width = 2), type = "scatter", mode = "lines",
+                             color = I("red"), hoverinfo = 'text',
+                             text = 'rare variant zone to the right', inherit = F)
+                   
                    setProgress(value = 1)
                  }) # end of progress bar for base plot
     p
