@@ -32,7 +32,7 @@ ui <- shinyUI(tagList(
                                            condition = "input.sample_size_specification == 'Number of subjects + fraction of Cases'",
                                            numericInput("n", "Totoal number of subjects:", 
                                                         value = 20000, min = 500, max = 1000000, step = 100),
-                                           sliderInput("phi", "Fraction of cases:", value = 1/2, min = 0.01, max = 0.99, step = .01)
+                                           sliderInput("phi", "Fraction of cases:", value = 1/2, min = 0.05, max = 0.95, step = .05)
                                          ),
                                          conditionalPanel(
                                            condition = "input.sample_size_specification == 'Number of Cases + number of Controls'",
@@ -88,7 +88,7 @@ ui <- shinyUI(tagList(
                                            condition = "input.overlay_rare_variant_zones == true",
                                            sliderInput(inputId = "rare_variant_threshold", 
                                                        label = "Variant counts need to be at least:",
-                                                       value = 30, min = 10, max = 50, step = 1)
+                                                       value = 30, min = 5, max = 50, step = 5)
                                          )
                                ),
                                # br(),
