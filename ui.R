@@ -1,3 +1,5 @@
+library("rintrojs")
+
 # user interface
 
 ui <- shinyUI(tagList(
