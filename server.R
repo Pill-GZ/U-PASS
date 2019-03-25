@@ -41,24 +41,27 @@ server <- function(input, output, session) {
   # OR-RAF tab
   observeEvent(input$help_ORRAF, {
     rintrojs::introjs(session, options = list(
-      steps = data.frame(element = c("#sample_size", "#false_discovery_control", "#overlay_dataset", 
-                                     "#OR-RAF_diagram", "#gene_info", NA),
+      steps = data.frame(element = c("#sample_size", "#false_discovery_control", "#plot_options", 
+                                     "#data_options", "#OR-RAF_diagram", "#gene_info", NA),
                          intro = c("Specify <b>sample sizes</b> here.",
                                    "Specify <b>false discovery control criteria</b> (FWER / Type I error rate) here.",
+                                   "Select <b>plot options</b> here.",
                                    "Choose to <b>overlay reported findings</b> from the NHGRI-EBI GWAS Catalog, or upload your own data!",
                                    "Statistical power for association tests is visualized in the <b>OR-RAF diagram</b>. 
                                      Reported findings are also overlaid here.<br><br>
                                      It's fully interactive. Click on a reported loci to display detailed information.
                                      Sample sizes also automatically adapt to the study reporting the selected loci.<br><br>
+                                     If a reported loci lies in the rare-variant region (outisde the red line(s)), 
+                                     single-SNP-based association tests are not recommended.<br><br>
                                      If a reported loci lies in the low power region (dark regions of the heatmap),
-                                     or in the rare variant region (below the red line), the claim of statistical significance is dubious.",
+                                     the claim of statistical significance is dubious.",
                                    "When you select a reported loci in the OR-RAF diagram, detailed information is displayed here below the diagram.",
                                    "The power analysis is <b>model-free</b> and <b>test-independent</b>. 
                                      This means that you do not need to specify a disease model, or the test of association used.<br><br>
                                      Find out why in the Details tab."
                          ))
     ))
-  })
+  }) # end of intro for OR-RAF tab
   
   # OR-RAF tab
   observeEvent(input$help_power_analysis, {
@@ -87,7 +90,7 @@ server <- function(input, output, session) {
                                      Find out why in the Details tab."
                          ))
     ))
-  })
+  }) # end of intro for design-my-study tab
   
   
   
@@ -125,7 +128,7 @@ server <- function(input, output, session) {
   #### calculate rare variant region ####
   
   rare.variant.curves <- reactive({
-    rare.variant.curves.calculator(n1 = n1(), n2 = n2(), rare.variant.threshold = 30, f.lim, R.lim)
+    rare.variant.curves.calculator(n1 = n1(), n2 = n2(), input$rare_variant_threshold, f.lim, R.lim)
   })
 
   #### calculate cutoff threshold for false discovery control ####
@@ -258,39 +261,55 @@ server <- function(input, output, session) {
                                      text = paste0("<b>", format(n1(), scientific = FALSE), 
                                                    "/", format(n2(), scientific = FALSE), "</b>"), showarrow = F, 
                                      font=list(size = 40, color = toRGB("grey70")))
-                   
-                   setProgress(value = 0.8, detail = "Overlaying equi-power curves")
-                   
-                   for (i in 1:length(signal.size.vec)) {
-                     signal.size <- signal.size.vec[i]
-                     solution.vec <- OR.finder(phi = phi(), signal.size)
-                     p <- add_trace(p, x = x.adj(solution.vec$f), y = y.adj.plotly(solution.vec$R), 
-                                    line = list(dash = 'dash', width = 1), type = "scatter", mode = "lines", 
-                                    color = I("gray50"), hoverinfo = 'text', 
-                                    text = paste('signal size / sample =', signal.size, 
-                                                 '\n', 'power = ', round(power.vec()[i], digits = 3)),
-                                    inherit = F) 
-                   }
-                   
-                   setProgress(value = 0.9, detail = "Overlaying rare-variant region")
-                   
-                   p <- p %>% 
-                     add_trace(x = x.adj(rare.variant.curves()$f.vec.left),
-                               y = y.adj.plotly(rare.variant.curves()$OR.vec.left),
-                               line = list(dash = 'dash', width = 2), type = "scatter", mode = "lines",
-                               color = I("red"), hoverinfo = 'text',
-                               text = 'rare variant zone to the left', inherit = F) %>%
-                   add_trace(x = x.adj(rare.variant.curves()$f.vec.right),
-                             y = y.adj.plotly(rare.variant.curves()$OR.vec.right),
-                             line = list(dash = 'dash', width = 2), type = "scatter", mode = "lines",
-                             color = I("red"), hoverinfo = 'text',
-                             text = 'rare variant zone to the right', inherit = F)
-                   
                    setProgress(value = 1)
                  }) # end of progress bar for base plot
     p
   }) # end of OR-RAF local plot
   
+  #### overlay equi-power curves and rare variant zones on OR-RAF diagram ####
+  
+  OR_RAF_w_power_RV_curves <- reactive({
+    withProgress(message = 'Rendering phase diagram with power and RV curves',
+                 detail = 'Rendering base OR-RAF diagram', value = 0, {
+                   # generate base OR-RAF diagram
+                   p <- OR_RAF_baseplot()
+                   # overlaying equi-power curves
+                   if (input$overlay_equipower_curves == T) {
+                     setProgress(value = 0.8, detail = "Overlaying equi-power curves")
+                     for (i in 1:length(signal.size.vec)) {
+                       signal.size <- signal.size.vec[i]
+                       solution.vec <- OR.finder(phi = phi(), signal.size)
+                       p <- add_trace(p, x = x.adj(solution.vec$f), y = y.adj.plotly(solution.vec$R), 
+                                      line = list(dash = 'dash', width = 1), type = "scatter", mode = "lines", 
+                                      color = I("gray50"), hoverinfo = 'text', 
+                                      text = paste('signal size / sample =', signal.size, 
+                                                   '\n', 'power = ', round(power.vec()[i], digits = 3)),
+                                      inherit = F) 
+                     }
+                   }
+                   # overlaying equi-power curves
+                   if (input$overlay_rare_variant_zones == T) {
+                     setProgress(value = 0.9, detail = "Overlaying rare-variant region")
+                     p <- p %>% 
+                       add_trace(x = x.adj(rare.variant.curves()$f.vec.left),
+                                 y = y.adj.plotly(rare.variant.curves()$OR.vec.left),
+                                 line = list(dash = 'dash', width = 2), type = "scatter", mode = "lines",
+                                 color = I("red"), hoverinfo = 'text',
+                                 text = paste('rare variant zone to the left',
+                                              '\n', 'risk allele count < ', input$rare_variant_threshold),
+                                 inherit = F) %>%
+                       add_trace(x = x.adj(rare.variant.curves()$f.vec.right),
+                                 y = y.adj.plotly(rare.variant.curves()$OR.vec.right),
+                                 line = list(dash = 'dash', width = 2), type = "scatter", mode = "lines",
+                                 color = I("red"), hoverinfo = 'text',
+                                 text = paste('rare variant zone to the right',
+                                              '\n', 'non-risk allele count < ', input$rare_variant_threshold),
+                                 inherit = F)
+                   }
+                   setProgress(value = 1)
+    }) # end of progress bar
+    return(p)
+  })
   
   #### select and load dataset ####
   # plot redered and passed to output
@@ -444,7 +463,7 @@ server <- function(input, output, session) {
                        
                        # Overlaying loci not selected / not in article
                        setProgress(value = 0.2, detail = "Rendering base plot")
-                       p <- OR_RAF_baseplot() 
+                       p <- OR_RAF_w_power_RV_curves() 
                        
                        # Overlaying loci not selected / not in article
                        setProgress(value = 0.7, detail = "Overlaying loci not selected / not in article")
@@ -491,7 +510,7 @@ server <- function(input, output, session) {
                        # restore warnings, delayed so plot is completed
                        shinyjs::delay(expr =({ 
                          options(warn = storeWarn) 
-                       }) ,ms = 100)
+                       }), ms = 100)
                        
                        # set progress bar to 1
                        setProgress(value = 1)
@@ -501,7 +520,15 @@ server <- function(input, output, session) {
                    }) # end of progress bar
     } else { 
       # don't overlay data points
-      OR_RAF_baseplot()
+      # suppress warnings  
+      storeWarn<- getOption("warn")
+      options(warn = -1)
+      p <- OR_RAF_w_power_RV_curves()
+      # restore warnings, delayed so plot is completed
+      shinyjs::delay(expr =({
+        options(warn = storeWarn)
+      }), ms = 100)
+      p
     }
   }) # end of OR-RAF plotly output
   

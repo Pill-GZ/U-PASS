@@ -78,8 +78,23 @@ ui <- shinyUI(tagList(
                                ),
                                # br(),
                                
+                               #### OR-RAF diagram options ####
+                               wellPanel(id = "plot_options", 
+                                         tags$b("Plot options"),
+                                         checkboxInput("overlay_equipower_curves", "Overlay equi-power curves", TRUE),
+                                         checkboxInput("overlay_rare_variant_zones", "Overlay rare-variant zones", TRUE),
+                                         conditionalPanel(
+                                           condition = "input.overlay_rare_variant_zones == true",
+                                           sliderInput(inputId = "rare_variant_threshold", 
+                                                       label = "Variant counts need to be at least:",
+                                                       value = 30, min = 10, max = 50, step = 1)
+                                         )
+                               ),
+                               # br(),
+                               
                                #### datasets overlay ####
-                               wellPanel(id = "overlay_dataset",
+                               wellPanel(id = "data_options",
+                                         tags$b("Data options"),
                                          checkboxInput("overlay_example_dataset", "Overlay reported findings from NHGRI-EBI GWAS Catalog", FALSE),
                                          conditionalPanel(
                                            condition = "input.overlay_example_dataset == true",
