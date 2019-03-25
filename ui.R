@@ -86,9 +86,22 @@ ui <- shinyUI(tagList(
                                          checkboxInput("overlay_rare_variant_zones", "Overlay rare-variant zones", TRUE),
                                          conditionalPanel(
                                            condition = "input.overlay_rare_variant_zones == true",
-                                           sliderInput(inputId = "rare_variant_threshold", 
-                                                       label = "Variant counts need to be at least:",
-                                                       value = 30, min = 5, max = 50, step = 5)
+                                           selectInput("rare_variant_zone_specification", "Rare variant is specified as...",
+                                                       list("Absolute variant count in study",
+                                                            "Fraction of total subjects in study")),
+                                           conditionalPanel(
+                                             condition = "input.rare_variant_zone_specification == 'Absolute variant count in study'",
+                                             sliderInput(inputId = "rare_variant_threshold_count", 
+                                                         label = "Variant counts need to be at least:",
+                                                         value = 30, min = 5, max = 50, step = 5)
+                                           ),
+                                           conditionalPanel(
+                                             condition = "input.rare_variant_zone_specification == 'Fraction of total subjects in study'",
+                                             shinyWidgets::sliderTextInput(inputId = "rare_variant_threshold_fraction", 
+                                                                           label = "Variant fraction need to be at least:",
+                                                                           choices = paste0(as.vector(outer(c(1,2,5), 10^(-3:-2))) * 100, "%"),
+                                                                           selected = "0.5%")
+                                           )
                                          )
                                ),
                                # br(),
@@ -132,18 +145,16 @@ ui <- shinyUI(tagList(
                         
                         column(8, # "fixing height to avoid automatic adjustments"
                                #textOutput("debug"),
-                               div(style = "height:1200px;", 
-                                   div(id = "OR-RAF_diagram",
-                                       tags$style(type="text/css", '#OR-RAF_diagram { width:750px; }'),
-                                       withSpinner(plotlyOutput("OR.RAF.plotly", height = "700px"))),
-                                   # plotOutput("OR.RAF.plot", height = "700px"), 
-                                   div(id = "gene_info",
-                                       tags$style(type="text/css", '#gene_info { width:730px; }'),
-                                       conditionalPanel(condition = "input.overlay_example_dataset == true",
-                                                        wellPanel(htmlOutput("selection"))
-                                       ) # end of gene_info box
-                                   )
-                               ) # end of "fixing height to avoid automatic adjustments"
+                               div(id = "OR-RAF_diagram",
+                                   tags$style(type="text/css", '#OR-RAF_diagram { width:750px; }'),
+                                   withSpinner(plotlyOutput("OR.RAF.plotly", height = "700px"))),
+                               # plotOutput("OR.RAF.plot", height = "700px"), 
+                               div(id = "gene_info",
+                                   tags$style(type="text/css", '#gene_info { width:730px; }'),
+                                   conditionalPanel(condition = "input.overlay_example_dataset == true",
+                                                    wellPanel(htmlOutput("selection"))
+                                   ) # end of gene_info box
+                               )
                         ) # end of second column
                         
                         #plotlyOutput("OR.RAF.heatmap.plotly")

@@ -31,14 +31,15 @@ rare.variant.curves.calculator <- function(n1, n2, rare.variant.threshold,
                                            f.lim = c(1e-4, 1-5e-3), R.lim = c(1,110)) {
   n <- n1 + n2
   phi <- n1 / n
+  RV.resolution <- 100
   # left branch
   R.min <- 1
   R.max <- R.lim[2]
   f.rare.variant.root.finder.left <- function(f.RAF, OR, phi, n, rare.variant.threshold) {
     f.RAF * n * (OR*phi/(f.RAF*OR+(1-f.RAF)) + (1-phi)) - rare.variant.threshold
   }
-  OR.vec.left <- exp(log(R.min) + 0:20/20 * (log(R.max) - log(R.min)))
-  f.vec.left <- vector(mode = "numeric", length = 21)
+  OR.vec.left <- exp(log(R.min) + 0:RV.resolution/RV.resolution * (log(R.max) - log(R.min)))
+  f.vec.left <- vector(mode = "numeric", length = RV.resolution+1)
   for (i in 1:length(OR.vec.left)) {
     if (f.rare.variant.root.finder.left(f.RAF = f.lim[1]/2, OR = OR.vec.left[i], 
                                         phi, n, rare.variant.threshold) > 0) {
@@ -56,8 +57,8 @@ rare.variant.curves.calculator <- function(n1, n2, rare.variant.threshold,
   f.rare.variant.root.finder.right <- function(f.RAF, OR, phi, n, rare.variant.threshold) {
     (1-f.RAF) * n * (OR*phi/(f.RAF*OR+(1-f.RAF)) + (1-phi)) - rare.variant.threshold
   }
-  OR.vec.right <- exp(log(R.min) + 0:20/20 * (log(R.max) - log(R.min)))
-  f.vec.right <- vector(mode = "numeric", length = 21)
+  OR.vec.right <- exp(log(R.min) + 0:RV.resolution/RV.resolution * (log(R.max) - log(R.min)))
+  f.vec.right <- vector(mode = "numeric", length = RV.resolution+1)
   for (i in 1:length(OR.vec.right)) {
     if (f.rare.variant.root.finder.right(f.RAF = f.lim[2], OR = OR.vec.right[i], 
                                          phi, n, rare.variant.threshold) > 0) {
@@ -99,13 +100,13 @@ server <- function(input, output, session) {
                                    "Choose to <b>overlay reported findings</b> from the NHGRI-EBI GWAS Catalog, or upload your own data!",
                                    "Statistical power for association tests is visualized in the <b>OR-RAF diagram</b>. 
                                      Reported findings are also overlaid here.<br><br>
-                                     It's fully interactive. Click on a reported loci to display detailed information.
-                                     Sample sizes also automatically adapt to the study reporting the selected loci.<br><br>
-                                     If a reported loci lies in the rare-variant region (outisde the red line(s)), 
+                                     It's fully interactive. Click on a reported locus to display detailed information.
+                                     Sample sizes also automatically adapt to the study reporting the selected locus.<br><br>
+                                     If a reported locus lies in the rare-variant region (outisde the red line(s)), 
                                      single-SNP-based association tests are not recommended.<br><br>
-                                     If a reported loci lies in the low power region (dark regions of the heatmap),
-                                     the claim of statistical significance is dubious.",
-                                   "When you select a reported loci in the OR-RAF diagram, detailed information is displayed here below the diagram.",
+                                     If a reported locus lies in the low power region (dark regions of the heatmap),
+                                     the claim of statistical significance are dubious.",
+                                   "When you select a reported locus in the OR-RAF diagram, detailed information is displayed here below the diagram.",
                                    "The power analysis is <b>model-free</b> and <b>test-independent</b>. 
                                      This means that you do not need to specify a disease model, or the test of association used.<br><br>
                                      Find out why in the Details tab."
@@ -177,8 +178,17 @@ server <- function(input, output, session) {
   
   #### calculate rare variant region ####
   
+  rare_variant_threshold_count <- reactive({
+    if (input$rare_variant_zone_specification == 'Absolute variant count in study') {
+      input$rare_variant_threshold_count
+    } else if (input$rare_variant_zone_specification == 'Fraction of total subjects in study') {
+      fraction <- as.numeric(gsub("%", "", input$rare_variant_threshold_fraction))/100
+      floor(fraction * (n1() + n2()))
+    }
+  })
+  
   rare.variant.curves <- reactive({
-    rare.variant.curves.calculator(n1 = n1(), n2 = n2(), input$rare_variant_threshold, f.lim, R.lim)
+    rare.variant.curves.calculator(n1 = n1(), n2 = n2(), rare_variant_threshold_count(), f.lim, R.lim)
   })
 
   #### calculate cutoff threshold for false discovery control ####
@@ -346,14 +356,14 @@ server <- function(input, output, session) {
                                  line = list(dash = 'dash', width = 2), type = "scatter", mode = "lines",
                                  color = I("red"), hoverinfo = 'text',
                                  text = paste('rare variant zone to the left',
-                                              '\n', 'risk allele count < ', input$rare_variant_threshold),
+                                              '\n', 'risk allele count < ', rare_variant_threshold_count()),
                                  inherit = F) %>%
                        add_trace(x = x.adj(rare.variant.curves()$f.vec.right),
                                  y = y.adj.plotly(rare.variant.curves()$OR.vec.right),
                                  line = list(dash = 'dash', width = 2), type = "scatter", mode = "lines",
                                  color = I("red"), hoverinfo = 'text',
                                  text = paste('rare variant zone to the right',
-                                              '\n', 'non-risk allele count < ', input$rare_variant_threshold),
+                                              '\n', 'non-risk allele count < ', rare_variant_threshold_count()),
                                  inherit = F)
                    }
                    setProgress(value = 1)
