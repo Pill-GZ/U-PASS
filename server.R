@@ -1,16 +1,40 @@
+#### required columns for user upload data ####
+
+list_accessed_columns <- c("INITIAL.SAMPLE.SIZE", "X95..CI..TEXT.", "P.VALUE", "MAPPED_GENE", 
+                           "PUBMEDID", "REPORTED.GENE.S.", "DATE.ADDED.TO.CATALOG", "STUDY", 
+                           "JOURNAL", "FIRST.AUTHOR", "DISEASE.TRAIT", "REPLICATION.SAMPLE.SIZE")
+list_required_columns <- c("OR.or.BETA", "RISK.ALLELE.FREQUENCY")
+
 #### read datasets downloaded from EBI ####
 
 # function to read and pre-process data
 read_data <- function(dataset_directory_and_name) {
-  dataset <- read.delim(dataset_directory_and_name, 
-                        na.strings = c("NA", "NR"), stringsAsFactors = F)
-  # filter out non-numerical stuff in RAF
-  dataset$RISK.ALLELE.FREQUENCY <- as.numeric(gsub("\\(.*\\)", "", dataset$RISK.ALLELE.FREQUENCY))
-  # separate beta's from OR's
-  beta.indicator <- grepl(pattern = "increase|decrease", x = dataset$X95..CI..TEXT.)
-  dataset$OR <- ifelse(beta.indicator, exp(dataset$OR.or.BETA), dataset$OR.or.BETA)
-  dataset$index <- 1:nrow(dataset)
-  dataset
+  tryCatch(
+    {
+      dataset <- read.delim(dataset_directory_and_name, 
+                            na.strings = c("NA", "NR"), stringsAsFactors = F)
+      missing_required_columns <- list_required_columns[!(list_required_columns %in% colnames(dataset))]
+      missing_accessed_columns <- list_accessed_columns[!(list_accessed_columns %in% colnames(dataset))]
+      if (length(missing_required_columns) > 0) {
+        stop(paste("Required column", missing_required_columns, "is missing! "))
+      }
+      if(length(missing_accessed_columns) > 0) {
+        stop(paste("Column", missing_accessed_columns, "is missing! "))
+      }
+      # filter out non-numerical stuff in RAF
+      dataset$RISK.ALLELE.FREQUENCY <- as.numeric(gsub("\\(.*\\)", "", dataset$RISK.ALLELE.FREQUENCY))
+      # separate beta's from OR's
+      beta.indicator <- grepl(pattern = "increase|decrease", x = dataset$X95..CI..TEXT.)
+      dataset$OR <- ifelse(beta.indicator, exp(dataset$OR.or.BETA), dataset$OR.or.BETA)
+      dataset$index <- 1:nrow(dataset)
+      dataset
+    }, 
+    # print error in a message box if a parsing error occurs
+    error = function(e) {
+      showModal(modalDialog(title = "Unable to read dataset!", toString(e)))
+      return(NULL)
+    }
+  ) # end of try-catch data read
 }
 
 #### determine intersection for power calculation ####
@@ -380,32 +404,19 @@ server <- function(input, output, session) {
   
   dataset <- reactive({
     if (input$overlay_example_dataset == T) {
-      withProgress(message = 'Loading dataset', 
-                   value = 0, {
-                     if (input$choose_dataset %in% names(list_of_datasets)) {
-                       setProgress(value = 0.5, detail = 'Loading NHGRI-EBI GWAS Catalog')
-                       # print(list_of_datasets[input$choose_dataset])
-                       read_data(list_of_datasets[input$choose_dataset])
-                     } else {
-                       setProgress(value = 0.5, detail = 'Uploading user data')
-                       # print(input$my_data_upload)
-                       if (!is.null(input$my_data_upload)) {
-                         req(input$my_data_upload)
-                         tryCatch(
-                           {
-                             read_data(input$my_data_upload$datapath)
-                           },
-                           error = function(e) {
-                             # return a safeError if a parsing error occurs
-                             stop(safeError(e))
-                           }
-                         ) # end of try-catch data read
-                       } else {
-                         NULL
-                       }
-                       setProgress(value = 1)
-                     } # end of user upload
-                   }) # end of progess bar
+      if (input$choose_dataset %in% names(list_of_datasets)) {
+        setProgress(value = 0.5, detail = 'Loading NHGRI-EBI GWAS Catalog')
+        # print(list_of_datasets[input$choose_dataset])
+        read_data(list_of_datasets[input$choose_dataset])
+      } else {
+        
+        if (!is.null(input$my_data_upload)) {
+          req(input$my_data_upload)
+          return(read_data(input$my_data_upload$datapath))
+        } else {
+          return(NULL)
+        }
+      } # end of user upload
     } # end of data read
   })
   
@@ -431,7 +442,9 @@ server <- function(input, output, session) {
   selected_paper_idx <- reactive({
     if (length(selected_loci_idx()) > 0) {
       which(dataset()$PUBMEDID == dataset()[selected_loci_idx()[1], "PUBMEDID"])
-    }
+    } else (
+      integer(0)
+    )
   })
   
   #### display details of selected loci by capture click event ####
@@ -463,7 +476,8 @@ server <- function(input, output, session) {
   observe({
     if (input$adaptive_sample_size == T && length(selected_loci_idx()) > 0) {
       # determine sample sizes
-      initial_sample_size <- strsplit(x = dataset()[selected_loci_idx()[1], "INITIAL.SAMPLE.SIZE"], split = ", ")
+      initial_sample_size <- strsplit(x = as.character(dataset()[selected_loci_idx()[1], "INITIAL.SAMPLE.SIZE"]), 
+                                      split = ", ")
       initial_sample_size <- sapply(initial_sample_size, gsub, pattern = ",", replacement = "")
       cases_idx <- grepl(pattern = "cases", x = initial_sample_size)
       controls_idx <- grepl(pattern = "controls", x = initial_sample_size)
@@ -518,10 +532,10 @@ server <- function(input, output, session) {
                        # separate layers for selected points (if any), points in the same paper (if any),
                        # indexed by binary (T/F) vectors
                        selected_loci_TF <- index %in% selected_loci_idx()
-                       selected_paper_TF <- index %in% selected_paper_idx()
-                       not_selected_TF <- !selected_paper_TF
+                       selected_paper_TF <- index %in% setdiff(selected_paper_idx(), selected_loci_idx())
+                       not_selected_TF <- !selected_paper_TF & !selected_loci_TF
                        
-                       # Overlaying loci not selected / not in article
+                       # generate base OR-RAF diagram with equi-power and rare-variant curves
                        setProgress(value = 0.2, detail = "Rendering base plot")
                        p <- OR_RAF_w_power_RV_curves() 
                        
@@ -538,8 +552,8 @@ server <- function(input, output, session) {
                                                            "<br>PUBMEDID: ", PUBMEDID[not_selected_TF]),
                                               type = "scatter", mode = 'markers', inherit = F) 
                        
-                       # Overlaying loci selected / in article
-                       if (sum(selected_loci_TF) > 0) {
+                       # Overlaying loci in article
+                       if (sum(selected_paper_TF) > 0) {
                          setProgress(value = 0.9, detail = "Overlaying loci selected / in article")
                          p <- p %>% add_markers(x = x.adj(RISK.ALLELE.FREQUENCY[selected_paper_TF]),
                                                 y = y.adj.plotly(OR[selected_paper_TF]),
@@ -550,27 +564,30 @@ server <- function(input, output, session) {
                                                              "OR: ", round(OR[selected_paper_TF], digits = 3),
                                                              '<br>MAPPED GENE:', MAPPED_GENE[selected_paper_TF],
                                                              "<br>PUBMEDID: ", PUBMEDID[selected_paper_TF]),
-                                                type = "scatter", mode = 'markers', inherit = F) %>% 
-                           add_markers(x = x.adj(RISK.ALLELE.FREQUENCY[selected_loci_TF]),
-                                       y = y.adj.plotly(OR[selected_loci_TF]),
-                                       marker = list(color = 'rgb(255, 165, 0)', size = 15, opacity = 0.9,
-                                                     line = list(color = 'rgb(255, 0, 0)', width = 3)),
-                                       hoverinfo = "text",
-                                       text = paste("RAF: ", RISK.ALLELE.FREQUENCY[selected_loci_TF],
-                                                    "OR: ", round(OR[selected_loci_TF], digits = 3),
-                                                    '<br>MAPPED GENE:', MAPPED_GENE[selected_loci_TF],
-                                                    "<br>PUBMEDID: ", PUBMEDID[selected_loci_TF]),
-                                       type = "scatter", mode = 'markers', inherit = F)
+                                                type = "scatter", mode = 'markers', inherit = F) 
+                       }
+                       # Overlaying loci selected 
+                       if (sum(selected_loci_TF) > 0) {
+                         p <- p %>% add_markers(x = x.adj(RISK.ALLELE.FREQUENCY[selected_loci_TF]),
+                                                y = y.adj.plotly(OR[selected_loci_TF]),
+                                                marker = list(color = 'rgb(255, 165, 0)', size = 15, opacity = 0.9,
+                                                              line = list(color = 'rgb(255, 0, 0)', width = 3)),
+                                                hoverinfo = "text",
+                                                text = paste("RAF: ", RISK.ALLELE.FREQUENCY[selected_loci_TF],
+                                                             "OR: ", round(OR[selected_loci_TF], digits = 3),
+                                                             '<br>MAPPED GENE:', MAPPED_GENE[selected_loci_TF],
+                                                             "<br>PUBMEDID: ", PUBMEDID[selected_loci_TF]),
+                                                type = "scatter", mode = 'markers', inherit = F)
                        }
                        
                        # suppress warnings  
-                       storeWarn<- getOption("warn")
-                       options(warn = -1) 
+                       # storeWarn<- getOption("warn")
+                       # options(warn = -1) 
                        p <- p %>% layout( source = "dataset" )
                        # restore warnings, delayed so plot is completed
-                       shinyjs::delay(expr =({ 
-                         options(warn = storeWarn) 
-                       }), ms = 100)
+                       # shinyjs::delay(expr =({ 
+                       #   options(warn = storeWarn) 
+                       # }), ms = 100)
                        
                        # set progress bar to 1
                        setProgress(value = 1)

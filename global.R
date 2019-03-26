@@ -1,10 +1,7 @@
 library("MASS")
 library("plotly")
 library("dplyr")
-if (!require("shinyWidgets")) {
-  install.packages("shinyWidgets")
-  library("shinyWidgets")
-}
+library("shinyWidgets")
 
 #### adjustments made to x and y axis for plotting ####
 

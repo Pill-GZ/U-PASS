@@ -144,7 +144,7 @@ ui <- shinyUI(tagList(
                         #### display OR-RAF diagram ####
                         
                         column(8, # "fixing height to avoid automatic adjustments"
-                               #textOutput("debug"),
+                               # textOutput("debug"),
                                div(id = "OR-RAF_diagram",
                                    tags$style(type="text/css", '#OR-RAF_diagram { width:750px; }'),
                                    withSpinner(plotlyOutput("OR.RAF.plotly", height = "700px"))),
