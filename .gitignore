@@ -2,3 +2,6 @@
 .Rhistory
 .RData
 .Ruserdata
+.Rbuildignore
+example/rsconnect
+rsconnect

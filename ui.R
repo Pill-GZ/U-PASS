@@ -1,4 +1,6 @@
 library("rintrojs")
+# we strongly recommend using our version of the load spinner
+# devtools::install_github("Pill-GZ/shinycssloaders")
 library("shinycssloaders")
 
 # user interface

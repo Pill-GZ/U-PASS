@@ -465,7 +465,7 @@ server <- function(input, output, session) {
             "<b>Initial sample size:</b> ", dataset()[search_idx, "INITIAL.SAMPLE.SIZE"], "<br>",
             "<b>Replication sample size:</b> ", dataset()[search_idx, "REPLICATION.SAMPLE.SIZE"], "<br><br>")
     } else if (is.null(dataset())) {
-      "Choose a dataset in the EBI format."
+      "Choose a dataset in the NHGRI-EBI GWAS Catalog format."
     } else {
       "Click on data points to display details"
     }
