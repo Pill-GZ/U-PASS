@@ -51,7 +51,7 @@ determine.intersection <- function(x, y, target) {
 
 #### function to calculate rare variant region based on sample sizes ####
 
-rare.variant.curves.calculator <- function(n1, n2, rare.variant.threshold,
+rare.variant.curves.calculator <- function(n1, n2, RV.threshold.left, RV.threshold.right,
                                            f.lim = c(1e-4, 1-5e-3), R.lim = c(1,110)) {
   n <- n1 + n2
   phi <- n1 / n
@@ -66,11 +66,11 @@ rare.variant.curves.calculator <- function(n1, n2, rare.variant.threshold,
   f.vec.left <- vector(mode = "numeric", length = RV.resolution+1)
   for (i in 1:length(OR.vec.left)) {
     if (f.rare.variant.root.finder.left(f.RAF = f.lim[1]/2, OR = OR.vec.left[i], 
-                                        phi, n, rare.variant.threshold) > 0) {
+                                        phi, n, RV.threshold.left) > 0) {
       f.vec.left[i] <- NA
     } else {
-      solution <- uniroot(f = f.rare.variant.root.finder.left, interval = c(f.lim[1]/2, 0.5),
-                          OR = OR.vec.left[i], phi, n, rare.variant.threshold,
+      solution <- uniroot(f = f.rare.variant.root.finder.left, interval = c(f.lim[1]/2, 0.90),
+                          OR = OR.vec.left[i], phi, n, RV.threshold.left,
                           tol = .Machine$double.eps^0.5)
       f.vec.left[i] <- solution$root
     }
@@ -85,11 +85,11 @@ rare.variant.curves.calculator <- function(n1, n2, rare.variant.threshold,
   f.vec.right <- vector(mode = "numeric", length = RV.resolution+1)
   for (i in 1:length(OR.vec.right)) {
     if (f.rare.variant.root.finder.right(f.RAF = f.lim[2], OR = OR.vec.right[i], 
-                                         phi, n, rare.variant.threshold) > 0) {
+                                         phi, n, RV.threshold.right) > 0) {
       f.vec.right[i] <- NA
     } else {
-      solution <- uniroot(f = f.rare.variant.root.finder.right, interval = c(0.5, f.lim[2]),
-                          OR = OR.vec.right[i], phi, n, rare.variant.threshold,
+      solution <- uniroot(f = f.rare.variant.root.finder.right, interval = c(0.1, f.lim[2]),
+                          OR = OR.vec.right[i], phi, n, RV.threshold.right,
                           tol = .Machine$double.eps^0.5)
       f.vec.right[i] <- solution$root
     }
@@ -117,18 +117,20 @@ server <- function(input, output, session) {
   observeEvent(input$help_ORRAF, {
     rintrojs::introjs(session, options = list(
       steps = data.frame(element = c("#sample_size", "#false_discovery_control", "#plot_options", 
-                                     "#data_options", "#OR-RAF_diagram", "#gene_info", NA),
+                                     "#data_options", "#OR-RAF_diagram", "#OR-RAF_diagram", "#gene_info", NA),
                          intro = c("Specify <b>sample sizes</b> here.",
                                    "Specify <b>false discovery control criteria</b> (FWER / Type I error rate) here.",
                                    "Select <b>plot options</b> here.",
                                    "Choose to <b>overlay reported findings</b> from the NHGRI-EBI GWAS Catalog, or upload your own data!",
                                    "Statistical power for association tests is visualized in the <b>OR-RAF diagram</b>. 
                                      Reported findings are also overlaid here.<br><br>
-                                     It's fully interactive. Click on a reported locus to display detailed information.
-                                     Sample sizes also automatically adapt to the study reporting the selected locus.<br><br>
-                                     If a reported locus lies in the rare-variant region (outisde the red line(s)), 
-                                     single-SNP-based association tests are not recommended.<br><br>
-                                     If a reported locus lies in the low power region (dark regions of the heatmap),
+                                     It's <b>fully interactive</b>. Click on a reported locus to display detailed information.
+                                     Sample sizes also automatically adapt to the study reporting the selected locus.",
+                                   "We recommend specifying the <b>rare-variant regions</b> according to the minimum number of counts 
+                                     needed for Fisher's exact test to be correctly calibrated.
+                                     In this case, power calculations based on asymptotics are not applicable in the rare-variant region (outisde the red line(s));
+                                     single-SNP-based association tests have 0 power, and are <b>not recommended</b>.<br><br>
+                                     If a reported locus lies in the <b>low power region</b> (dark regions of the heatmap),
                                      the claim of statistical significance are dubious.",
                                    "When you select a reported locus in the OR-RAF diagram, detailed information is displayed here below the diagram.",
                                    "The power analysis is <b>model-free</b> and <b>test-independent</b>. 
@@ -203,16 +205,21 @@ server <- function(input, output, session) {
   #### calculate rare variant region ####
   
   rare_variant_threshold_count <- reactive({
-    if (input$rare_variant_zone_specification == 'Absolute variant count in study') {
-      input$rare_variant_threshold_count
+    if (input$rare_variant_zone_specification == "Minimum counts needed to calibrate Fisher's exact test") {
+      minimum.RV.Fishers.test(n1 = n1(), n2 = n2(), p.val.threhold = p_val_cutoff())
+    } else if (input$rare_variant_zone_specification == 'Absolute variant count in study') {
+      threshold <- input$rare_variant_threshold_count
+      list(left = threshold, right = threshold)
     } else if (input$rare_variant_zone_specification == 'Fraction of total subjects in study') {
       fraction <- as.numeric(gsub("%", "", input$rare_variant_threshold_fraction))/100
-      floor(fraction * (n1() + n2()))
+      threshold <- floor(fraction * (n1() + n2()))
+      list(left = threshold, right = threshold)
     }
   })
   
   rare.variant.curves <- reactive({
-    rare.variant.curves.calculator(n1 = n1(), n2 = n2(), rare_variant_threshold_count(), f.lim, R.lim)
+    RV.thresholds <- rare_variant_threshold_count()
+    rare.variant.curves.calculator(n1 = n1(), n2 = n2(), RV.thresholds$left, RV.thresholds$right, f.lim, R.lim)
   })
 
   #### calculate cutoff threshold for false discovery control ####
@@ -374,20 +381,21 @@ server <- function(input, output, session) {
                    # overlaying equi-power curves
                    if (input$overlay_rare_variant_zones == T) {
                      setProgress(value = 0.9, detail = "Overlaying rare-variant region")
+                     RV.thresholds <- rare_variant_threshold_count()
                      p <- p %>% 
                        add_trace(x = x.adj(rare.variant.curves()$f.vec.left),
                                  y = y.adj.plotly(rare.variant.curves()$OR.vec.left),
                                  line = list(dash = 'dash', width = 2), type = "scatter", mode = "lines",
                                  color = I("red"), hoverinfo = 'text',
                                  text = paste('rare variant zone to the left',
-                                              '\n', 'risk allele count < ', rare_variant_threshold_count()),
+                                              '\n', 'risk allele count < ', RV.thresholds$left),
                                  inherit = F) %>%
                        add_trace(x = x.adj(rare.variant.curves()$f.vec.right),
                                  y = y.adj.plotly(rare.variant.curves()$OR.vec.right),
                                  line = list(dash = 'dash', width = 2), type = "scatter", mode = "lines",
                                  color = I("red"), hoverinfo = 'text',
                                  text = paste('rare variant zone to the right',
-                                              '\n', 'non-risk allele count < ', rare_variant_threshold_count()),
+                                              '\n', 'non-risk allele count < ', RV.thresholds$right),
                                  inherit = F)
                    }
                    setProgress(value = 1)

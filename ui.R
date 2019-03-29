@@ -89,7 +89,8 @@ ui <- shinyUI(tagList(
                                          conditionalPanel(
                                            condition = "input.overlay_rare_variant_zones == true",
                                            selectInput("rare_variant_zone_specification", "Rare variant is specified as...",
-                                                       list("Absolute variant count in study",
+                                                       list("Minimum counts needed to calibrate Fisher's exact test",
+                                                            "Absolute variant count in study",
                                                             "Fraction of total subjects in study")),
                                            conditionalPanel(
                                              condition = "input.rare_variant_zone_specification == 'Absolute variant count in study'",
