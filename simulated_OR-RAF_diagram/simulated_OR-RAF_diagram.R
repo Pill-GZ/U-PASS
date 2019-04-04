@@ -22,7 +22,7 @@ R.vec <- y.adj.plotly.inv(seq(from = y.adj.plotly(R.lim)[1],
                               to = y.adj.plotly(R.lim)[2], 
                               length.out = resolution))
 
-#### simulate the OR-RAF diagram ####
+#### simulate the OR-RAF diagram - Welch's t-test ####
 
 n <- 2000
 phi <- 0.85
@@ -43,6 +43,33 @@ for (i in 1:length(R.vec)) {
       } else {
         FALSE
       }
+    })
+    temp.mat[i,j] <- mean(res)
+  }
+}
+
+#### simulate the OR-RAF diagram - Fisher's exact test ####
+
+n <- 2000
+phi <- 0.85
+alpha <- 5e-5
+
+temp.mat <- matrix(nrow = length(R.vec), ncol = length(f.vec))
+n1 <- phi * n
+n2 <- n - n1
+
+for (i in 1:length(R.vec)) {
+  print(i)
+  R <- R.vec[i]
+  for (j in 1:length(f.vec)) {
+    f <- f.vec[j]
+    p1 <- f*R / (f*R + 1 - f)
+    p2 <- f
+    res <- replicate(1000, {
+      y1 <- rbinom(n = 1, size = n1, prob = p1)
+      y2 <- rbinom(n = 1, size = n2, prob = p2)
+      test.res <- fisher.test(matrix(c(y1, y2, n1 - y1, n2 - y2), 2))
+      test.res$p.value < alpha
     })
     temp.mat[i,j] <- mean(res)
   }
@@ -72,6 +99,8 @@ image(t(simulate_mat_n20000_phi05))
 image(t(temp.mat))
 
 plot.mat <- simulate_mat_n20000_phi05
+plot.mat <- simulate_mat_n2000_phi015
+plot.mat <- simulate_mat_n2000_phi085
 plot.mat <- temp.mat
 # plot.mat[,1:5] <- temp.mat[,1:5]
 

@@ -110,37 +110,3 @@ OR.finder <- function(phi = 1/2, signal.size) {
   return(list(theta = theta, R = R, f = f))
 }
 
-#### function to calculate minimum number of counts needed to calibrate Fisher's exact test ####
-
-minimum.RV.Fishers.test <- function(n1, n2, p.val.threhold) {
-  # left-hand side
-  O21 <- 0
-  O22 <- n2
-  O11 <- 1
-  O12 <- n1- O11
-  
-  test.res <- fisher.test(matrix(c(O11, O21, O12, O22), 2), alternative = "greater")
-  while (test.res$p.value > p.val.threhold) {
-    O11 <- O11 + 1
-    O12 <- n1- O11
-    test.res <- fisher.test(matrix(c(O11, O21, O12, O22), 2), alternative = "greater")
-  }
-  left.threshold <- O11
-  
-  # right-hand side
-  O22 <- 1
-  O21 <- n2 - O22
-  O12 <- 0
-  O11 <- n1
-  
-  test.res <- fisher.test(matrix(c(O11, O21, O12, O22), 2), alternative = "greater")
-  while (test.res$p.value > p.val.threhold) {
-    O22 <- O22 + 1
-    O21 <- n2- O22
-    test.res <- fisher.test(matrix(c(O11, O21, O12, O22), 2), alternative = "greater")
-  }
-  right.threshold <- O22
-  
-  return(list(left = left.threshold, right = right.threshold))
-}
-

@@ -99,6 +99,39 @@ rare.variant.curves.calculator <- function(n1, n2, RV.threshold.left, RV.thresho
               f.vec.right = f.vec.right, OR.vec.right = OR.vec.right))
 }
 
+#### function to calculate minimum number of counts needed to calibrate Fisher's exact test ####
+
+minimum.RV.Fishers.test <- function(n1, n2, p.val.threhold) {
+  # left-hand side
+  O21 <- 0
+  O22 <- n2
+  O11 <- 1
+  O12 <- n1- O11
+  
+  test.res <- fisher.test(matrix(c(O11, O21, O12, O22), 2), alternative = "greater")
+  while (test.res$p.value > p.val.threhold) {
+    O11 <- O11 + 1
+    O12 <- n1- O11
+    test.res <- fisher.test(matrix(c(O11, O21, O12, O22), 2), alternative = "greater")
+  }
+  left.threshold <- O11
+  
+  # right-hand side
+  O22 <- 1
+  O21 <- n2 - O22
+  O12 <- 0
+  O11 <- n1
+  
+  test.res <- fisher.test(matrix(c(O11, O21, O12, O22), 2), alternative = "greater")
+  while (test.res$p.value > p.val.threhold) {
+    O22 <- O22 + 1
+    O21 <- n2- O22
+    test.res <- fisher.test(matrix(c(O11, O21, O12, O22), 2), alternative = "greater")
+  }
+  right.threshold <- O22
+  
+  return(list(left = left.threshold, right = right.threshold))
+}
 
 #### set plot limits and resolution ####
 
@@ -206,7 +239,7 @@ server <- function(input, output, session) {
   
   rare_variant_threshold_count <- reactive({
     if (input$rare_variant_zone_specification == "Minimum counts needed to calibrate Fisher's exact test") {
-      minimum.RV.Fishers.test(n1 = n1(), n2 = n2(), p.val.threhold = p_val_cutoff())
+      minimum.RV.Fishers.test(n1 = 2 * n1(), n2 = 2 * n2(), p.val.threhold = p.val.cutoff())
     } else if (input$rare_variant_zone_specification == 'Absolute variant count in study') {
       threshold <- input$rare_variant_threshold_count
       list(left = threshold, right = threshold)
@@ -219,24 +252,24 @@ server <- function(input, output, session) {
   
   rare.variant.curves <- reactive({
     RV.thresholds <- rare_variant_threshold_count()
-    rare.variant.curves.calculator(n1 = n1(), n2 = n2(), RV.thresholds$left, RV.thresholds$right, f.lim, R.lim)
+    rare.variant.curves.calculator(n1 = 2 * n1(), n2 = 2 * n2(), RV.thresholds$left, RV.thresholds$right, f.lim, R.lim)
   })
 
   #### calculate cutoff threshold for false discovery control ####
   
-  p_val_cutoff <- reactive({
+  p.val.cutoff <- reactive({
     if (input$type_I_error_criteria == 'Type I error') {
       input$alpha
     } else if (input$type_I_error_criteria == 'Family-wise error rate (FWER)') {
-      validate(need({is.integer(input$p.FWER); input$p.FWER > 0}, "Effective dimension must be a positive integer"))
-      input$alpha.FWER / input$p.FWER
+      validate(need({is.integer(input$p_FWER); input$p_FWER > 0}, "Effective dimension must be a positive integer"))
+      input$alpha_FWER / input$p_FWER
     } 
   })
   
-  output$p_val_cutoff <- renderText({ paste("<b>P-value threshold:</b>",p_val_cutoff()) })
+  output$p_val_cutoff <- renderText({ paste("<b>P-value threshold:</b>",p.val.cutoff()) })
   
   cutoff <- reactive({
-    qchisq(p = 1 - p_val_cutoff(), df = 1, ncp = 0, lower.tail = T)
+    qchisq(p = 1 - p.val.cutoff(), df = 1, ncp = 0, lower.tail = T)
   })
   
   #### calculate power for the sample size inputs ####
@@ -313,7 +346,6 @@ server <- function(input, output, session) {
   }, height = 750, width = 700)
   
   #### base OR-RAF plot in plotly ####
-  # not pass to output
   
   OR_RAF_baseplot <- reactive({
     withProgress(message = 'Rendering OR-RAF phase diagram', detail = 'Rendering power heatmap',
@@ -342,7 +374,7 @@ server <- function(input, output, session) {
                      add_annotations(yref = "paper", xref = "paper", y = -0.12, x = 1, 
                                      text = "risk allele frequency (in control group)", 
                                      showarrow = F, font = list(size = 25)) %>%
-                     add_annotations(yref = "paper", xref = "paper", y = 1.04, x = 1.14, 
+                     add_annotations(yref = "paper", xref = "paper", y = 1.04, x = 1.15, 
                                      text = "power", 
                                      showarrow = F, font = list(size = 25)) %>%
                      add_annotations(yref = "paper", xref = "paper", y = 0.8, x = 0.5, 
@@ -378,7 +410,7 @@ server <- function(input, output, session) {
                                       inherit = F) 
                      }
                    }
-                   # overlaying equi-power curves
+                   # overlaying rare-variant zones
                    if (input$overlay_rare_variant_zones == T) {
                      setProgress(value = 0.9, detail = "Overlaying rare-variant region")
                      RV.thresholds <- rare_variant_threshold_count()
@@ -514,9 +546,9 @@ server <- function(input, output, session) {
         FWER_guess <- max_p_val * dim_guess
         FWER_guess <- ifelse(FWER_guess <= 0.05, 0.05, 0.1)
         # Chage the FWER in UI
-        shinyWidgets::updateSliderTextInput(session, "alpha.FWER", selected = FWER_guess)
+        shinyWidgets::updateSliderTextInput(session, "alpha_FWER", selected = FWER_guess)
         # Change the dimension of FWER control in UI
-        updateNumericInput(session, "p.FWER", value = dim_guess)
+        updateNumericInput(session, "p_FWER", value = dim_guess)
         # Change false discovery control to FWER 
         updateSelectInput(session, "type_I_error_criteria",
                           selected = "Family-wise error rate (FWER)")
@@ -619,7 +651,7 @@ server <- function(input, output, session) {
   
   
   
-#### second tab: design my study #### 
+#### second tab: design my study ###################### #### 
   #### checking if design is complete ####
   
   waiting_for_design <- reactive({
@@ -656,14 +688,31 @@ server <- function(input, output, session) {
   
   #### calculate rejection region for the design ####
   
-  design.cutoff <- reactive({
+  #### calculate cutoff threshold for false discovery control ####
+  
+  design.p.val.cutoff <- reactive({
     if (input$step3_type_I_error_criteria == 'Type I error') {
-      qchisq(p = 1 - input$design_alpha, df = 1, ncp = 0, lower.tail = T)
-    } else if (input$step3_type_I_error_criteria == 'Family-wise error rate (FWER)') {
-      validate(need({is.integer(input$design_p_FWER); input$design_p_FWER > 0}, "Effective dimension must be a positive integer"))
-      qchisq(p = 1 - input$design_alpha_FWER / input$design_p_FWER, df = 1, ncp = 0, lower.tail = T)
+      input$design_alpha
+    } else if (input$type_I_error_criteria == 'Family-wise error rate (FWER)') {
+      validate(need({is.integer(input$p_FWER); input$p_FWER > 0}, "Effective dimension must be a positive integer"))
+      input$design_alpha_FWER / input$design_p_FWER
     } 
   })
+  
+  output$design_p_val_cutoff <- renderText({ paste("<b>P-value threshold:</b>", design.p.val.cutoff()) })
+  
+  design.cutoff <- reactive({
+    qchisq(p = 1 - design.p.val.cutoff(), df = 1, ncp = 0, lower.tail = T)
+  })
+  
+  # design.cutoff <- reactive({
+  #   if (input$step3_type_I_error_criteria == 'Type I error') {
+  #     qchisq(p = 1 - input$design_alpha, df = 1, ncp = 0, lower.tail = T)
+  #   } else if (input$step3_type_I_error_criteria == 'Family-wise error rate (FWER)') {
+  #     validate(need({is.integer(input$design_p_FWER); input$design_p_FWER > 0}, "Effective dimension must be a positive integer"))
+  #     qchisq(p = 1 - input$design_alpha_FWER / input$design_p_FWER, df = 1, ncp = 0, lower.tail = T)
+  #   } 
+  # })
   
   #### calculate target power of the study ####
   
@@ -698,9 +747,9 @@ server <- function(input, output, session) {
           input$target_w2
         }
       }
-      # calculate power as a function of Controls
+      # calculate power as a function of Controls (assuming one allele pair per subject)
       variable.power <- pchisq(q = design.cutoff(), df = 1 , lower.tail = F, 
-                               ncp = design.signal.size.per.sample * fixed.n)
+                               ncp = design.signal.size.per.sample * 2 * fixed.n)
       # calculate optimal fraction of Cases
       optimal.fraction.of.cases <- variable.phi[which.max(design.signal.size.per.sample)]
       optimal.fraction.of.cases.prompt <- ifelse(max(variable.power) > design.power(), 
@@ -777,9 +826,9 @@ server <- function(input, output, session) {
           input$target_w2
         }
       }
-      # calculate power as a function of Controls
+      # calculate power as a function of Controls (assuming one allele pair per subject)
       variable.power <- pchisq(q = design.cutoff(), df = 1 , lower.tail = F, 
-                               ncp = design.signal.size.per.sample * variable.n)
+                               ncp = design.signal.size.per.sample * 2 * variable.n)
       # calculate required number of controls
       required.number.of.controls <- determine.intersection(variable.n2, variable.power, design.power())
       required.number.of.controls.prompt <- ifelse(required.number.of.controls, 
@@ -844,9 +893,9 @@ server <- function(input, output, session) {
         }
       }
       variable.n <- as.vector(outer(c(1,1.5,2:9), 10^(1:6)))
-      # calculate power as a function of total sample size
+      # calculate power as a function of total sample size (assuming one allele pair per subject)
       variable.power <- pchisq(q = design.cutoff(), df = 1 , lower.tail = F, 
-                               ncp = design.signal.size.per.sample * variable.n)
+                               ncp = design.signal.size.per.sample * 2 * variable.n)
       
       # calculate required number of total samples
       required.number.of.total.samples <- determine.intersection(variable.n, variable.power, design.power())

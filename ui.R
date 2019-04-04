@@ -61,7 +61,7 @@ ui <- shinyUI(tagList(
                                          ),
                                          conditionalPanel(
                                            condition = "input.type_I_error_criteria == 'False discovery rate (FDR)'",
-                                           numericInput("p.FDR", "Effective dimension (number of loci):", 
+                                           numericInput("p_FDR", "Effective dimension (number of loci):", 
                                                         value = 1000, min = 250, max = 10000000, step = 50),
                                            shinyWidgets::sliderTextInput(inputId = "alpha.FDR", 
                                                                          label = "Target FDR:",
@@ -70,9 +70,9 @@ ui <- shinyUI(tagList(
                                          ),
                                          conditionalPanel(
                                            condition = "input.type_I_error_criteria == 'Family-wise error rate (FWER)'",
-                                           numericInput("p.FWER", "Effective dimension (number of loci):", 
+                                           numericInput("p_FWER", "Effective dimension (number of loci):", 
                                                         value = 1000, min = 250, max = 10000000, step = 50),
-                                           shinyWidgets::sliderTextInput(inputId = "alpha.FWER", 
+                                           shinyWidgets::sliderTextInput(inputId = "alpha_FWER", 
                                                                          label = "Target FWER:", 
                                                                          choices = c(as.vector(outer(c(1,5), 10^(-4:-2))),0.1),
                                                                          selected = 0.05)
@@ -187,7 +187,7 @@ ui <- shinyUI(tagList(
                                                             "Signal size per sample (advanced user)")),
                                            conditionalPanel(
                                              condition = "input.step1_target_OR_RAF == 'Allele frequency and odds ratio'",
-                                             numericInput("target_RAF", "Target risk allele frequency:", 
+                                             numericInput("target_RAF", "Target risk allele frequency (in control group):", 
                                                           value = 0.001, min = 0.001, max = 0.99999, step = 0.001),
                                              numericInput("target_OR", "Target odds ratio:", 
                                                           value = 5, min = 1.01, max = 1000000, step = 0.01)
@@ -219,12 +219,12 @@ ui <- shinyUI(tagList(
                                    conditionalPanel(
                                      condition = "input.step2_fixed_quantity == 'Budget / total number of subjects'",
                                      numericInput("fixed_budget", "Total subjects (Cases + Controls):", 
-                                                  value = 40000, min = 500, max = 1000000, step = 100)
+                                                  value = 20000, min = 500, max = 1000000, step = 100)
                                    ),
                                    conditionalPanel(
                                      condition = "input.step2_fixed_quantity == 'Number of Cases'",
                                      numericInput("fixed_cases", "Number of Cases in study:", 
-                                                  value = 20000, min = 500, max = 1000000, step = 100)
+                                                  value = 10000, min = 500, max = 1000000, step = 100)
                                    ),
                                    conditionalPanel(
                                      condition = "input.step2_fixed_quantity == 'Fraction of Cases'",
@@ -248,8 +248,7 @@ ui <- shinyUI(tagList(
                                        shinyWidgets::sliderTextInput(inputId = "design_alpha", 
                                                                      label = "Target type I error rate:", 
                                                                      choices = c(as.vector(outer(c(1,5), 10^(-4:-2))),0.1),
-                                                                     selected = 0.05)
-                                     ),
+                                                                     selected = 0.05)),
                                      conditionalPanel(
                                        condition = "input.step3_type_I_error_criteria == 'False discovery rate (FDR)'",
                                        numericInput("design_p_FDR", "Effective dimension (number of loci):", 
@@ -265,7 +264,11 @@ ui <- shinyUI(tagList(
                                        shinyWidgets::sliderTextInput(inputId = "design_alpha_FWER", 
                                                                      label = "Target FWER:", 
                                                                      choices = c(as.vector(outer(c(1,5), 10^(-4:-2))),0.1),
-                                                                     selected = 0.05))
+                                                                     selected = 0.05)),
+                                     conditionalPanel(
+                                       condition = "input.step3_type_I_error_criteria != 'Select a criterion'",
+                                       htmlOutput("design_p_val_cutoff")
+                                     )
                                    ), # end of step 3: select a false discovery control
                                    
                                    conditionalPanel( 
