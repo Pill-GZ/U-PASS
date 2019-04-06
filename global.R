@@ -2,6 +2,7 @@ library("MASS")
 library("plotly")
 library("dplyr")
 library("shinyWidgets")
+library("knitr")
 
 #### adjustments made to x and y axis for plotting ####
 

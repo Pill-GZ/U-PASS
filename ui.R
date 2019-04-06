@@ -10,12 +10,11 @@ ui <- shinyUI(tagList(
   navbarPage("GWAS power calculator",
              
              #### OR-RAF tab ####
-             
              tabPanel("OR-RAF power diagram", id = "OR-RAF_tab",
                       tags$style(type = 'text/css', '.navbar {font-size: 15px;}', 
                                  '.navbar-default .navbar-brand {font-size: 30px;}'),
                       tags$style(HTML(".introjs-tooltip {max-width: 50%; min-width: 300px;}")),
-                      includeHTML("header.html"),
+                      includeHTML("www/header.html"),
                       actionButton("help_ORRAF", "Take a quick tour of the interface"),
                       
                       fluidRow(
@@ -163,13 +162,13 @@ ui <- shinyUI(tagList(
                         #plotlyOutput("OR.RAF.heatmap.plotly")
                         
                       ), # end of fluidRow
-                      includeHTML("credits.html")
+                      includeHTML("www/credits.html")
              ), # end of first rab panel (OR-RAF)
              
              #### Power analysis tab ####
              
              tabPanel("Design my study", id = "design_tab",
-                      includeHTML("header.html"),
+                      includeHTML("www/header.html"),
                       actionButton("help_power_analysis", "Take a quick tour of the interface"),
                       
                       fluidRow(
@@ -309,33 +308,32 @@ ui <- shinyUI(tagList(
                         #### display results from power analysis ####
                         
                         column(9, # "fixing height to avoid automatic adjustments"
-                               #textOutput("debug"),
-                               div(style = "height:1200px;", 
-                                   #textOutput("waiting_for_design2"),
-                                   #textOutput("power_vec"),
-                                   #textOutput("waiting_for_design"),
-                                   #textOutput("debug"),
-                                   div(id = "power_analysis_results",
-                                       tags$style(type="text/css", '#power_analysis_results { width:700px; }'),
-                                       conditionalPanel(condition = "output.waiting_for_design == true",
-                                                        br(),
-                                                        "Complete your study design on the left"),
-                                       conditionalPanel(condition = "output.fixed_n_design == true",
-                                                        plotlyOutput("optimal_design_fixed_n", height = "700px")),
-                                       conditionalPanel(condition = "output.fixed_n1_design == true",
-                                                        plotlyOutput("optimal_design_fixed_n1", height = "700px")),
-                                       conditionalPanel(condition = "output.fixed_phi_design == true",
-                                                        plotlyOutput("optimal_design_fixed_phi", height = "700px"))
-                                       #textOutput("waiting_for_design")
-                                   )
-                               ) # end of "fixing height to avoid automatic adjustments"
+                               div(id = "power_analysis_results",
+                                   tags$style(type="text/css", '#power_analysis_results { width:700px; }'),
+                                   conditionalPanel(condition = "output.waiting_for_design == true",
+                                                    br(),
+                                                    "Complete your study design on the left"),
+                                   conditionalPanel(condition = "output.fixed_n_design == true",
+                                                    plotlyOutput("optimal_design_fixed_n", height = "700px")),
+                                   conditionalPanel(condition = "output.fixed_n1_design == true",
+                                                    plotlyOutput("optimal_design_fixed_n1", height = "700px")),
+                                   conditionalPanel(condition = "output.fixed_phi_design == true",
+                                                    plotlyOutput("optimal_design_fixed_phi", height = "700px"))
+                                   #textOutput("waiting_for_design")
+                               )
                         ) # end of second column
                         
                         
                       ), # end of fliudRow
                       
-                      includeHTML("credits.html")
-             ) # end of second tab panel (study design)
+                      includeHTML("www/credits.html")
+             ), # end of second tab panel (study design)
+             
+             navbarMenu("Details",
+                        tabPanel(HTML("About</a></li><li><a href=\"U-PASS_documentation.html\" target=\"_blank\">Documentation"),
+                                 tags$a("Theory page", href="U-PASS_documentation.html", target="_blank")
+                                 )
+             )
              
              #### page ends ####
              ) # end of navbarPage

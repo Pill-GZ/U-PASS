@@ -24,13 +24,13 @@ server <- function(input, output, session) {
                                    "We recommend specifying the <b>rare-variant regions</b> according to the minimum number of counts 
                                      needed for Fisher's exact test to be correctly calibrated.
                                      In this case, power calculations based on asymptotics are not applicable in the rare-variant region (outisde the red line(s));
-                                     single-SNP-based association tests have 0 power, and are <b>not recommended</b>.<br><br>
+                                     single-SNP-based association tests have zero power, and are not recommended.<br><br>
                                      If a reported locus lies in the <b>low power region</b> (dark regions of the heatmap),
-                                     the claim of statistical significance are dubious.",
+                                     the claim of statistical significance should be further investigated",
                                    "When you select a reported locus in the OR-RAF diagram, detailed information is displayed here below the diagram.",
-                                   "The power analysis is <b>model-free</b> and <b>test-independent</b>. 
+                                   "The power analysis is <b>model-invariant</b> and <b>test-independent</b>. 
                                      This means that you do not need to specify a disease model, or the test of association used.<br><br>
-                                     Find out why in the Details tab."
+                                     Find out more under <a href=\"U-PASS_documentation.html#unified_asymptotic_power_analysis\" target=\"_blank\">Details tab &#8594; Documentation &#8594; Unified power analysis."
                          ))
     ))
   }) # end of intro for OR-RAF tab
@@ -57,9 +57,9 @@ server <- function(input, output, session) {
                                        <li>If the contraint is <b>number of Cases</b>, power is shown as a function of the number of Controls.</li>
                                        <li>If the contraint is <b>fraction of Cases</b>, power is shown as a function of the total number of subjects.</li>
                                      </ul>",
-                                   "The power analysis is <b>model-free</b> and <b>test-independent</b>. 
+                                   "The power analysis is <b>model-invariant</b> and <b>test-independent</b>. 
                                      This means that you do not need to specify a disease model, or the test of association used.<br><br>
-                                     Find out why in the Details tab."
+                                     Find out more under <a href=\"U-PASS_documentation.html#unified_asymptotic_power_analysis\" target=\"_blank\">Details tab &#8594; Documentation &#8594; Unified power analysis."
                          ))
     ))
   }) # end of intro for design-my-study tab
