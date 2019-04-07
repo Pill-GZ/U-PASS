@@ -6,8 +6,9 @@ library("shinycssloaders")
 # user interface
 
 ui <- shinyUI(tagList(
+  tags$head(HTML("<title>U-PASS: a unified power analysis of association studies</title>")),
   introjsUI(),
-  navbarPage("GWAS power calculator",
+  navbarPage("U-PASS power calculator",
              
              #### OR-RAF tab ####
              tabPanel("OR-RAF power diagram", id = "OR-RAF_tab",
@@ -15,7 +16,12 @@ ui <- shinyUI(tagList(
                                  '.navbar-default .navbar-brand {font-size: 30px;}'),
                       tags$style(HTML(".introjs-tooltip {max-width: 50%; min-width: 300px;}")),
                       includeHTML("www/header.html"),
-                      actionButton("help_ORRAF", "Take a quick tour of the interface"),
+                      HTML("<p>We encourage users to take a "), 
+                      actionButton("help_ORRAF", "quick tour of the interface"),
+                      HTML(" and checkout definitions of key quantities in the "),
+                      actionButton("null", "documentation page",
+                                   onclick ="window.open('U-PASS_documentation.html', '_blank')"),
+                      
                       
                       fluidRow(
                         
