@@ -179,7 +179,7 @@ ui <- shinyUI(tagList(
                       HTML("<p>We encourage users to take a "), 
                       actionButton("help_power_analysis", "quick tour of the interface"),
                       HTML(", check out the "),
-                      actionButton(inputId="link_to_guide_from_tab1", label="User Guide"),
+                      actionButton(inputId="link_to_guide_from_tab2", label="User Guide"),
                       HTML(", and find definitions of key quantities in the "),
                       actionButton("null", "Documentation",
                                    onclick ="window.open('U-PASS_documentation.html', '_blank')"),
@@ -345,6 +345,13 @@ ui <- shinyUI(tagList(
              #### display results from power analysis ####
              
              navbarMenu("About",
+                        tabPanel(HTML("Download and installation"), value = "download",
+                                 fluidRow(
+                                   column(6, offset = 3,
+                                          includeHTML("www/download_and_installation.html")
+                                   )
+                                 )
+                        ),
                         tabPanel(HTML("Contact"), value = "contact",
                                  fluidRow(
                                    column(6, offset = 3,

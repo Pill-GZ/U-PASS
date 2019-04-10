@@ -1,0 +1,57 @@
+---
+title: "Download and Installation"
+author: "GAO Zheng"
+date: "April 10, 2019"
+output:
+  html_fragment:
+    self_contained: false
+---
+
+U-PASS runs as an [R Shiny application](https://shiny.rstudio.com/){target="_blank"}.
+It is a free, open source software under the [MIT license](https://badges.mit-license.org/){target="_blank"}.
+
+You can run it locally by following the three steps detailed below.
+
+# Download source
+
+You can download the project by running in your terminal:
+
+```shell
+git clone https://github.com/Pill-GZ/U-PASS.git
+```
+
+or download as a zip file from its [GitHub page](https://github.com/Pill-GZ/U-PASS){target="_blank"}: [https://github.com/Pill-GZ/U-PASS]{target="_blank"}.
+
+# Install dependencies
+
+We have collected the required R packages inside `install_required_packages.R`.
+
+You can install these packages by navigating to the project folder, and running in your terminal:
+
+```shell
+Rscript install_required_packages.R 
+```
+
+or from inside R (RStudio):
+
+```r
+source("install_required_packages.R")
+```
+
+# Start / terminate the application
+
+You can start the application by running in your terminal:
+
+```shell
+Rscript -e 'library(methods); shiny::runApp("./", launch.browser=TRUE)'
+```
+
+or from inside R (RStudio):
+
+```r
+shiny::runApp()
+```
+
+The application can be terminated by simply closing the browser (or browser tab).
+
+Alternatively, the application can be terminated by pressing `Ctrl + C` in the terminal, or by pressing the red stop button inside Rstudio.

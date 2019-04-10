@@ -13,6 +13,11 @@ server <- function(input, output, session) {
     updateNavbarPage(session, "mainNavbarPage", selected="user_guide")
   })
   
+  #### automatically end session on quiting ####
+  session$onSessionEnded(function() {
+    stopApp()
+  })
+  
 #### first tab: OR-RAF diagram #### 
   
   #### quick start guided tours with IntroJS ####

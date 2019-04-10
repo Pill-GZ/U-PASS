@@ -1,0 +1,17 @@
+
+# check and install all required packages
+required.packages <- c("MASS", "plotly", "dplyr", "shinyWidgets",
+                       "knitr", "rintrojs", "shinycssloaders")
+missing.packages <- required.packages[!required.packages %in% rownames(installed.packages())]
+
+for (missing.package in missing.packages) {
+  install.packages(missing.package)
+}
+
+# we strongly recommend using our version of the load spinner
+if (packageVersion("shinycssloaders") != package_version('0.2.1')) {
+  if (!"devtools" %in% rownames(installed.packages())) {
+    install.packages("devtools")
+  }
+  devtools::install_github("Pill-GZ/shinycssloaders", upgrade = "never")
+}
