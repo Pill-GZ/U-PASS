@@ -84,19 +84,21 @@ server <- function(input, output, session) {
   
   n1 <- reactive({
     if (input$sample_size_specification == 'Number of subjects + fraction of Cases') {
-      validate(need({is.integer(input$n); input$n > 0}, "Number of subjects must be a positive integer"))
+      validate(need({is.integer(input$n)}, "Number of subjects must be a positive integer"))
+      validate(need({floor(input$n * input$phi) >= 10}, "Number of cases must be a positive integer >= 10"))
       floor(input$n * input$phi)
     } else {
-      validate(need({is.integer(input$n1); input$n1 > 0}, "Number of cases must be a positive integer"))
+      validate(need({is.integer(input$n1); input$n1 >= 10}, "Number of cases must be a positive integer >= 10"))
       floor(input$n1)
     }
   })
   n2 <- reactive({
     if (input$sample_size_specification == 'Number of subjects + fraction of Cases') {
-      validate(need({is.integer(input$n); input$n > 0}, "Number of subjects must be a positive integer"))
+      validate(need({is.integer(input$n)}, "Number of subjects must be a positive integer"))
+      validate(need({input$n - floor(input$n * input$phi) >= 10}, "Number of controls must be a positive integer >= 10"))
       input$n - floor(input$n * input$phi)
     } else {
-      validate(need({is.integer(input$n1); input$n1 > 0}, "Number of cases must be a positive integer"))
+      validate(need({is.integer(input$n2); input$n2 >= 10}, "Number of controls must be a positive integer >= 10"))
       floor(input$n2)
     }
   })
@@ -105,8 +107,8 @@ server <- function(input, output, session) {
       input$phi
     } else {
       validate(
-        need({is.integer(input$n1); input$n1 > 0}, "Number of cases must be a positive integer"),
-        need({is.integer(input$n2); input$n2 > 0}, "Number of controls must be a positive integer"))
+        need({is.integer(input$n1); input$n1 >= 10}, "Number of cases must be a positive integer >= 10"),
+        need({is.integer(input$n2); input$n2 >= 10}, "Number of controls must be a positive integer >= 10"))
       input$n1 / (input$n1 + input$n2)
     }
   })
