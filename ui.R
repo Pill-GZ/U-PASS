@@ -8,20 +8,21 @@ library("shinycssloaders")
 ui <- shinyUI(tagList(
   tags$head(HTML("<title>U-PASS: a unified power analysis of association studies</title>")),
   introjsUI(),
-  navbarPage("U-PASS power calculator",
+  navbarPage("U-PASS power calculator", id = "mainNavbarPage", theme = "bootstrap-cosmo-customized.css",
              
              #### OR-RAF tab ####
              tabPanel("OR-RAF power diagram", id = "OR-RAF_tab",
-                      tags$style(type = 'text/css', '.navbar {font-size: 15px;}', 
+                      tags$style(type = 'text/css', '.navbar {font-size: 20px;}',
                                  '.navbar-default .navbar-brand {font-size: 30px;}'),
                       tags$style(HTML(".introjs-tooltip {max-width: 50%; min-width: 300px;}")),
                       includeHTML("www/header.html"),
                       HTML("<p>We encourage users to take a "), 
                       actionButton("help_ORRAF", "quick tour of the interface"),
-                      HTML(" and checkout definitions of key quantities in the "),
-                      actionButton("null", "documentation page",
+                      HTML(", check out the "),
+                      actionButton(inputId="link_to_guide_from_tab1", label="User Guide"),
+                      HTML(", and find definitions of key quantities in the "),
+                      actionButton("null", "Documentation",
                                    onclick ="window.open('U-PASS_documentation.html', '_blank')"),
-                      
                       
                       fluidRow(
                         
@@ -175,7 +176,13 @@ ui <- shinyUI(tagList(
              
              tabPanel("Design my study", id = "design_tab",
                       includeHTML("www/header.html"),
-                      actionButton("help_power_analysis", "Take a quick tour of the interface"),
+                      HTML("<p>We encourage users to take a "), 
+                      actionButton("help_power_analysis", "quick tour of the interface"),
+                      HTML(", check out the "),
+                      actionButton(inputId="link_to_guide_from_tab1", label="User Guide"),
+                      HTML(", and find definitions of key quantities in the "),
+                      actionButton("null", "Documentation",
+                                   onclick ="window.open('U-PASS_documentation.html', '_blank')"),
                       
                       fluidRow(
                         #### Study specifications ####
@@ -233,7 +240,7 @@ ui <- shinyUI(tagList(
                                    ),
                                    conditionalPanel(
                                      condition = "input.step2_fixed_quantity == 'Fraction of Cases'",
-                                     sliderInput("fixed_phi", "Fraction of cases in the study:", value = 1/2, min = 0.01, max = 0.99, step = .01)
+                                     sliderInput("fixed_phi", "Fraction of cases in the study:", value = 1/2, min = 0.05, max = 0.95, step = .05)
                                    )
                                  ), # end of step 2: select a constraint
                                  
@@ -335,10 +342,25 @@ ui <- shinyUI(tagList(
                       includeHTML("www/credits.html")
              ), # end of second tab panel (study design)
              
-             navbarMenu("Details",
-                        tabPanel(HTML("About</a></li><li><a href=\"U-PASS_documentation.html\" target=\"_blank\">Documentation"),
-                                 tags$a("Theory page", href="U-PASS_documentation.html", target="_blank")
+             #### display results from power analysis ####
+             
+             navbarMenu("About",
+                        tabPanel(HTML("Contact"), value = "contact",
+                                 fluidRow(
+                                   column(6, offset = 3,
+                                          includeHTML("www/contact.html")
+                                   )
                                  )
+                        ),
+                        tabPanel(HTML("User guide</a></li><li><a href=\"U-PASS_documentation.html\" target=\"_blank\">Documentation"), 
+                                 value = "user_guide",
+                                 fluidRow(
+                                   column(6, offset = 3,
+                                          withMathJax(includeHTML("www/user_guide.html")),
+                                          includeHTML("www/credits.html")
+                                   )
+                                 )
+                        )
              )
              
              #### page ends ####

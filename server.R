@@ -4,6 +4,15 @@ source("./global.R")
 #### start of server ####
 
 server <- function(input, output, session) {
+  
+  #### navigate to User guide page ####
+  observeEvent(input$link_to_guide_from_tab1, {
+    updateNavbarPage(session, "mainNavbarPage", selected="user_guide")
+  })
+  observeEvent(input$link_to_guide_from_tab2, {
+    updateNavbarPage(session, "mainNavbarPage", selected="user_guide")
+  })
+  
 #### first tab: OR-RAF diagram #### 
   
   #### quick start guided tours with IntroJS ####
@@ -30,7 +39,7 @@ server <- function(input, output, session) {
                                    "When you select a reported locus in the OR-RAF diagram, detailed information is displayed here below the diagram.",
                                    "The power analysis is <b>model-invariant</b> and <b>test-independent</b>. 
                                      This means that you do not need to specify a disease model, or the test of association used.<br><br>
-                                     Find out more under <a href=\"U-PASS_documentation.html#unified_asymptotic_power_analysis\" target=\"_blank\">Details tab &#8594; Documentation &#8594; Unified power analysis."
+                                     Find out more under <a href=\"U-PASS_documentation.html#unified_asymptotic_power_analysis\" target=\"_blank\">About &#8594; Documentation &#8594; Unified power analysis."
                          ))
     ))
   }) # end of intro for OR-RAF tab
@@ -59,7 +68,7 @@ server <- function(input, output, session) {
                                      </ul>",
                                    "The power analysis is <b>model-invariant</b> and <b>test-independent</b>. 
                                      This means that you do not need to specify a disease model, or the test of association used.<br><br>
-                                     Find out more under <a href=\"U-PASS_documentation.html#unified_asymptotic_power_analysis\" target=\"_blank\">Details tab &#8594; Documentation &#8594; Unified power analysis."
+                                     Find out more under <a href=\"U-PASS_documentation.html#unified_asymptotic_power_analysis\" target=\"_blank\">About &#8594; Documentation &#8594; Unified power analysis."
                          ))
     ))
   }) # end of intro for design-my-study tab
@@ -128,7 +137,7 @@ server <- function(input, output, session) {
     } 
   })
   
-  output$p_val_cutoff <- renderText({ paste("<b>P-value threshold:</b>",p.val.cutoff()) })
+  output$p_val_cutoff <- renderText({ paste("<b>P-value threshold:</b>", formatC(p.val.cutoff(), format = "e", digits = 1)) })
   
   cutoff <- reactive({
     qchisq(p = 1 - p.val.cutoff(), df = 1, ncp = 0, lower.tail = T)
@@ -561,7 +570,7 @@ server <- function(input, output, session) {
     } 
   })
   
-  output$design_p_val_cutoff <- renderText({ paste("<b>P-value threshold:</b>", design.p.val.cutoff()) })
+  output$design_p_val_cutoff <- renderText({ paste("<b>P-value threshold:</b>", formatC(design.p.val.cutoff(), format = "e", digits = 1)) })
   
   design.cutoff <- reactive({
     qchisq(p = 1 - design.p.val.cutoff(), df = 1, ncp = 0, lower.tail = T)

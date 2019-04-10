@@ -25,7 +25,7 @@ library(kableExtra)
 
 # Unified asymptotic power analysis {#sec:unified-analysis}
 
-In association tests for categorical phenotypes and genetic variants, counts of subjects in each phenotype-genetic variant combination are tabulated in the form of a contingency tables.
+In association tests for categorical phenotypes and genetic variants, counts of subjects in each phenotype-genetic variant combination are tabulated in the form of a contingency table.
 For a 2-genetic-variant-by-2-phenotype definition, we have the following table of counts.
 
 ```{r echo=FALSE}
@@ -40,7 +40,7 @@ kable(dt, "html", escape = FALSE, align = "c") %>%
 ```
 
 Statistics are then calculated based on the counts, to test for associations between the genotypes and phenotypes, at levels adjusted for multiplicity.
-Performance of the tests are measured in terms of power, i.e., probability of correct rejection under an alternative hypothesis.
+Performance of a test is measured in terms of power, i.e., probability of correct rejection under an alternative hypothesis.
 
 Power analysis starts by assuming an alternative, typically described by a disease model (recessive, dominant, additive, etc.).
 Power of a test is approximated either based on large sample asymptotics, or by simulating the empirical distribution of the statistic under the alternative.
@@ -54,11 +54,11 @@ Indeed, the latter approach is the basis of power calculations in @skol2006joint
 Regardless of the disease model assumed, the test statistics are calculated based on cell counts of the contingency table.
 The alternative hypothesis, consequently, influences the distribution of the test statistics only through altering the distribution of the multinomial integer counts in the contingency tables.
 
-Consider 2-by-2 multinomial distributions with probability matrix $\mu$,
+Consider 2-by-2 multinomial distributions with probability matrix $\mu = (\mu_{ij})_{2\times2}$,
 
 ```{r echo=FALSE}
-dt <- data.frame(matrix(c("Cases", "$\\mu_{11}$", "$\\mu_{12}$", "$\\phi$",
-                          "Controls", "$\\mu_{21}$", "$\\mu_{22}$", "$1-\\phi$"), byrow = T, nrow = 2))
+dt <- data.frame(matrix(c("Cases", "$\\mu_{11}$", "$\\mu_{12}$", "$\\phi = \\mu_{11} + \\mu_{12}$",
+                          "Controls", "$\\mu_{21}$", "$\\mu_{22}$", "$1-\\phi = \\mu_{21} + \\mu_{22}$"), byrow = T, nrow = 2))
 
 colnames(dt) <- c("Probabilities", "Variant 1", "Variant 2", "Total by phenotype")
 
@@ -68,15 +68,15 @@ kable(dt, "html", escape = FALSE, align = "c") %>%
 ```
 
 We may assume -- by relabelling, and hence without loss of generality -- that genetic Variant 1 is positively associated with the Cases, and referred to as the risk allele / variant. 
-The multinomial probability matrix $\mu$ can be fully parametrized by the trio of parameters (explicit expressions are given at the end of the section):
+The multinomial probability matrix $\mu$ can be fully parametrized by the parameter triple (explicit expressions are given at the end of the section):
 
-* the marginal distribution of phenotypes, i.e., fraction of Cases $\phi$,
+* Fraction of Cases $\phi$, i.e., marginal distribution of phenotypes.
 
-* the conditional distribution of risk variant among Controls, i.e., risk allele frequency (RAF) in the Control group 
+* Conditional distribution of risk variant among Controls, i.e., risk allele frequency (RAF) in the Control group 
 $$
-    f := \mu_{21}/(1-\phi),
+    f := \mu_{21}\big/(1-\phi),
 $$
-* and the odds ratio (OR) of the genotype Variant 1 to Variant 2
+* Odds ratio (OR) of the genotype Variant 1 to Variant 2
 $$
 \text{R} := \frac{\mu_{11}}{\mu_{21}}\Big/\frac{\mu_{12}}{\mu_{22}} = \frac{\mu_{11}\mu_{22}}{\mu_{12}\mu_{21}}.
 $$
@@ -132,7 +132,7 @@ $$
 Alternative hypotheses may be formed as in the multinomial case with parameters $\phi$, $f$ and $R$, along with the total samples size.
 
 Finally, we mention the assumptions behind the Fisher's exact test.
-This Fisher exact test conditions on the number of observations of both the phenotype variants and genetic variants, leading to a hypergeometric distribution of the first cell count $O_{11}$ given the marginals $n_1$, $n_2$, and $O_{11}+O_{21}$, under the null hypothesis.
+The Fisher exact test conditions on the number of observations of both the phenotype variants and genetic variants, leading to a hypergeometric distribution of the first cell count $O_{11}$ given the marginals $n_1$, $n_2$, and $O_{11}+O_{21}$, under the null hypothesis.
 We found no easy parametrizations of alternative hypotheses under this framework.
 Indeed, existing power calculations for Fisher's exact test resort to simulations under the the two-binomial assumptions [@smyth2017].
 
@@ -156,7 +156,7 @@ Under the multinomial assumption, let $\mu^{(0)}$ be the probability matrix of t
 We require that $\theta\in(0,1)$ and $\phi\in(0,1)$ be bounded away from 0 and 1.
 Let $\mu = \mu^{(n)}$ be the sequence of alternatives such that 
 \begin{equation} \label{eq:alternative-multinomial}
-    \sqrt{n}(\mu - \mu^{(0)}) \rightarrow \delta \begin{pmatrix} 1 & -1 \\ -1 & 1 \end{pmatrix},
+    \sqrt{n}(\mu^{(0)} - \mu^{(0)}) \rightarrow \delta \begin{pmatrix} 1 & -1 \\ -1 & 1 \end{pmatrix},
 \end{equation}
 where $\delta$ is a positive constant.
 
@@ -174,7 +174,7 @@ It is easy to see that with the same $\delta$ the two sequences of alternatives 
 <div class="panel panel-primary">
 <div class="panel-heading"> Theorem 1 </div>
 <div class="panel-body">
-In 2-by-2 contingency tables, under the assumption that counts in the contingency table follow the multinomial distributions, 
+In 2-by-2 contingency tables, under the assumption that the counts in the contingency table follow the multinomial distributions, 
     
 * the likelihood ratio test for independence,
 * the likelihood ratio test for zero slope in logistic regressions,
@@ -196,9 +196,9 @@ where $q_{\alpha}$ is the upper $\alpha$ quantile of the central chi-square dist
   </div>
 </div>
 
-Proof of Theorem 1 is detailed in [Section 3](#sec:proof).
+The proof of Theorem 1 is detailed in [Section 3](#sec:proof).
 
-Theorem 1 is the central result that paves way for a unified powers analysis.
+Theorem 1 is the central result that paves the way for a unified power analysis.
 It allows us to chart findings from different studies employing the applicable tests in the same diagram, with the same power limits.
 In particular, for large samples, tests for zero slopes in logistic regressions should report approximately the same set of loci as Welch's t-tests for equal proportions on the same dataset, after the same family-wise error rate adjustments.
 The estimated odds ratios (in the case of logistic regression, estimate slopes exponentiated) and RAF's, when charted on the OR-RAF diagram, should also follow the same power limits.
@@ -219,7 +219,7 @@ Elementary algebra yields
 $$\theta = \frac{fR\phi}{(fR+1-f)} + f(1-\phi),$$ 
 and 
 $$\delta = \sqrt{n}(\theta - f)(1-\phi).$$
-If tests are based on allele type counts, the effective sample sizes should be doubled, and the appropriate non-centrality parameter becomes  $\delta = \sqrt{2n}(\theta - f)(1-\phi)$.
+If tests are based on allele type counts, accounting for the fact that each genetic location has a pair of alleles, the effective sample sizes should be doubled, and the appropriate non-centrality parameter becomes  $\delta = \sqrt{2n}(\theta - f)(1-\phi)$.
 Power may then be approximated using the formula in \eqref{eq:power-approx}.
 
 
@@ -263,7 +263,7 @@ kable(dt, "html", escape = FALSE, align = "c") %>%
 
 We can similarly determine the minimum number of non-risk allele counts needed to achieve non-zero power at the given type I error target, for a given phenotype marginals $(n_1, n_2)$.
 
-For correctly calibrated tests, an alternative hypothesis with expected variant counts less than the minimum calibration numbers should have power close to zero; asymptotic power approximations do not apply for theses alternatives.
+For correctly calibrated tests, an alternative hypothesis with expected variant counts less than the minimum calibration numbers should have power close to zero; asymptotic power approximations do not apply for these alternatives.
 We correct the asymptotic approximations laid out in [the first section](#sec:unified-analysis) by setting the predicted statistical power for alternatives in this "rare-variant zone" to zero.
 
 We conduct an extensive simulation study to examine the quality of this finite-sample correction in [the last Secction](#sec:numerical).
@@ -283,16 +283,22 @@ We prove Theorem 1 in this section.
 The asymptotic equivalence of the likelihood ratio (LR) test and the chi-square test in 2-by-2 tables can be found in standard texts on asymptotic theory.
 See, e.g., @ferguson2017course Chapter 10 and Chapter 24, and @lehmann2004elements Chapter 5; see also, @hunter2002 for an accessible derivation of the formula \eqref{eq:non-centrality}.
 
-To see the asymptotic equivalence with the LR statistic under logistic regressions with binary predictors, we reparametrize the LR statistic as
+Recall the likelihood ratio statistic in LR test
 \begin{equation*}
-    \mu_{11}^{O_{11}}\mu_{12}^{O_{12}}\mu_{21}^{O_{21}}(1-\mu_{11}-\mu_{12}-\mu_{21})^{O_{22}} = \phi^{n_1}(1-\phi)^{n_2}p_{1}^{O_{11}}(1-p_{1})^{O_{12}}p_{2}^{O_{21}}(1-p_{2})^{O_{22}}
+    LR = \frac{\sup_{\mu\in H_1}L(\mu)}{\sup_{\mu\in H_0}L(\mu)}.
 \end{equation*}
+where $H_0$ is the set of independent probabilities, and $H_1$ all valid 2-by-2 multinomial probabilities.
+To see the asymptotic equivalence with the LR statistic under logistic regressions with binary predictors, we reparametrize the likelihood as
+\begin{align*}
+    L(\mu) &= \mu_{11}^{O_{11}}\mu_{12}^{O_{12}}\mu_{21}^{O_{21}}(1-\mu_{11}-\mu_{12}-\mu_{21})^{O_{22}} \\
+    &= \phi^{n_1}(1-\phi)^{n_2}p_{1}^{O_{11}}(1-p_{1})^{O_{12}}p_{2}^{O_{21}}(1-p_{2})^{O_{22}}
+\end{align*}
 where we have omitted the multinomial coefficient.
 In the latter parametrization, it is easy to show that the maximizers are $\widehat{\phi} = n_1/n$, $\widehat{p_1} = O_{11}/n_1$, and $\widehat{p_1} = O_{21}/n_2$ under the alternative, and $\widehat{\phi} = n_1/n$, $\widehat{p_1} = \widehat{p_1} = (O_{11}+O_{21})/n$ under the null.
-Therefore, the terms involving $\phi$ cancels in the LR statistic, and the LR statistic coincides with the logistic regressions likelihood ratio, where $p_1$, $p_2$ are further reparametrized as
+Therefore, the terms involving $\phi$ cancels in the LR statistic, and the LR statistic coincides with the logistic regressions likelihood ratio, where $p_1$ and $p_2$ are further reparametrized as
 \begin{align*}
     p_1 &= \exp{(\beta_0+\beta_1)}/(1+\exp{(\beta_0+\beta_1)}), \\
-    p_2 &= \exp{\beta_0}/(1+\exp{\beta_0}).
+    p_2 &= \exp{(\beta_0)}/(1+\exp{\beta_0}).
 \end{align*}
 Hence, the logistic regressions likelihood ratio follows the same distribution as in the original likelihood ratio test.
 Notice that this is not an immediate consequence of the invariance property of the likelihood ratio tests. Rather, it follows because $n_1$, $n_2$ are ancillary for inference of the odds ratios.
@@ -302,7 +308,7 @@ Notice that this is not an immediate consequence of the invariance property of t
 We now work with the two-binomial assumption, conditioning on the phenotype marginals $n_1$, $n_2$, and show that Welch's t-test has asymptotically the same power.
 Recall the Welch t-statistic
 \begin{equation} \label{eq:Welch-t}
-    t = \frac{\widehat{p_1} - \widehat{p_2}}{\sqrt{\frac{\widehat{p_1}(1-\widehat{p_1})}{n_1} + \frac{\widehat{p_2}(1-\widehat{p_2})}{n_2}}}
+    t = \frac{\widehat{p_1} - \widehat{p_2}}{\sqrt{\frac{\widehat{p_1}(1-\widehat{p_1})}{n_1} + \frac{\widehat{p_2}(1-\widehat{p_2})}{n_2}}}, \quad\quad (*)
 \end{equation}
 where $\widehat{p_1} = O_{11}/n_1$ and $\widehat{p_2} = O_{21}/n_2$.
 By the (Lindeberg-Feller) central limit theorem, for the sequence of alternatives defined in \eqref{eq:alternative-two-bionomial} we have 
@@ -312,28 +318,28 @@ By the (Lindeberg-Feller) central limit theorem, for the sequence of alternative
 \end{equation*}
 and therefore, by independence of the two binomial distributions, we have 
 \begin{equation}
-    t - (p_1-p_2)\Big/\sqrt{\frac{{p_1}(1-{p_1})}{n_1} + \frac{{p_2}(1-{p_2})}{n_2}} \Rightarrow \mathrm{N}(0,1).
+    t - (p_1-p_2)\Big/\sqrt{\frac{{p_1}(1-{p_1})}{n_1} + \frac{{p_2}(1-{p_2})}{n_2}} \Rightarrow \mathrm{N}(0,1). 
 \end{equation}
 
 By the definition of the alternatives in \eqref{eq:alternative-two-bionomial}, we know that 
 \begin{equation} \label{eq:center-mean}
-    \sqrt{n}(p_1-p_2) \to \delta/(\phi(1-\phi)).
+    \sqrt{n}(p_1-p_2) \to \delta/(\phi(1-\phi)). \quad\quad (1)
 \end{equation}
-On the other hand, for the denominator, we have
+On the other hand, for the denominator of $(*)$, we have
 \begin{align}
     &\sqrt{n}\sqrt{\frac{{p_1}(1-{p_1})}{n_1} + \frac{{p_2}(1-{p_2})}{n_2}} \sim \sqrt{\frac{{p_1}(1-{p_1})}{\phi} + \frac{{p_2}(1-{p_2})}{1-\phi}} \nonumber \\
     % &= \Bigg(\frac{(\theta + O(1/\sqrt{n}))(1-\theta + O(1/\sqrt{n}))}{\phi} \,\, + \nonumber \\  &\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad + \frac{(\theta + O(1/\sqrt{n}))(1-\theta + O(1/\sqrt{n}))}{1-\phi}\Bigg)^{1/2} \nonumber \\
     &= \Bigg(\frac{(\theta + O(1/\sqrt{n}))(1-\theta + O(1/\sqrt{n}))}{\phi} + \frac{(\theta + O(1/\sqrt{n}))(1-\theta + O(1/\sqrt{n}))}{1-\phi}\Bigg)^{1/2} \nonumber \\
-    &\sim \sqrt{(\theta(1-\theta)) \Big/ (\phi(1-\phi))}. \label{eq:center-sd}
+    &\sim \sqrt{(\theta(1-\theta)) \Big/ (\phi(1-\phi))}. \quad\quad\quad\quad\quad\quad\quad\quad  (2)
 \end{align}
-Dividing \eqref{eq:center-mean} by \eqref{eq:center-sd}, we conclude that the centers of the distribution of $t$ converges to 
+Dividing Equation $(1)$ by $(2)$, we conclude that the centers of the distribution of $t$ converges to 
 $$\delta\Big/\sqrt{\theta(1-\theta)\phi(1-\phi)},$$
 which is precisely the square root of the non-centrality in \eqref{eq:non-centrality}.
 Finally, the conclusion in Theorem 1 follows from the fact that the square of a normal distribution with mean $\sqrt{\lambda}$ is equal in distribution to a chi-square distribution with non-centrality parameter $\lambda$.
 
 # Numerical illustrations {#sec:numerical}
 
-We examine the accuracy of the asymptotic approximations in Theorem 1 in finite samples, and of the correction by minimum calibration number detailed in [Section 2](#sec:finite-sample), via numerical simulation.
+We examine the accuracy of the asymptotic approximations in Theorem 1 in finite samples, and of the correction by minimum calibration number introduced in [Section 2](#sec:finite-sample), via numerical simulation.
 
 We refer readers to Section 4 in the [full Supplement](./Supplement_to_U_PASS.pdf){target="_blank"} for further details.
 

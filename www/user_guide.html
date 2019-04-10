@@ -1,0 +1,88 @@
+
+
+
+<div id="user-guide" class="section level1">
+<h1>User Guide</h1>
+<div id="the-or-raf-diagram" class="section level2">
+<h2>The OR-RAF diagram</h2>
+<p>U-PASS calculates statistical power based the core parameters common to models of qualitative traits:</p>
+<ul>
+<li>Sample sizes, i.e., the number of Cases, <span class="math inline">\(n_1\)</span>, and Controls, <span class="math inline">\(n_2\)</span>,</li>
+<li>Conditional distribution of risk variant among Controls, i.e., risk allele frequency (RAF) in the Control group.</li>
+<li>Odds ratio (OR) of having the defined trait among the genetic variants.</li>
+</ul>
+<p>Users need only prescribe the sample sizes, by one of two ways provided in the first box, i.e., total sample size + fraction of Cases, or number of Cases + number of Controls.</p>
+<p>Statistical power of familiar association tests, including ncluding the likelihood ratio test, chi-square test, Welch’s t-test, and LR test for logistic regressions, have the same asymptotic power curves (see the <a href="U-PASS_documentation.html#a_test-independent_power_analysis" target="_blank">documentation</a> for details). This common power limit is calculated as a function of RAF and OR, and visualized as a heatmap in the OR-RAF diagram.</p>
+<center>
+<img src="user_guide_files/basics.gif" style="width:90.0%" />
+</center>
+</div>
+<div id="interactively-explore-reported-findings-in-the-nhgri-ebi-catalog" class="section level2">
+<h2>Interactively explore reported findings in the NHGRI-EBI Catalog</h2>
+<p>We provide options for users to load and overlay findings reported in the NHGRI-EBI GWAS Catalog, or upload data from other sources compliant with the Catalog’s data format.</p>
+<p>A quick reference for the diagram with data overlay:</p>
+<ul>
+<li>Circles: reported associations
+<ul>
+<li>red: user selected loci</li>
+<li>orange: findings reported in the same study as the user selected loci</li>
+<li>blue: findings reported in studies other than the one selected</li>
+</ul></li>
+<li><p>Greyscale heatmap: OR-RAF power diagram of association tests</p></li>
+<li>red dashed lines: rare-variant threshold. We recommend specifying the threshold by the <a href="U-PASS_documentation.html#finite-sample_corrections" target="_blank">minimum calibration numbers</a>.
+<ul>
+<li>left (if present): the minimum risk variant count neede for the asymptotic approximations to apply.</li>
+<li>right (if present): the minimum non-risk variant count neede for the asymptotic approximations to apply.</li>
+</ul></li>
+</ul>
+<p>The initial sample sizes are dynamically adjusted, and automatically determined from texts of the article reporting the user selected loci.</p>
+<p>Information of the selected loci and the study is also dynamically displayed below the diagram.</p>
+<center>
+<img src="user_guide_files/interactive.gif" style="width:60.0%" />
+</center>
+</div>
+<div id="review-and-forensics-of-reported-findings" class="section level2">
+<h2>Review and forensics of reported findings</h2>
+<p>The unified power analysis allows us to examine results from different studies employing different models and applicable tests, in the same diagram, with the same power limits. It allows for a systematic review of reported findings for their statistical validity.</p>
+<p>In particular, a reported association predicted to have low power given the study’s sample size – lying in the dark regions of the OR-RAF diagram – while not impossible, invites further scrutiny. It should be noted that a reported association predicted to have high power is not automatically accurate, as survival bias induced by multiple testing may inflate the reported OR and RAF estimates.</p>
+<p>Studies where reported associations show misalignment with the predicted powered curves may be further investigated for potential problems in the data curation process. The following figure shows one such study, where gross misalignment was identified.</p>
+<center>
+<img src="user_guide_files/forensics.png" alt="optional caption text" style="width:60.0%" />
+</center>
+<p>We reached out to the authors of the study <span class="citation">(Domínguez-Cruz et al. 2018)</span>, who confirmed with us that the RAF reported in the Catalog were based on all subjects in the study, as opposed to only the control group. As a consequence, the RAFs are systematically overestimated, shifting the reported findings to the right in the diagram.</p>
+<p>In general, we expect this aspect of our software to be useful for discovering problems with data entry and catalog curation process, as well as for assessing the reproducibility and robustness of reported findings.</p>
+</div>
+<div id="find-optimal-study-designs" class="section level2">
+<h2>Find optimal study designs</h2>
+<p>We provide three ways to perform power analysis, depending on the contraint of the study design.</p>
+<ul>
+<li>If the contraint is the total budget, i.e., total number of subjects recruited,
+<ul>
+<li>power is calculated as a function of the fraction of Cases.</li>
+</ul></li>
+<li>If the contraint is the number of Cases,
+<ul>
+<li>power is calculated as a function of the number of Controls.</li>
+</ul></li>
+<li>If the contraint is the fraction of Cases,
+<ul>
+<li>power is calculated as a function of the total number of total subjects.</li>
+</ul></li>
+</ul>
+<center>
+<img src="user_guide_files/design.gif" alt="optional caption text" style="width:100.0%" />
+</center>
+<p><br /></p>
+<p>The power analysis tool uses the targeted RAF and OR directly to calculated optimal study designs. This allows us to bypass the disease models which define these two quantities implicitly. Indeed, when designing a study to replicate a reported finding, the core quantities RAF and OR are alaways available in GWAS catalogs, while disease models are often not reported in the literature. See <a href="U-PASS_documentation.html#a_model-invariant_parametrization" target="_blank">more arguments in the documentation</a> on why we prefer to specify these two quantities directly.</p>
+<p>Type I error control criteria may be specified in terms of <a href="https://en.wikipedia.org/wiki/Family-wise_error_rate" target="_blank">family-wise error rate</a> or <a href="https://en.wikipedia.org/wiki/Type_I_and_type_II_errors" target="_blank">type I error</a>.</p>
+<p>Target non-discovery rate may be specified in terms of <a href="https://en.wikipedia.org/wiki/Type_I_and_type_II_errors" target="_blank">power / type II error</a>, or the more stringent family-wise non-discovery rate, i.e., the probablity of not detecting any one of the loci with equal signal or stronger.</p>
+</div>
+<div id="references" class="section level2 unnumbered">
+<h2>References</h2>
+<div id="refs" class="references">
+<div id="ref-dominguez2018pilot">
+<p>Domínguez-Cruz, Miriam Givisay, María de Lourdes Muñoz, Armando Totomoch-Serra, María Guadalupe García-Escalante, Juan Burgueño, Nina Valadez-González, Doris Pinto-Escalantes, and Álvaro Díaz-Badillo. 2018. “Pilot Genome-Wide Association Study Identifying Novel Risk Loci for Type 2 Diabetes in a Maya Population.” <em>Gene</em> 677. Elsevier: 324–31.</p>
+</div>
+</div>
+</div>
+</div>
