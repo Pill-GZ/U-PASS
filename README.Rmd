@@ -99,7 +99,7 @@ Statistical power of familiar association tests, including ncluding the likeliho
 This common power limit is calculated as a function of RAF and OR, and visualized as a heatmap in the OR-RAF diagram. 
 
 <center>
-![](https://power.stat.lsa.umich.edu/u-pass/user_guide_files/basics.gif){width=90%}
+![](www/user_guide_files/basics.gif){width=90%}
 </center>
 
 <br />
