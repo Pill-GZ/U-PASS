@@ -91,7 +91,7 @@ Users need only prescribe the sample sizes, by one of two ways provided in the f
 Statistical power of familiar association tests, including ncluding the likelihood ratio test, chi-square test, Welch's t-test, and LR test for logistic regressions, have the same asymptotic power curves (see the <a href="https://power.stat.lsa.umich.edu/u-pass/U-PASS_documentation.html#a_test-independent_power_analysis" target="_blank">documentation</a> for details). This common power limit is calculated as a function of RAF and OR, and visualized as a heatmap in the OR-RAF diagram.
 
 <center>
-<img src="https://power.stat.lsa.umich.edu/u-pass/user_guide_files/basics.gif" style="width:90.0%" />
+<img src="www/user_guide_files/basics.gif" style="width:90.0%" />
 </center>
 <br />
 
