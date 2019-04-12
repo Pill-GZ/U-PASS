@@ -213,15 +213,12 @@ rare.variant.curves.calculator <- function(n1, n2, RV.threshold.left, RV.thresho
 
 #### function to calculate minimum number of counts needed to calibrate Fisher's exact test ####
 
-minimum.RV.Fishers.test <- function(n1, n2, p.val.threhold) {
+# function to calculate minimum calibration numbers for common traits
+minimum.calibration.numbers.common.trait <- function(n1, n2, p.val.threshold) {
   # left-hand side
-  O21 <- 0
-  O22 <- n2
-  O11 <- 1
-  O12 <- n1- O11
-  
+  O21 <- 0; O22 <- n2; O11 <- 1; O12 <- n1- O11
   test.res <- fisher.test(matrix(c(O11, O21, O12, O22), 2), alternative = "greater")
-  while (test.res$p.value > p.val.threhold) {
+  while (test.res$p.value > p.val.threshold) {
     O11 <- O11 + 1
     O12 <- n1- O11
     test.res <- fisher.test(matrix(c(O11, O21, O12, O22), 2), alternative = "greater")
@@ -229,13 +226,9 @@ minimum.RV.Fishers.test <- function(n1, n2, p.val.threhold) {
   left.threshold <- O11
   
   # right-hand side
-  O22 <- 1
-  O21 <- n2 - O22
-  O12 <- 0
-  O11 <- n1
-  
+  O22 <- 1; O21 <- n2 - O22; O12 <- 0; O11 <- n1
   test.res <- fisher.test(matrix(c(O11, O21, O12, O22), 2), alternative = "greater")
-  while (test.res$p.value > p.val.threhold) {
+  while (test.res$p.value > p.val.threshold) {
     O22 <- O22 + 1
     O21 <- n2- O22
     test.res <- fisher.test(matrix(c(O11, O21, O12, O22), 2), alternative = "greater")
@@ -243,6 +236,57 @@ minimum.RV.Fishers.test <- function(n1, n2, p.val.threhold) {
   right.threshold <- O22
   
   return(list(left = left.threshold, right = right.threshold))
+}
+
+# a helper function for rare traits
+uniroot.integer <- function(f, interval, ...) {
+  left <- interval[1]
+  right <- interval[2]
+  mid <- ceiling(sum(interval) / 2)
+  if (f(left, ...) < 0) { 
+    return(left) 
+  } else if (f(right, ...) > 0) { 
+    return(right)
+  }
+  while (right - left > 1) {
+    mid <- ceiling((left + right) / 2)
+    if (f(mid, ...) > 0) {
+      left <- mid
+    } else {
+      right <- mid
+    }
+  }
+  return(right)
+}
+
+# function to calculate minimum calibration numbers for rare traits
+minimum.calibration.numbers.rare.trait <- function(n1, n2, p.val.threshold) {
+  # left-hand side
+  left.threshold <- uniroot.integer(f = function(O11, n1, n2, p.val.threshold) {
+    O11 <- floor(O11)
+    O12 <- n1- O11; O21 <- 0; O22 <- n2
+    test.res <- fisher.test(matrix(c(O11, O21, O12, O22), 2), alternative = "greater")
+    test.res$p.value - p.val.threshold
+  }, interval = c(1, n1), n1 = n1, n2  = n2, p.val.threshold = p.val.threshold)
+  # right-hand side
+  right.threshold <- uniroot.integer(f = function(O22, n1, n2, p.val.threshold) {
+    O22 <- floor(O22)
+    O21 <- n2 - O22; O12 <- 0; O11 <- n1
+    test.res <- fisher.test(matrix(c(O11, O21, O12, O22), 2), alternative = "greater")
+    test.res$p.value - p.val.threshold
+  }, interval = c(0, n2), n1 = n1, n2  = n2, p.val.threshold = p.val.threshold)
+  
+  return(list(left = left.threshold, right = right.threshold))
+}
+
+# entry point for calculation of minimum calibration numbers
+minimum.calibration.numbers <- function(n1, n2, p.val.threshold) {
+  phi <- n1 / (n1 + n2)
+  if (phi > 0.01 && phi < 0.9) {
+    return(minimum.calibration.numbers.common.trait(n1, n2, p.val.threshold))
+  } else {
+    return(minimum.calibration.numbers.rare.trait(n1, n2, p.val.threshold))
+  }
 }
 
 #### set plot limits and resolution ####

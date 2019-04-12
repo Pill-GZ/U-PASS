@@ -84,21 +84,27 @@ server <- function(input, output, session) {
   
   n1 <- reactive({
     if (input$sample_size_specification == 'Number of subjects + fraction of Cases') {
-      validate(need({is.integer(input$n)}, "Number of subjects must be a positive integer"))
+      validate(need({is.integer(input$n); input$n >= 50; input$n <= 1e7}, 
+                    "Number of subjects must be a positive integer between 50 and 10,000,000"))
       validate(need({floor(input$n * input$phi) >= 10}, "Number of cases must be a positive integer >= 10"))
       floor(input$n * input$phi)
     } else {
-      validate(need({is.integer(input$n1); input$n1 >= 10}, "Number of cases must be a positive integer >= 10"))
+      validate(need({is.integer(input$n1)}, "Number of cases must be a positive integer"))
+      validate(need({input$n1 >= 10}, "Number of cases must be a positive integer >= 10"))
+      validate(need({input$n1 <= 5e6}, "Number of cases must be a positive integer <= 5,000,000"))
       floor(input$n1)
     }
   })
   n2 <- reactive({
     if (input$sample_size_specification == 'Number of subjects + fraction of Cases') {
-      validate(need({is.integer(input$n)}, "Number of subjects must be a positive integer"))
+      validate(need({is.integer(input$n); input$n >= 50; input$n <= 1e7}, 
+                    "Number of subjects must be a positive integer between 50 and 10,000,000"))
       validate(need({input$n - floor(input$n * input$phi) >= 10}, "Number of controls must be a positive integer >= 10"))
       input$n - floor(input$n * input$phi)
     } else {
-      validate(need({is.integer(input$n2); input$n2 >= 10}, "Number of controls must be a positive integer >= 10"))
+      validate(need({is.integer(input$n2)}, "Number of controls must be a positive integer"))
+      validate(need({input$n2 >= 10}, "Number of controls must be a positive integer >= 10"))
+      validate(need({input$n2 <= 5e6}, "Number of controls must be a positive integer <= 5,000,000"))
       floor(input$n2)
     }
   })
@@ -117,13 +123,13 @@ server <- function(input, output, session) {
   
   rare_variant_threshold_count <- reactive({
     if (input$rare_variant_zone_specification == "Minimum counts needed to calibrate Fisher's exact test") {
-      minimum.RV.Fishers.test(n1 = 2 * n1(), n2 = 2 * n2(), p.val.threhold = p.val.cutoff())
+      minimum.calibration.numbers(n1 = 2 * n1(), n2 = 2 * n2(), p.val.threshold = p.val.cutoff())
     } else if (input$rare_variant_zone_specification == 'Absolute variant count in study') {
       threshold <- input$rare_variant_threshold_count
       list(left = threshold, right = threshold)
     } else if (input$rare_variant_zone_specification == 'Fraction of total subjects in study') {
       fraction <- as.numeric(gsub("%", "", input$rare_variant_threshold_fraction))/100
-      threshold <- floor(fraction * (n1() + n2()))
+      threshold <- floor(fraction * 2 * (n1() + n2()))
       list(left = threshold, right = threshold)
     }
   })

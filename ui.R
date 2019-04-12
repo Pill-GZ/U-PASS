@@ -7,6 +7,7 @@ library("shinycssloaders")
 
 ui <- shinyUI(tagList(
   tags$head(HTML("<title>U-PASS: a unified power analysis of association studies</title>")),
+  tags$head(tags$style(HTML(".shiny-output-error-validation { color: red; }"))),
   introjsUI(),
   navbarPage("U-PASS power calculator", id = "mainNavbarPage", theme = "bootstrap-cosmo-customized.css",
              
