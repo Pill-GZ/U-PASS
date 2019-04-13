@@ -40,7 +40,7 @@ signal.size.ana.sol <- function(theta, phi, R){
     warning("only one of the marginals should be a vector!")
     return(NA)
   } else if (R==1) {
-    lam <- rep(0, max(length(theta), length(phi)))
+    w2 <- rep(0, max(length(theta), length(phi)))
   } else {
     A <- theta*phi*(1-theta)*(1-phi)
     B <- (theta*phi+(1-theta)*(1-phi)) 
@@ -91,7 +91,7 @@ OR.finder <- function(phi = 1/2, signal.size) {
   theta.vec.left <- exp(log(theta.min) + 1:100/100 * (log(theta.mid) - log(theta.min)))
   OR.vec.left <- vector(mode = "numeric", length = 100)
   for (i in 1:length(theta.vec.left)) {
-    solution <- uniroot(f = OR.root.finder, interval = c(1.01, 1e6),
+    solution <- uniroot(f = OR.root.finder, interval = c(1.01, 1e8),
                         theta = theta.vec.left[i], phi = phi, signal.size)
     OR.vec.left[i] <- solution$root
   }
@@ -99,7 +99,7 @@ OR.finder <- function(phi = 1/2, signal.size) {
   theta.vec.right <- rev(1 - exp(log(1-theta.max) + 1:100/100 * (log(1-theta.mid) - log(1-theta.max))))
   OR.vec.right <- vector(mode = "numeric", length = 100)
   for (i in 1:length(theta.vec.right)) {
-    solution <- uniroot(f = OR.root.finder, interval = c(1.01, 1e6),
+    solution <- uniroot(f = OR.root.finder, interval = c(1.01, 1e8),
                         theta = theta.vec.right[i], phi = phi, signal.size)
     OR.vec.right[i] <- solution$root
   }
@@ -213,32 +213,7 @@ rare.variant.curves.calculator <- function(n1, n2, RV.threshold.left, RV.thresho
 
 #### function to calculate minimum number of counts needed to calibrate Fisher's exact test ####
 
-# function to calculate minimum calibration numbers for common traits
-minimum.calibration.numbers.common.trait <- function(n1, n2, p.val.threshold) {
-  # left-hand side
-  O21 <- 0; O22 <- n2; O11 <- 1; O12 <- n1- O11
-  test.res <- fisher.test(matrix(c(O11, O21, O12, O22), 2), alternative = "greater")
-  while (test.res$p.value > p.val.threshold) {
-    O11 <- O11 + 1
-    O12 <- n1- O11
-    test.res <- fisher.test(matrix(c(O11, O21, O12, O22), 2), alternative = "greater")
-  }
-  left.threshold <- O11
-  
-  # right-hand side
-  O22 <- 1; O21 <- n2 - O22; O12 <- 0; O11 <- n1
-  test.res <- fisher.test(matrix(c(O11, O21, O12, O22), 2), alternative = "greater")
-  while (test.res$p.value > p.val.threshold) {
-    O22 <- O22 + 1
-    O21 <- n2- O22
-    test.res <- fisher.test(matrix(c(O11, O21, O12, O22), 2), alternative = "greater")
-  }
-  right.threshold <- O22
-  
-  return(list(left = left.threshold, right = right.threshold))
-}
-
-# a helper function for rare traits
+# a helper function to calculate minimum calibration numbers for rare traits
 uniroot.integer <- function(f, interval, ...) {
   left <- interval[1]
   right <- interval[2]
@@ -259,34 +234,75 @@ uniroot.integer <- function(f, interval, ...) {
   return(right)
 }
 
-# function to calculate minimum calibration numbers for rare traits
-minimum.calibration.numbers.rare.trait <- function(n1, n2, p.val.threshold) {
-  # left-hand side
-  left.threshold <- uniroot.integer(f = function(O11, n1, n2, p.val.threshold) {
-    O11 <- floor(O11)
-    O12 <- n1- O11; O21 <- 0; O22 <- n2
+# function to calculate minimum calibration numbers for risk variant
+minimum.calibration.numbers.left <- function(n1, n2, p.val.threshold) {
+  phi <- n1 / (n1 + n2)
+  if (phi > 0.01 && phi < 0.9) { # common trait: use brute force
+    O11 <- 1; O12 <- n1- O11; O21 <- 0; O22 <- n2
     test.res <- fisher.test(matrix(c(O11, O21, O12, O22), 2), alternative = "greater")
-    test.res$p.value - p.val.threshold
-  }, interval = c(1, n1), n1 = n1, n2  = n2, p.val.threshold = p.val.threshold)
-  # right-hand side
-  right.threshold <- uniroot.integer(f = function(O22, n1, n2, p.val.threshold) {
-    O22 <- floor(O22)
-    O21 <- n2 - O22; O12 <- 0; O11 <- n1
+    while (test.res$p.value > p.val.threshold) {
+      O11 <- O11 + 1
+      O12 <- n1- O11
+      test.res <- fisher.test(matrix(c(O11, O21, O12, O22), 2), alternative = "greater")
+    }
+    left.threshold <- O11
+  } else { # rare trait: use binary search
+    left.threshold <- uniroot.integer(f = function(O11, n1, n2, p.val.threshold) {
+      O11 <- floor(O11)
+      O12 <- n1- O11; O21 <- 0; O22 <- n2
+      test.res <- fisher.test(matrix(c(O11, O21, O12, O22), 2), alternative = "greater")
+      test.res$p.value - p.val.threshold
+    }, interval = c(1, n1), n1 = n1, n2  = n2, p.val.threshold = p.val.threshold)
+  }  
+  return(left.threshold)
+}
+
+# function to calculate minimum calibration number for non-risk variant
+minimum.calibration.numbers.right <- function(n1, n2, p.val.threshold) {
+  phi <- n1 / (n1 + n2)
+  if (phi > 0.01 && phi < 0.9) { # common trait: use brute force
+    O22 <- 1; O21 <- n2 - O22; O12 <- 0; O11 <- n1
     test.res <- fisher.test(matrix(c(O11, O21, O12, O22), 2), alternative = "greater")
-    test.res$p.value - p.val.threshold
-  }, interval = c(0, n2), n1 = n1, n2  = n2, p.val.threshold = p.val.threshold)
-  
-  return(list(left = left.threshold, right = right.threshold))
+    while (test.res$p.value > p.val.threshold) {
+      O22 <- O22 + 1
+      O21 <- n2- O22
+      test.res <- fisher.test(matrix(c(O11, O21, O12, O22), 2), alternative = "greater")
+    }
+    right.threshold <- O22
+  } else { # rare trait: use binary search
+    right.threshold <- uniroot.integer(f = function(O22, n1, n2, p.val.threshold) {
+      O22 <- floor(O22)
+      O21 <- n2 - O22; O12 <- 0; O11 <- n1
+      test.res <- fisher.test(matrix(c(O11, O21, O12, O22), 2), alternative = "greater")
+      test.res$p.value - p.val.threshold
+    }, interval = c(0, n2), n1 = n1, n2  = n2, p.val.threshold = p.val.threshold)
+  }
+  return(right.threshold)
 }
 
 # entry point for calculation of minimum calibration numbers
-minimum.calibration.numbers <- function(n1, n2, p.val.threshold) {
-  phi <- n1 / (n1 + n2)
-  if (phi > 0.01 && phi < 0.9) {
-    return(minimum.calibration.numbers.common.trait(n1, n2, p.val.threshold))
+minimum.calibration.numbers <- function(n1, n2, p.val.threshold, 
+                                        f.lim = c(1e-4, 1-5e-3)) {
+  # calculate the minimum number of risk variant needed
+  O11 <- ceiling(min(n1, (n1 + n2) * f.lim[1]))
+  O12 <- n1- O11; O21 <- 0; O22 <- n2
+  test.res <- fisher.test(matrix(c(O11, O21, O12, O22), 2), alternative = "greater")
+  if (test.res$p.value < p.val.threshold) {
+    left.threshold <- O11 - 1
   } else {
-    return(minimum.calibration.numbers.rare.trait(n1, n2, p.val.threshold))
+    left.threshold <- minimum.calibration.numbers.left(n1, n2, p.val.threshold)
   }
+  # calculate the minimum number of non-risk variant needed
+  O22 <- ceiling(min(n2, (n1 + n2) * (1 - f.lim[2])))
+  O21 <- n2 - O22; O12 <- 0; O11 <- n1
+  test.res <- fisher.test(matrix(c(O11, O21, O12, O22), 2), alternative = "greater")
+  if (test.res$p.value < p.val.threshold) {
+    right.threshold <- O22 - 1
+  } else {
+    right.threshold <- minimum.calibration.numbers.right(n1, n2, p.val.threshold)
+  }
+
+  return(list(left = left.threshold, right = right.threshold))
 }
 
 #### set plot limits and resolution ####
