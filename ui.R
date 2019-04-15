@@ -120,7 +120,7 @@ ui <- shinyUI(tagList(
                                #### datasets overlay ####
                                wellPanel(id = "data_options",
                                          tags$b("Data options"),
-                                         checkboxInput("overlay_example_dataset", "Overlay reported findings from NHGRI-EBI GWAS Catalog", FALSE),
+                                         checkboxInput("overlay_example_dataset", "Overlay reported findings from NHGRI-EBI GWAS Catalog", TRUE),
                                          conditionalPanel(
                                            condition = "input.overlay_example_dataset == true",
                                            selectInput("choose_dataset", "Choose a dataset", 
