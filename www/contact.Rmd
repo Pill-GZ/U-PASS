@@ -7,6 +7,25 @@ output:
     self_contained: false
 ---
 
+# Citation
+
+This work is currently under review.
+A preprint is available on [bioRxiv](https://www.biorxiv.org/content/early/2019/04/13/605766){target="_blank"}.
+
+```
+@article {Gao605766,
+	author = {Gao, Zheng and Terhorst, Jonathan and Hout, Cristopher Van and Stoev, Stilian},
+	title = {U-PASS: unified power analysis and forensics for qualitative traits in genetic association studies},
+	elocation-id = {605766},
+	year = {2019},
+	doi = {10.1101/605766},
+	publisher = {Cold Spring Harbor Laboratory},
+	URL = {https://www.biorxiv.org/content/early/2019/04/13/605766},
+	eprint = {https://www.biorxiv.org/content/early/2019/04/13/605766.full.pdf},
+	journal = {bioRxiv}
+}
+```
+
 # Contact
 
 ### [Zheng Gao](http://www-personal.umich.edu/~gaozheng/){target="_blank"}
@@ -18,3 +37,4 @@ West Hall 436,
 Ann Arbor MI, 48105
 
 Please report any bugs or unexpected interruptions to <gaozheng@umich.edu>.
+

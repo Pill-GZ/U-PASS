@@ -354,7 +354,7 @@ ui <- shinyUI(tagList(
                                    )
                                  )
                         ),
-                        tabPanel(HTML("Contact"), value = "contact",
+                        tabPanel(HTML("Citation and Contact"), value = "contact",
                                  fluidRow(
                                    column(6, offset = 3,
                                           includeHTML("www/contact.html")
