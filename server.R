@@ -329,8 +329,6 @@ server <- function(input, output, session) {
   dataset <- reactive({
     if (input$overlay_example_dataset == T) {
       if (input$choose_dataset %in% names(list_of_datasets)) {
-        setProgress(value = 0.5, detail = 'Loading NHGRI-EBI GWAS Catalog')
-        # print(list_of_datasets[input$choose_dataset])
         read_data(list_of_datasets[input$choose_dataset])
       } else {
         
@@ -505,13 +503,13 @@ server <- function(input, output, session) {
                        }
                        
                        # suppress warnings  
-                       # storeWarn<- getOption("warn")
-                       # options(warn = -1) 
+                       storeWarn <- getOption("warn")
+                       options(warn = -1) 
                        p <- p %>% layout( source = "dataset" )
                        # restore warnings, delayed so plot is completed
-                       # shinyjs::delay(expr =({ 
-                       #   options(warn = storeWarn) 
-                       # }), ms = 100)
+                       shinyjs::delay(expr =({
+                         options(warn = storeWarn)
+                       }), ms = 100)
                        
                        # set progress bar to 1
                        setProgress(value = 1)
