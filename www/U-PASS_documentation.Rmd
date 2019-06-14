@@ -220,7 +220,7 @@ $$\theta = \frac{fR\phi}{(fR+1-f)} + f(1-\phi),$$
 and 
 $$\delta = \sqrt{n}(\theta - f)(1-\phi).$$
 If tests are based on allele type counts, accounting for the fact that each genetic location has a pair of alleles, the effective sample sizes should be doubled, and the appropriate non-centrality parameter becomes  $\delta = \sqrt{2n}(\theta - f)(1-\phi)$.
-Power may then be approximated using the formula in \eqref{eq:power-approx}.
+Power may then be approximated using the formula in Theorem 1.
 
 
 # Finite-sample corrections {#sec:finite-sample}
@@ -281,7 +281,7 @@ We prove Theorem 1 in this section.
 
 ## Asymptotic equivalence of likelihood ratio tests and the chi-square test
 The asymptotic equivalence of the likelihood ratio (LR) test and the chi-square test in 2-by-2 tables can be found in standard texts on asymptotic theory.
-See, e.g., @ferguson2017course Chapter 10 and Chapter 24, and @lehmann2004elements Chapter 5; see also, @hunter2002 for an accessible derivation of the formula \eqref{eq:non-centrality}.
+See, e.g., @ferguson2017course Chapter 10 and Chapter 24, and @lehmann2004elements Chapter 5; see also, @hunter2002 for an accessible derivation of the formula for the non-centrality parameter.
 
 Recall the likelihood ratio statistic in LR test
 \begin{equation*}
@@ -311,7 +311,7 @@ Recall the Welch t-statistic
     t = \frac{\widehat{p_1} - \widehat{p_2}}{\sqrt{\frac{\widehat{p_1}(1-\widehat{p_1})}{n_1} + \frac{\widehat{p_2}(1-\widehat{p_2})}{n_2}}}, \quad\quad (*)
 \end{equation}
 where $\widehat{p_1} = O_{11}/n_1$ and $\widehat{p_2} = O_{21}/n_2$.
-By the (Lindeberg-Feller) central limit theorem, for the sequence of alternatives defined in \eqref{eq:alternative-two-bionomial} we have 
+By the (Lindeberg-Feller) central limit theorem, for the sequence of alternatives defined in the two-bionomial model, we have 
 \begin{equation*}
     \sqrt{n_i}(\widehat{p_i} - p_i)\big/\sqrt{p_i(1-p_i)} \Rightarrow \mathrm{N}(0,1),
     \quad \text{for }\,i=1,2.
@@ -321,7 +321,7 @@ and therefore, by independence of the two binomial distributions, we have
     t - (p_1-p_2)\Big/\sqrt{\frac{{p_1}(1-{p_1})}{n_1} + \frac{{p_2}(1-{p_2})}{n_2}} \Rightarrow \mathrm{N}(0,1). 
 \end{equation}
 
-By the definition of the alternatives in \eqref{eq:alternative-two-bionomial}, we know that 
+By the definition of the alternatives in the two-bionomial model, we know that 
 \begin{equation} \label{eq:center-mean}
     \sqrt{n}(p_1-p_2) \to \delta/(\phi(1-\phi)). \quad\quad (1)
 \end{equation}
@@ -334,7 +334,7 @@ On the other hand, for the denominator of $(*)$, we have
 \end{align}
 Dividing Equation $(1)$ by $(2)$, we conclude that the centers of the distribution of $t$ converges to 
 $$\delta\Big/\sqrt{\theta(1-\theta)\phi(1-\phi)},$$
-which is precisely the square root of the non-centrality in \eqref{eq:non-centrality}.
+which is precisely the square root of the non-centrality in Theorem 1.
 Finally, the conclusion in Theorem 1 follows from the fact that the square of a normal distribution with mean $\sqrt{\lambda}$ is equal in distribution to a chi-square distribution with non-centrality parameter $\lambda$.
 
 # Numerical illustrations {#sec:numerical}
