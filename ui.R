@@ -344,24 +344,11 @@ ui <- shinyUI(tagList(
                       includeHTML("www/credits.html")
              ), # end of second tab panel (study design)
              
-             #### display results from power analysis ####
              
-             navbarMenu("About",
-                        tabPanel(HTML("Download and installation"), value = "download",
-                                 fluidRow(
-                                   column(6, offset = 3,
-                                          includeHTML("www/download_and_installation.html")
-                                   )
-                                 )
-                        ),
-                        tabPanel(HTML("Citation and Contact"), value = "contact",
-                                 fluidRow(
-                                   column(6, offset = 3,
-                                          includeHTML("www/contact.html")
-                                   )
-                                 )
-                        ),
-                        tabPanel(HTML("User guide</a></li><li><a href=\"U-PASS_documentation.html\" target=\"_blank\">Documentation"), 
+             #### Help pages ####
+             
+             navbarMenu("Help",
+                        tabPanel(HTML("User Guide"), 
                                  value = "user_guide",
                                  fluidRow(
                                    column(6, offset = 3,
@@ -369,7 +356,72 @@ ui <- shinyUI(tagList(
                                           includeHTML("www/credits.html")
                                    )
                                  )
+                        ),
+                        #### Disease model converter ####
+                        tabPanel(HTML("Disease Models Revisited"),
+                                 value = "disease_model_revisited",
+                                 fluidRow(
+                                   #### Disease model specifications ####
+                                   column(6, offset = 3,
+                                          withMathJax(includeHTML("www/disease_model_revisited.html")),
+                                          fluidRow(
+                                            column(8, offset = 2,
+                                                   wellPanel(id = "disease_model_specification",
+                                                             selectInput("disease_model", "Select a disease model ...",
+                                                                         list("Multiplicative",
+                                                                              "Additive",
+                                                                              "Dominant",
+                                                                              "Recessive")),
+                                                             numericInput("disease_model_prevalence", "Disease prevalence in the general population:", 
+                                                                          value = 0.1, min = 0.01, max = 0.99, step = 0.01),
+                                                             numericInput("disease_model_RAF_population", "Risk allele frequency in the general population:", 
+                                                                          value = 0.3, min = 0.01, max = 0.99, step = 0.01),
+                                                             numericInput("disease_model_GRR", "Genotype relative risk:", 
+                                                                          value = 1.5, min = 1.01, max = 100, step = 0.01)
+                                                   ),
+                                                   wellPanel(
+                                                     htmlOutput("disease_model_converter_result")
+                                                   )
+                                            ) # end of small column
+                                          ), # end of subdivision of column
+                                          # column(3, br()),
+                                          fluidRow(
+                                            HTML("<p>Multiple disease models may map to the same set of core parameters. Try, e.g., "), 
+                                            actionButton("disease_model_preset_multiplicative", "Multiplicative"),
+                                            actionButton("disease_model_preset_additive", "Additive"),
+                                            actionButton("disease_model_preset_dominant", "Dominant"),
+                                            actionButton("disease_model_preset_recessive", "Recessive"),
+                                            HTML('<p>Of course, these disease models specifications also produce the same results in <a href="http://csg.sph.umich.edu/abecasis/cats/gas_power_calculator/" target="_blank">the GAS calculator</a>.'), 
+                                            br(),
+                                            br(),
+                                            includeHTML("www/credits.html")
+                                          )
+                                   ) # end of disease model specifications
+                                 ) # end of fliudRow
+                        ) # end of disease model converter
+                        
+             ),
+             
+             #### About pages ####
+             
+             navbarMenu("About",
+                        tabPanel(HTML("Download and Installation"), value = "download",
+                                 fluidRow(
+                                   column(6, offset = 3,
+                                          includeHTML("www/download_and_installation.html")
+                                   )
+                                 )
+                        ),
+                        # Documentation page is inserted below the contact page
+                        tabPanel(HTML("Citation and Contact</a></li><li><a href=\"U-PASS_documentation.html\" target=\"_blank\">Documentation"), 
+                                 value = "contact",
+                                 fluidRow(
+                                   column(6, offset = 3,
+                                          includeHTML("www/contact.html")
+                                   )
+                                 )
                         )
+                        
              )
              
              #### page ends ####

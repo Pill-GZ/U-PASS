@@ -1,0 +1,324 @@
+
+
+
+<div id="disease-models-revisited" class="section level1">
+<h1>Disease Models Revisited</h1>
+<div id="how-was-power-analysis-done-traditionally" class="section level2">
+<h2>How was power analysis done (traditionally)?</h2>
+<p>Traditional power calculations for genetic association studies begin by specifiying an alternative hypothesis through</p>
+<ul>
+<li>A disease model (one of dominant, recessive, multiplicative, additive, etc.).</li>
+<li>The genotye relative risks (GRR).</li>
+<li>Risk allele frequency in the general population (p).</li>
+<li>Disease prevalence in the general population (Prev).</li>
+</ul>
+<p>These disease model parameters determine the assumed joint distribution of the genotypes and phenotyes in <em>in the population</em>, shown the following table.</p>
+<table class="table table-hover table-responsive" style="width: auto !important; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="border-bottom:hidden" colspan="1">
+</th>
+<th style="border-bottom:hidden; padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="3">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px;">
+Risk allele copies
+</div>
+</th>
+</tr>
+<tr>
+<th style="text-align:center;">
+Population Prob.
+</th>
+<th style="text-align:center;">
+0 copies
+</th>
+<th style="text-align:center;">
+1 copy
+</th>
+<th style="text-align:center;">
+2 copies
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center;">
+Cases
+</td>
+<td style="text-align:center;">
+<span class="math inline">\(\pi_{10}\)</span>
+</td>
+<td style="text-align:center;">
+<span class="math inline">\(\pi_{11}\)</span>
+</td>
+<td style="text-align:center;">
+<span class="math inline">\(\pi_{12}\)</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Controls
+</td>
+<td style="text-align:center;">
+<span class="math inline">\(\pi_{20}\)</span>
+</td>
+<td style="text-align:center;">
+<span class="math inline">\(\pi_{21}\)</span>
+</td>
+<td style="text-align:center;">
+<span class="math inline">\(\pi_{22}\)</span>
+</td>
+</tr>
+</tbody>
+</table>
+<p>For example, a mutiplicative model dictates that the conditional probabilities of having the disease, given the risk allele copy numbers, satisfy the following relations,</p>
+<p><span class="math display">\[
+\frac{\pi_{10}}{\pi_{10} + \pi_{20}} : \frac{\pi_{11}}{\pi_{11} + \pi_{21}} : \frac{\pi_{12}}{\pi_{12} + \pi_{22}}
+= 1 : \text{GRR} : \text{GRR}^2,
+\]</span></p>
+<p>where GRR is strictly greater than 1 under the alternative (and equal to 1 under the null hypothesis).</p>
+<p>The assumption of disease prevalence implies that</p>
+<p><span class="math display">\[
+\pi_{10} + \pi_{11} + \pi_{12} = \text{Prev}.
+\]</span></p>
+<p>The risk allele frequency in the general population, assuming <a href="https://en.wikipedia.org/wiki/Hardy%E2%80%93Weinberg_principle" target="_blank">Hardy-Weinberg equilibrium</a>, implies</p>
+<p><span class="math display">\[
+\pi_{10} + \pi_{20} = (1-p)^2, \quad \pi_{11} + \pi_{21} = 2p(1-p), \quad \pi_{12} + \pi_{22} = p^2.
+\]</span></p>
+<p>The population probabilities <span class="math inline">\((\pi_{10},\ldots,\pi_{22})\)</span> are determined by the disease model, GRR, prevalence, and risk allele frequency in the population. The probabilities are solved for using the three equations above.</p>
+<p>Next, the probabilities of observing each genotype-phenotype combination are adjusted according the number of cases and controls recruited <em>in the studies</em>. The sample sizes are specified with</p>
+<ul>
+<li>The number of cases (<span class="math inline">\(n_1\)</span>) and controls (<span class="math inline">\(n_2\)</span>). Or equivalently, the fraction of cases (<span class="math inline">\(\phi\)</span>) and total number of subjects (<span class="math inline">\(n\)</span>).</li>
+</ul>
+<p>As an example, if <span class="math inline">\(\phi &gt; \text{Prev}\)</span>, the probablities are adjusted to account for over-sampling of the cases.</p>
+<table class="table table-hover table-responsive" style="width: auto !important; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="border-bottom:hidden" colspan="1">
+</th>
+<th style="border-bottom:hidden; padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="3">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px;">
+Risk allele copies
+</div>
+</th>
+</tr>
+<tr>
+<th style="text-align:center;">
+Prob. in study
+</th>
+<th style="text-align:center;">
+0 copies
+</th>
+<th style="text-align:center;">
+1 copy
+</th>
+<th style="text-align:center;">
+2 copies
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center;">
+Cases
+</td>
+<td style="text-align:center;">
+<span class="math inline">\(\pi_{10}\frac{\phi}{\text{Prev}}\)</span>
+</td>
+<td style="text-align:center;">
+<span class="math inline">\(\pi_{11}\frac{\phi}{\text{Prev}}\)</span>
+</td>
+<td style="text-align:center;">
+<span class="math inline">\(\pi_{12}\frac{\phi}{\text{Prev}}\)</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Controls
+</td>
+<td style="text-align:center;">
+<span class="math inline">\(\pi_{20}\frac{1-\phi}{1-\text{Prev}}\)</span>
+</td>
+<td style="text-align:center;">
+<span class="math inline">\(\pi_{21}\frac{1-\phi}{1-\text{Prev}}\)</span>
+</td>
+<td style="text-align:center;">
+<span class="math inline">\(\pi_{22}\frac{1-\phi}{1-\text{Prev}}\)</span>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Consequently, the relative frequencies of allele type-phenotype combinations <em>in the study</em> are derived as follows.</p>
+<table class="table table-hover table-responsive" style="width: auto !important; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="border-bottom:hidden" colspan="1">
+</th>
+<th style="border-bottom:hidden; padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="2">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px;">
+Allele variants
+</div>
+</th>
+<th style="border-bottom:hidden" colspan="1">
+</th>
+</tr>
+<tr>
+<th style="text-align:center;">
+Prob. in study
+</th>
+<th style="text-align:center;">
+risk allele
+</th>
+<th style="text-align:center;">
+non-risk allele
+</th>
+<th style="text-align:center;">
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center;">
+Cases
+</td>
+<td style="text-align:center;">
+<span class="math inline">\(\phi \left(\frac{\pi_{12}}{\text{Prev}} +  \frac{\pi_{11}}{2\times\text{Prev}}\right)\)</span>
+</td>
+<td style="text-align:center;">
+<span class="math inline">\(\phi \left(\frac{\pi_{11}}{2\times\text{Prev}} +  \frac{\pi_{10}}{\text{Prev}}\right)\)</span>
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Controls
+</td>
+<td style="text-align:center;">
+<span class="math inline">\((1-\phi) \left(\frac{\pi_{22}}{1-\text{Prev}} +  \frac{\pi_{21}}{2(1-\text{Prev})}\right)\)</span>
+</td>
+<td style="text-align:center;">
+<span class="math inline">\((1-\phi) \left(\frac{\pi_{21}}{2(1-\text{Prev})} +  \frac{\pi_{20}}{1-\text{Prev}}\right)\)</span>
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+</tbody>
+</table>
+<p>To simplify notation, we denote the relative frequencies of allele type-phenotype combinations with <span class="math inline">\(\mu = (\mu_{11}, \mu_{12}, \mu_{21}, \mu_{22})\)</span>.</p>
+<table class="table table-hover table-responsive" style="width: auto !important; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="border-bottom:hidden" colspan="1">
+</th>
+<th style="border-bottom:hidden; padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="2">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px;">
+Allele variants
+</div>
+</th>
+<th style="border-bottom:hidden" colspan="1">
+</th>
+</tr>
+<tr>
+<th style="text-align:center;">
+Prob. in study
+</th>
+<th style="text-align:center;">
+risk allele
+</th>
+<th style="text-align:center;">
+non-risk allele
+</th>
+<th style="text-align:center;">
+Total by phenotype
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center;">
+Cases
+</td>
+<td style="text-align:center;">
+<span class="math inline">\(\mu_{11}\)</span>
+</td>
+<td style="text-align:center;">
+<span class="math inline">\(\mu_{12}\)</span>
+</td>
+<td style="text-align:center;">
+<span class="math inline">\(\phi = \mu_{11} + \mu_{12}\)</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Controls
+</td>
+<td style="text-align:center;">
+<span class="math inline">\(\mu_{21}\)</span>
+</td>
+<td style="text-align:center;">
+<span class="math inline">\(\mu_{22}\)</span>
+</td>
+<td style="text-align:center;">
+<span class="math inline">\(1-\phi = \mu_{21} + \mu_{22}\)</span>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Finally, the power of an association test is calculated as the probability of (a correct) rejection, assuming that the data (i.e., tabulated counts of the allele type-phenotype combinations) follow a multinomial distribution with probability matrix <span class="math inline">\(\mu\)</span> and sample size <span class="math inline">\(2n\)</span> (since each individual has a pair of alleles).</p>
+<p>Indeed, these steps form the basis of the calculations implemented in the <a href="http://csg.sph.umich.edu/abecasis/cats/gas_power_calculator/" target="_blank">GAS calculator</a>. See (a terse) <a href="https://github.com/jenlij/GAS-power-calculator/blob/master/equations_gas_power_calc.pdf" target="_blank">documentation</a> of their <a href="https://github.com/jenlij/GAS-power-calculator/blob/master/gas_power_calculator.js" target="_blank">implementations</a>.</p>
+<p><strong>Caveat:</strong> The final step in the power calculations does not apply to association tests performed directly on the 2-by-3 contingency tables of phenotype-genotype combinations (e.g., the <a href="https://en.wikipedia.org/wiki/Cochran%E2%80%93Armitage_test_for_trend" target="_blank">Cochran-Armitage_test</a>). Therefore, the GAS calculator should not be used if these tests are to be applied. This is, perhaps, not very alarming, since most studies do perform tests based on the tabulated counts of allele frequencies.</p>
+</div>
+<div id="why-can-we-skip-the-disease-models-in-power-analysis" class="section level2">
+<h2>Why <em>can</em> we skip the disease models in power analysis?</h2>
+<p>In the power calculations outlined above, the disease models are used to decribe the distribution of the data under the alternative hypothesis. Specifically, they are used to specify the conditional distributions of the allele variants, given the phenotypes. For example, the probability of observing a risk allele in the control group, <span class="math display">\[
+f := \mathbb{P}[\,\text{risk allele}\,|\,\text{control group}\,] 
+= \frac{\mu_{21}}{1-\phi} 
+= \frac{\pi_{22} + \pi_{21}/2}{1-\text{Prev}},
+\]</span> is fully determined by the disease model. Similarly, the odds ratio between the two allele variants, <span class="math display">\[
+R:=\frac{\mu_{11}\mu_{22}}{\mu_{12}\mu_{21}},
+\]</span> is also determined by the disease model and its parameters.</p>
+<p>The parameters <span class="math inline">\((f, R)\)</span>, together with the sample sizes <span class="math inline">\((\phi, n)\)</span>, fully determine the distribution of our data under the alternative hypothesis (by determining the probability vector <span class="math inline">\(\mu\)</span> and the sample size <span class="math inline">\(n\)</span>). Power of association tests, therefore, depends on (and only on) the set of “core parameters”:</p>
+<ul>
+<li>Risk allele frequency among the controls (f).</li>
+<li>Odds ratio (R) of having the defined trait between the two allele variants.</li>
+<li>One of the two equivalent ways of parametrizing the sample sizes.</li>
+</ul>
+<p>The following diagram illustrates the process of power analysis outlined above.</p>
+<center>
+<img src="flowchart.png" style="width:80.0%" />
+</center>
+<p><br /></p>
+<p>It is worth noting that the mapping from the disease model and its parameters to the core parameters (<span class="math inline">\(f, R\)</span>) is many-to-one. That is, different model disease model specifications may lead to the <em>same</em> distributions of the allele variant counts. From a statistical perspective, the disease models that map to the same set of core parameters are equivalent in terms of power. While the disease models may generate additional insights into the biological process, for the purpose of power analysis, the core parameters are sufficient. We shall provide some numerical examples in the last section.</p>
+<p>We also remind readers that the risk allele frquency in the control group (<span class="math inline">\(f\)</span>) is not the same as the risk allele frequency in the general population (<span class="math inline">\(p\)</span>); the odds ratio (<span class="math inline">\(R\)</span>) is also very different from the genotye relative risks (GRR).</p>
+</div>
+<div id="why-we-probably-should-skip-the-disease-models" class="section level2">
+<h2>Why we (probably) should skip the disease models</h2>
+<p>Now that we have established how power analysis can be performed by directly specifying the core parameters, we turn to the question of why this sometimes the preferred way.</p>
+<p>The reason is three-part.</p>
+<div id="disease-model-parameters-are-rarely-available" class="section level3">
+<h3>Disease model parameters are rarely available</h3>
+<p>The quantities in the disease models, such as <span class="math inline">\(p\)</span> and Prev, cannot be estimated from the study itself. For example, the information regarding prevalence must be obtained from other studies targeting the general population; the study, which usually itself oversamples the cases, does not produce an estimate. The studies also rarely report the disease model parameters used. In fact, we are not aware of a GWAS catalog that reports and curates the disease models and their estimated parameters.</p>
+<p>On the other hand, the core parameters <span class="math inline">\(f\)</span> and <span class="math inline">\(R\)</span> can be readily estimated from data collected in the study. They are also reported and curated in GWAS catalogs such as the <a href="https://www.ebi.ac.uk/gwas/" target="_blank">NHGRI-EBI Catalog</a>.</p>
+</div>
+<div id="disease-model-parameters-may-be-incompatible" class="section level3">
+<h3>Disease model parameters may be incompatible</h3>
+<p>We mentioned in the last section that the mapping from the disease models to the core parameters is many-to-one, therefore making the disease models unidentifiable from the allele frequencies.</p>
+<p>Worse still, not all values of the model parameters are valid. For example, in a multiplicative model, the parameters <span class="math display">\[
+p = 0.1, \quad \text{Prev} = 0.5, \quad \text{GRR} = 1.5,
+\]</span> would result in the conditional probability of having two risk allele copies greater than 1. (The GAS calculator would throw the error message: “I don’t like the genetic model you requested!”, without explicitly pointing to the incompatibility issue.)</p>
+<p>Although an experienced geneticist would immediately notice the impossibilty of the parameter combinations, these contradictions are not guarded against by default. The end user – experienced or not – is responsible for inputting valid values when specifying a disease model.</p>
+<p>For the set of core parameters (<span class="math inline">\(f, R, \phi, n\)</span>), parameter compatibility is not an issue. Any combination of <span class="math display">\[f\in(0,1), \quad R\in(0,+\infty), \quad \phi\in(0,1), \quad \text{and} \quad n\in\mathbb{N_+}\]</span> is valid.</p>
+</div>
+<div id="the-core-parameters-are-universal" class="section level3">
+<h3>The core parameters are universal</h3>
+<p>Even when the disease models and their parameters are available, it can be challenging to make efficient use of the information.</p>
+<p>Suppose a researcher wishes to perform a meta analysis of existing association studies, where each study reports the disease model used as well as the estimated parameters. Unfortunately, two different disease models (say, recessive and multiplicative) were used in different studies. The researcher would have adifficult time pooling the information from different disease models – the GRR in one model is a completely different quantity from the GRR in another. S/he must forego with the information from one model, and use only estimates from the other.</p>
+<p>On the other hand, the core parameters are common to all disease models. They can be easily combined to produce pooled estimates. This universality also means that power analysis can be performed the same way, regardless of the disease models assumed. This paves way for the OR-RAF diagram, and systematic reviews of statistical validity of existing studies.</p>
+</div>
+</div>
+</div>
+<div id="disease-model-converter" class="section level1">
+<h1>Disease model converter</h1>
+<p>We provide users with a tool to convert disease model spcifications to the the core paremters (<span class="math inline">\(f\)</span> and <span class="math inline">\(R\)</span>).</p>
+<p>We also include examples where different disease models produce the same set of core parameters; theses models are equivalent from the perspective of power analysis.</p>
+</div>

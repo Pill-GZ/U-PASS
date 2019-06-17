@@ -334,7 +334,7 @@ On the other hand, for the denominator of $(*)$, we have
 \end{align}
 Dividing Equation $(1)$ by $(2)$, we conclude that the centers of the distribution of $t$ converges to 
 $$\delta\Big/\sqrt{\theta(1-\theta)\phi(1-\phi)},$$
-which is precisely the square root of the non-centrality in Theorem 1.
+which is precisely the square root of the non-centrality parameter in Theorem 1.
 Finally, the conclusion in Theorem 1 follows from the fact that the square of a normal distribution with mean $\sqrt{\lambda}$ is equal in distribution to a chi-square distribution with non-centrality parameter $\lambda$.
 
 # Numerical illustrations {#sec:numerical}

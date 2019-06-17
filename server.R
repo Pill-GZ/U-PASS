@@ -12,13 +12,16 @@ server <- function(input, output, session) {
   observeEvent(input$link_to_guide_from_tab2, {
     updateNavbarPage(session, "mainNavbarPage", selected="user_guide")
   })
+  observeEvent(input$link_to_guide_from_tab3, {
+    updateNavbarPage(session, "mainNavbarPage", selected="user_guide")
+  })
   
   #### automatically end session on quiting ####
   session$onSessionEnded(function() {
     stopApp()
   })
   
-#### first tab: OR-RAF diagram #### 
+#### ################ first tab: OR-RAF diagram ################ ####
   
   #### quick start guided tours with IntroJS ####
   
@@ -533,7 +536,7 @@ server <- function(input, output, session) {
   
   
   
-#### second tab: design my study ###################### #### 
+#### ################ second tab: design my study ################ ####
   #### checking if design is complete ####
   
   waiting_for_design <- reactive({
@@ -671,7 +674,7 @@ server <- function(input, output, session) {
                showlegend = FALSE,
                margin = list(l = 50, r = 20, b = 80, t = 50, pad = 4)) %>%
         add_annotations(yref = "paper", xref = "paper", y = 1.08, x = -0.07, 
-                        text = "power", showarrow = F, font=list(size = 25)) %>%
+                        text = "power", showarrow = F, font = list(size = 25)) %>%
         add_annotations(yref = "paper", xref = "paper", y = -0.12, x = 1, 
                         text = "fraction of subjects in Case group", 
                         showarrow = F, font = list(size = 25))  %>%
@@ -828,6 +831,104 @@ server <- function(input, output, session) {
     }
   }) # end of fixed phi plotly output
   
+#### ################ third tab: disease model converter ################ ####
+  
+  #### disease model converter ####
+  disease.model.converted <- reactive({
+    # grab input values
+    RAF.population <- input$disease_model_RAF_population
+    GRR <- input$disease_model_GRR
+    prevalence <- input$disease_model_prevalence
+    
+    # validate inputs
+    parameters.invalid.nonnumeric <- !(is.numeric(RAF.population) && is.numeric(GRR) && is.numeric(prevalence))
+    parameters.invalid.RAF <- !(RAF.population > 0 && RAF.population < 1)
+    parameters.invalid.GRR <- !(GRR > 1)
+    parameters.invalid.prevalence <- !(prevalence > 0 && prevalence < 1)
+    parameters.valid <- !parameters.invalid.nonnumeric && !parameters.invalid.RAF && 
+      !parameters.invalid.GRR && !parameters.invalid.prevalence
+    
+    if (parameters.valid) {
+      # Genotype frequencies (one heterozygous and two homozygous variants)
+      p.RAF.copy <- c("0" = (1 - RAF.population)^2, 
+                      "1" = 2 * RAF.population * (1 - RAF.population), 
+                      "2" = RAF.population^2)
+      
+      # relative risks determined by the disease model
+      if (input$disease_model == "Multiplicative") {
+        relative.risks = c("0" = 1, "1" = GRR, "2" = GRR^2)
+      } else if (input$disease_model == "Additive") {
+        relative.risks = c("0" = 1, "1" = GRR, "2" = 2*GRR-1)
+      } else if (input$disease_model == "Dominant") {
+        relative.risks = c("0" = 1, "1" = GRR, "2" = GRR)
+      } else if (input$disease_model == "Recessive") {
+        relative.risks = c("0" = 1, "1" = 1, "2" = GRR)
+      }
+      
+      # conditional probability of having the disease given genotypes
+      cond.prob.disease <- relative.risks * prevalence / sum(relative.risks * p.RAF.copy)
+      
+      # determine whether the disease model parameters are compatible
+      parameters.compatible <- cond.prob.disease["2"] < 1
+      
+      # if compatible, calculate the RAFs and odds ratio
+      if (parameters.compatible) {
+        # risk allele frequency in cases
+        RAF_cases <- sum(cond.prob.disease * p.RAF.copy * c(0, 1/2, 1)) / prevalence
+        # risk allele frequency in controls
+        f <- sum((1 - cond.prob.disease) * p.RAF.copy * c(0, 1/2, 1)) / (1 - prevalence)
+        # odds ratio
+        R <- RAF_cases * (1-f) / f / (1-RAF_cases)
+        conversion.result <- paste("<b>Risk allele frequency in controls:</b> ", format(f, digits = 3), "<br>",
+                                   "<b>Odds ratio between the allele variants:</b> ", format(R, digits = 4), "<br>")
+      } else {
+        conversion.result <- "<b>Disease model parameters incompatible!</b>"
+      }
+      
+    } else if (parameters.invalid.nonnumeric) {
+      conversion.result <- "<b>Disease model parameters must be numeric!</b>"
+    } else if (parameters.invalid.RAF) {
+      conversion.result <- "<b>RAF in population must be between 0 and 1!</b>"
+    } else if (parameters.invalid.GRR) {
+      conversion.result <- "<b>GRR must be greater than 1!</b>"
+    } else if (parameters.invalid.prevalence) {
+      conversion.result <- "<b>Disease prevalence in population must be between 0 and 1!</b>"
+    } 
+    
+    conversion.result
+  })
+  
+  output$disease_model_converter_result <- renderText({ disease.model.converted() })
+  
+  #### Some equivalent pre-loaded settings for different disease models ####
+  # multiplicative
+  observeEvent(input$disease_model_preset_multiplicative, {
+    updateSelectInput(session, "disease_model", selected = "Multiplicative")
+    updateNumericInput(session, "disease_model_RAF_population", value = 0.3)
+    updateNumericInput(session, "disease_model_GRR", value = 1.500)
+    updateNumericInput(session, "disease_model_prevalence", value = 0.1)
+  })
+  # additive
+  observeEvent(input$disease_model_preset_additive, {
+    updateSelectInput(session, "disease_model", selected = "Additive")
+    updateNumericInput(session, "disease_model_RAF_population", value = 0.3)
+    updateNumericInput(session, "disease_model_GRR", value = 1.588)
+    updateNumericInput(session, "disease_model_prevalence", value = 0.1)
+  })
+  # multiplicative
+  observeEvent(input$disease_model_preset_dominant, {
+    updateSelectInput(session, "disease_model", selected = "Dominant")
+    updateNumericInput(session, "disease_model_RAF_population", value = 0.3)
+    updateNumericInput(session, "disease_model_GRR", value = 1.909)
+    updateNumericInput(session, "disease_model_prevalence", value = 0.1)
+  })
+  # multiplicative
+  observeEvent(input$disease_model_preset_recessive, {
+    updateSelectInput(session, "disease_model", selected = "Recessive")
+    updateNumericInput(session, "disease_model_RAF_population", value = 0.3)
+    updateNumericInput(session, "disease_model_GRR", value = 2.666)
+    updateNumericInput(session, "disease_model_prevalence", value = 0.1)
+  })
   
 #### end of server ####
 } # end of server

@@ -16,7 +16,7 @@ U-PASS calculates statistical power based the core parameters common to models o
 
 - Sample sizes, i.e., the number of Cases, $n_1$, and Controls, $n_2$,
 - Conditional distribution of risk variant among Controls, i.e., risk allele frequency (RAF) in the Control group.
-- Odds ratio (OR) of having the defined trait among the genetic variants.
+- Odds ratio (OR) of having the defined trait between the two allele variants.
 
 Users need only prescribe the sample sizes, by one of two ways provided in the first box, 
 i.e., total sample size + fraction of Cases, or number of Cases + number of Controls.
