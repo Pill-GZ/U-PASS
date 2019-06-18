@@ -14,14 +14,14 @@ output:
 
 U-PASS calculates statistical power based the core parameters common to models of qualitative traits:
 
-- Sample sizes, i.e., the number of Cases, $n_1$, and Controls, $n_2$,
-- Conditional distribution of risk variant among Controls, i.e., risk allele frequency (RAF) in the Control group.
+- Sample sizes, i.e., the number of cases, $n_1$, and controls, $n_2$,
+- Conditional distribution of risk variant among controls, i.e., risk allele frequency (RAF) in the control group.
 - Odds ratio (OR) of having the defined trait between the two allele variants.
 
 Users need only prescribe the sample sizes, by one of two ways provided in the first box, 
-i.e., total sample size + fraction of Cases, or number of Cases + number of Controls.
+i.e., total sample size + fraction of cases, or number of cases + number of controls.
 
-Statistical power of familiar association tests, including ncluding the likelihood ratio test, chi-square test, Welch's t-test, and LR test for logistic regressions, have the same asymptotic power curves
+Statistical power of familiar association tests, including the likelihood ratio test, chi-square test, Welch's t-test, and LR test for logistic regressions, have the same asymptotic power curves
 (see the [documentation](U-PASS_documentation.html#a_test-independent_power_analysis){target="_blank"} for details).
 This common power limit is calculated as a function of RAF and OR, and visualized as a heatmap in the OR-RAF diagram. 
 
@@ -85,10 +85,10 @@ In general, we expect this aspect of our software to be useful for discovering p
 We provide three ways to perform power analysis, depending on the contraint of the study design.
 
 - If the contraint is the total budget, i.e., total number of subjects recruited,
-    - power is calculated as a function of the fraction of Cases.
-- If the contraint is the number of Cases,
-    - power is calculated as a function of the number of Controls.
-- If the contraint is the fraction of Cases, 
+    - power is calculated as a function of the fraction of cases.
+- If the contraint is the number of cases,
+    - power is calculated as a function of the number of controls.
+- If the contraint is the fraction of cases, 
     - power is calculated as a function of the total number of total subjects.
 
 <center>

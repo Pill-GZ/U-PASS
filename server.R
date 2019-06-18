@@ -52,37 +52,6 @@ server <- function(input, output, session) {
     ))
   }) # end of intro for OR-RAF tab
   
-  # OR-RAF tab
-  observeEvent(input$help_power_analysis, {
-    # Auto fill in Steps 1-4 for the IntroJS demo
-    updateSelectInput(session, "step1_target_OR_RAF", selected = "Allele frequency and odds ratio")
-    updateSelectInput(session, "step2_fixed_quantity", selected = "Budget / total number of subjects")
-    updateSelectInput(session, "step3_type_I_error_criteria", selected = "Family-wise error rate (FWER)")
-    updateSelectInput(session, "step4_type_II_error_criteria", selected = "Type II error / non-discovery proportion (NDP)")
-    # start IntroJS demo
-    rintrojs::introjs(session, options = list(
-      steps = data.frame(element = c("#step1", "#step2", "#step3", 
-                                     "#step4", "#power_analysis_results", NA),
-                         intro = c("Specify in here the <b>RAF</b> and <b>OR</b> of the loci you wish to target.",
-                                   "Specify <b>constraint on sample sizes</b> here.<br><br>
-                                     It could be total budget (i.e., total number of subjects), number of Cases, or fraction of Cases among recuited subjects.",
-                                   "Specify <b>false discovery control criteria</b> (FWER / Type I error rate) here.",
-                                   "Specify <b>non-discovery control criteria</b> (Type II error rate / FWNDR) here.",
-                                   "Results from the power calculation is displayed here.<br><br>
-                                     <ul>
-                                       <li>If the contraint is <b>total budget</b>, power is shown as a function of the fraction of Cases.</li>
-                                       <li>If the contraint is <b>number of Cases</b>, power is shown as a function of the number of Controls.</li>
-                                       <li>If the contraint is <b>fraction of Cases</b>, power is shown as a function of the total number of subjects.</li>
-                                     </ul>",
-                                   "The power analysis is <b>model-invariant</b> and <b>test-independent</b>. 
-                                     This means that you do not need to specify a disease model, or the test of association used.<br><br>
-                                     Find out more under <a href=\"U-PASS_documentation.html#unified_asymptotic_power_analysis\" target=\"_blank\">About &#8594; Documentation &#8594; Unified power analysis."
-                         ))
-    ))
-  }) # end of intro for design-my-study tab
-  
-  
-  
   #### calculate number of cases (n1) and controls (n2), and the fraction of cases (phi) ####
   
   n1 <- reactive({
@@ -416,7 +385,7 @@ server <- function(input, output, session) {
         updateNumericInput(session, "n2", value = n_controls)
         # Change selection for input$sample_size_specification
         updateSelectInput(session, "sample_size_specification",
-                          selected = "Number of Cases + number of Controls")
+                          selected = "Number of cases + number of controls")
       } else {
         showModal(modalDialog(
           title = "Unable to automatically determine initial sample sizes",
@@ -537,10 +506,44 @@ server <- function(input, output, session) {
   
   
 #### ################ second tab: design my study ################ ####
+  
+  #### quick start guided tours with IntroJS ####
+  
+  # design-my-study tab
+  observeEvent(input$help_power_analysis, {
+    # Auto fill in Steps 1-4 for the IntroJS demo
+    updateSelectInput(session, "step1_model_specification", selected = "Allele frequency and odds ratio")
+    updateSelectInput(session, "step2_fixed_quantity", selected = "Budget / total number of subjects")
+    updateSelectInput(session, "step3_type_I_error_criteria", selected = "Family-wise error rate (FWER)")
+    updateSelectInput(session, "step4_type_II_error_criteria", selected = "Type II error / non-discovery proportion (NDP)")
+    # start IntroJS demo
+    rintrojs::introjs(session, options = list(
+      steps = data.frame(element = c("#step1", "#step2", "#step3", 
+                                     "#step4", "#power_analysis_results", NA),
+                         intro = c("Specify in here the <b>RAF</b> and <b>OR</b> of the loci you wish to target.<br><br>
+                                    Find out why we do not need to specify a disease model under 
+                                    <a href=\"disease_model_revisited.html\" target=\"_blank\">Help &#8594; Disease Models Revisited.",
+                                   "Specify <b>constraint on sample sizes</b> here.<br><br>
+                                     It could be total budget (i.e., total number of subjects), number of Cases, or fraction of Cases among recuited subjects.",
+                                   "Specify <b>false discovery control criteria</b> (FWER / Type I error rate) here.",
+                                   "Specify <b>non-discovery control criteria</b> (Type II error rate / FWNDR) here.",
+                                   "Results from the power calculation is displayed here.<br><br>
+                                     <ul>
+                                       <li>If the contraint is <b>total budget</b>, power is shown as a function of the fraction of Cases.</li>
+                                       <li>If the contraint is <b>number of Cases</b>, power is shown as a function of the number of Controls.</li>
+                                       <li>If the contraint is <b>fraction of Cases</b>, power is shown as a function of the total number of subjects.</li>
+                                     </ul>",
+                                   "The power analysis is <b>model-invariant</b> and <b>test-independent</b>. 
+                                     This means that you do not need to specify a disease model, or the test of association used.<br><br>
+                                     Find out more under <a href=\"U-PASS_documentation.html#unified_asymptotic_power_analysis\" target=\"_blank\">Help &#8594; Documentation &#8594; Unified power analysis."
+                         ))
+    ))
+  }) # end of intro for design-my-study tab
+  
   #### checking if design is complete ####
   
   waiting_for_design <- reactive({
-    if (input$step1_target_OR_RAF != "Select a target" &&
+    if (input$step1_model_specification != "Select a model specification" &&
         input$step2_fixed_quantity != "Select a constraint" &&
         input$step3_type_I_error_criteria != "Select a criterion" &&
         input$step4_type_II_error_criteria != "Select a criterion") {
@@ -620,7 +623,7 @@ server <- function(input, output, session) {
       variable.phi <- 1:99/100
       # calculate signal size of the design
       design.signal.size.per.sample <- {
-        if (input$step1_target_OR_RAF == 'Allele frequency and odds ratio') {
+        if (input$step1_model_specification == 'Allele frequency and odds ratio') {
           validate(
             need({is.numeric(input$target_RAF) & input$target_RAF > 0 & input$target_RAF < 1}, 
                  "Target risk allele frequency must be between 0 and 1"),
@@ -628,7 +631,25 @@ server <- function(input, output, session) {
                  "Target odds ratio must be greater than 1")
           )
           signal.size.ana.sol.f(f = input$target_RAF, phi = variable.phi, R = input$target_OR)
-        } else if (input$step1_target_OR_RAF == 'Signal size per sample (advanced user)') {
+        } else if (input$step1_model_specification == 'Disease model') {
+          validate(
+            need({is.numeric(input$target_prevalence) & input$target_prevalence > 0 & input$target_prevalence < 1}, 
+                 "Target disease prevalence must be between 0 and 1"),
+            need({is.numeric(input$target_RAF_population) & input$target_RAF_population > 0 & input$target_RAF_population < 1}, 
+                 "Target risk allele frequency in population must be between 0 and 1"),
+            need({is.numeric(input$target_GRR); input$target_OR > 1}, 
+                 "Target genotype relative risk must be greater than 1")
+          )
+          disease.model.converted <- disease.model.converter(disease_model = input$target_disease_model, 
+                                                             RAF.population = input$target_RAF_population,
+                                                             GRR = input$target_GRR, 
+                                                             prevalence = input$target_prevalence)
+          validate(
+            need({disease.model.converted$message == "Go to power calculator"}, 
+                 "Target disesase model parameters incompatible")
+          )
+          signal.size.ana.sol.f(f = disease.model.converted$f, phi = variable.phi, R = disease.model.converted$R)
+        } else if (input$step1_model_specification == 'Signal size per sample (advanced user)') {
           input$target_w2
         }
       }
@@ -676,7 +697,7 @@ server <- function(input, output, session) {
         add_annotations(yref = "paper", xref = "paper", y = 1.08, x = -0.07, 
                         text = "power", showarrow = F, font = list(size = 25)) %>%
         add_annotations(yref = "paper", xref = "paper", y = -0.12, x = 1, 
-                        text = "fraction of subjects in Case group", 
+                        text = "fraction of subjects in case group", 
                         showarrow = F, font = list(size = 25))  %>%
         add_annotations(yref = "paper", xref = "paper", y = design.power() - 0.01, x = 0.05, 
                         text = paste("<b>Target power:</b>", format(design.power(), scientific = F)),
@@ -699,7 +720,7 @@ server <- function(input, output, session) {
       variable.phi <- input$fixed_cases / variable.n
       # calculate signal size of the design
       design.signal.size.per.sample <- {
-        if (input$step1_target_OR_RAF == 'Allele frequency and odds ratio') {
+        if (input$step1_model_specification == 'Allele frequency and odds ratio') {
           validate(
             need({is.numeric(input$target_RAF) & input$target_RAF > 0 & input$target_RAF < 1}, 
                  "Target risk allele frequency must be between 0 and 1"),
@@ -707,7 +728,25 @@ server <- function(input, output, session) {
                  "Target odds ratio must be greater than 1")
           )
           signal.size.ana.sol.f(f = input$target_RAF, phi = variable.phi, R = input$target_OR)
-        } else if (input$step1_target_OR_RAF == 'Signal size per sample (advanced user)') {
+        } else if (input$step1_model_specification == 'Disease model') {
+          validate(
+            need({is.numeric(input$target_prevalence) & input$target_prevalence > 0 & input$target_prevalence < 1}, 
+                 "Target disease prevalence must be between 0 and 1"),
+            need({is.numeric(input$target_RAF_population) & input$target_RAF_population > 0 & input$target_RAF_population < 1}, 
+                 "Target risk allele frequency in population must be between 0 and 1"),
+            need({is.numeric(input$target_GRR); input$target_OR > 1}, 
+                 "Target genotype relative risk must be greater than 1")
+          )
+          disease.model.converted <- disease.model.converter(disease_model = input$target_disease_model, 
+                                                             RAF.population = input$target_RAF_population,
+                                                             GRR = input$target_GRR, 
+                                                             prevalence = input$target_prevalence)
+          validate(
+            need({disease.model.converted$message == "Go to power calculator"}, 
+                 "Target disesase model parameters incompatible")
+          )
+          signal.size.ana.sol.f(f = disease.model.converted$f, phi = variable.phi, R = disease.model.converted$R)
+        } else if (input$step1_model_specification == 'Signal size per sample (advanced user)') {
           input$target_w2
         }
       }
@@ -765,7 +804,7 @@ server <- function(input, output, session) {
     if (fixed_phi_design()) {
       # calculate signal size of the design
       design.signal.size.per.sample <- {
-        if (input$step1_target_OR_RAF == 'Allele frequency and odds ratio') {
+        if (input$step1_model_specification == 'Allele frequency and odds ratio') {
           validate(
             need({is.numeric(input$target_RAF) & input$target_RAF > 0 & input$target_RAF < 1}, 
                  "Target risk allele frequency must be between 0 and 1"),
@@ -773,7 +812,25 @@ server <- function(input, output, session) {
                  "Target odds ratio must be greater than 1")
           )
           signal.size.ana.sol.f(f = input$target_RAF, phi = input$fixed_phi, R = input$target_OR)
-        } else if (input$step1_target_OR_RAF == 'Signal size per sample (advanced user)') {
+        } else if (input$step1_model_specification == 'Disease model') {
+          validate(
+            need({is.numeric(input$target_prevalence) & input$target_prevalence > 0 & input$target_prevalence < 1}, 
+                 "Target disease prevalence must be between 0 and 1"),
+            need({is.numeric(input$target_RAF_population) & input$target_RAF_population > 0 & input$target_RAF_population < 1}, 
+                 "Target risk allele frequency in population must be between 0 and 1"),
+            need({is.numeric(input$target_GRR); input$target_OR > 1}, 
+                 "Target genotype relative risk must be greater than 1")
+          )
+          disease.model.converted <- disease.model.converter(disease_model = input$target_disease_model, 
+                                                             RAF.population = input$target_RAF_population,
+                                                             GRR = input$target_GRR, 
+                                                             prevalence = input$target_prevalence)
+          validate(
+            need({disease.model.converted$message == "Go to power calculator"}, 
+                 "Target disesase model parameters incompatible")
+          )
+          signal.size.ana.sol.f(f = disease.model.converted$f, phi = variable.phi, R = disease.model.converted$R)
+        } else if (input$step1_model_specification == 'Signal size per sample (advanced user)') {
           input$target_w2
         }
       }
@@ -833,6 +890,26 @@ server <- function(input, output, session) {
   
 #### ################ third tab: disease model converter ################ ####
   
+  #### Copy model specifications to power calculator ####
+  
+  observeEvent(input$use_disease_model_specification, {
+    updateSelectInput(session, "step1_model_specification", selected = "Disease model")
+    updateSelectInput(session, "target_disease_model", selected = input$disease_model)
+    updateNumericInput(session, "target_prevalence", value = input$disease_model_prevalence)
+    updateNumericInput(session, "target_RAF_population", value = input$disease_model_RAF_population)
+    updateNumericInput(session, "target_GRR", value = input$disease_model_GRR)
+    updateNavbarPage(session, "mainNavbarPage", selected="design_tab")
+  })
+
+  observeEvent(input$use_canonical_specification, {
+    if (disease.model.converted()$message == "Go to power calculator") {
+      updateSelectInput(session, "step1_model_specification", selected = "Allele frequency and odds ratio")
+      updateNumericInput(session, "target_RAF", value = round(disease.model.converted()$f, 4))
+      updateNumericInput(session, "target_OR", value = round(disease.model.converted()$R, 4))
+      updateNavbarPage(session, "mainNavbarPage", selected="design_tab")
+    }
+  })
+  
   #### disease model converter ####
   disease.model.converted <- reactive({
     # grab input values
@@ -848,59 +925,35 @@ server <- function(input, output, session) {
     parameters.valid <- !parameters.invalid.nonnumeric && !parameters.invalid.RAF && 
       !parameters.invalid.GRR && !parameters.invalid.prevalence
     
-    if (parameters.valid) {
-      # Genotype frequencies (one heterozygous and two homozygous variants)
-      p.RAF.copy <- c("0" = (1 - RAF.population)^2, 
-                      "1" = 2 * RAF.population * (1 - RAF.population), 
-                      "2" = RAF.population^2)
-      
-      # relative risks determined by the disease model
-      if (input$disease_model == "Multiplicative") {
-        relative.risks = c("0" = 1, "1" = GRR, "2" = GRR^2)
-      } else if (input$disease_model == "Additive") {
-        relative.risks = c("0" = 1, "1" = GRR, "2" = 2*GRR-1)
-      } else if (input$disease_model == "Dominant") {
-        relative.risks = c("0" = 1, "1" = GRR, "2" = GRR)
-      } else if (input$disease_model == "Recessive") {
-        relative.risks = c("0" = 1, "1" = 1, "2" = GRR)
-      }
-      
-      # conditional probability of having the disease given genotypes
-      cond.prob.disease <- relative.risks * prevalence / sum(relative.risks * p.RAF.copy)
-      
-      # determine whether the disease model parameters are compatible
-      parameters.compatible <- cond.prob.disease["2"] < 1
-      
-      # if compatible, calculate the RAFs and odds ratio
-      if (parameters.compatible) {
-        # risk allele frequency in cases
-        RAF_cases <- sum(cond.prob.disease * p.RAF.copy * c(0, 1/2, 1)) / prevalence
-        # risk allele frequency in controls
-        f <- sum((1 - cond.prob.disease) * p.RAF.copy * c(0, 1/2, 1)) / (1 - prevalence)
-        # odds ratio
-        R <- RAF_cases * (1-f) / f / (1-RAF_cases)
-        conversion.result <- paste("<b>Risk allele frequency in controls:</b> ", format(f, digits = 3), "<br>",
-                                   "<b>Odds ratio between the allele variants:</b> ", format(R, digits = 4), "<br>")
-      } else {
-        conversion.result <- "<b>Disease model parameters incompatible!</b>"
-      }
-      
-    } else if (parameters.invalid.nonnumeric) {
-      conversion.result <- "<b>Disease model parameters must be numeric!</b>"
+    if (parameters.invalid.nonnumeric) {
+      conversion.result <- list(message = '<font color="red">Non-numeric parameters!</font>', f = NA, R = NA)
     } else if (parameters.invalid.RAF) {
-      conversion.result <- "<b>RAF in population must be between 0 and 1!</b>"
+      conversion.result <- list(message = '<font color="red">Population RAF out of range!</font>', f = NA, R = NA)
     } else if (parameters.invalid.GRR) {
-      conversion.result <- "<b>GRR must be greater than 1!</b>"
+      conversion.result <- list(message = '<font color="red">GRR out of range!</font>', f = NA, R = NA)
     } else if (parameters.invalid.prevalence) {
-      conversion.result <- "<b>Disease prevalence in population must be between 0 and 1!</b>"
-    } 
+      conversion.result <- list(message = '<font color="red">Prevalence out of range!</font>', f = NA, R = NA)
+    } else if (parameters.valid) {
+      conversion.result <- disease.model.converter(disease_model = input$disease_model, 
+                                                   RAF.population = RAF.population, 
+                                                   GRR = GRR, prevalence = prevalence)
+    }
     
     conversion.result
   })
   
-  output$disease_model_converter_result <- renderText({ disease.model.converted() })
+  output$disease_model_converter_message <- renderText({ disease.model.converted()$message })
+  output$disease_model_converter_result_f <- renderText({ format(round(disease.model.converted()$f, 3), nsmall = 3) })
+  output$disease_model_converter_result_R <- renderText({ format(round(disease.model.converted()$R, 3), nsmall = 3) })
   
-  #### Some equivalent pre-loaded settings for different disease models ####
+  #### Some pre-loaded disease models settings ####
+  # incompatible
+  observeEvent(input$disease_model_preset_incompatible, {
+    updateSelectInput(session, "disease_model", selected = "Multiplicative")
+    updateNumericInput(session, "disease_model_RAF_population", value = 0.1)
+    updateNumericInput(session, "disease_model_GRR", value = 1.500)
+    updateNumericInput(session, "disease_model_prevalence", value = 0.5)
+  })
   # multiplicative
   observeEvent(input$disease_model_preset_multiplicative, {
     updateSelectInput(session, "disease_model", selected = "Multiplicative")

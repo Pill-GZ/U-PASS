@@ -8,11 +8,12 @@ library("shinycssloaders")
 ui <- shinyUI(tagList(
   tags$head(HTML("<title>U-PASS: a unified power analysis of association studies</title>"),
             tags$link(rel = "icon", type = "image/png", href = "favicon.png"),
-            tags$style(HTML(".shiny-output-error-validation { color: red; }"))),
+            tags$style(HTML(".shiny-output-error-validation { color: red; }")),
+            tags$style(".rightAlign{float:right;}")),
   introjsUI(),
   navbarPage("U-PASS power calculator", id = "mainNavbarPage", theme = "bootstrap-cosmo-customized.css",
              
-             #### OR-RAF tab ####
+             #### OR-RAF tab ############################################################ ####
              tabPanel("OR-RAF power diagram", id = "OR-RAF_tab",
                       tags$style(type = 'text/css', '.navbar {font-size: 20px;}',
                                  '.navbar-default .navbar-brand {font-size: 30px;}'),
@@ -37,7 +38,7 @@ ui <- shinyUI(tagList(
                                wellPanel(id = "sample_size",
                                          selectInput("sample_size_specification", "Sample size specification",
                                                      list("Number of subjects + fraction of Cases", 
-                                                          "Number of Cases + number of Controls")),
+                                                          "Number of cases + number of controls")),
                                          conditionalPanel(
                                            condition = "input.sample_size_specification == 'Number of subjects + fraction of Cases'",
                                            numericInput("n", "Totoal number of subjects:", 
@@ -45,7 +46,7 @@ ui <- shinyUI(tagList(
                                            sliderInput("phi", "Fraction of cases:", value = 1/2, min = 0.05, max = 0.95, step = .05)
                                          ),
                                          conditionalPanel(
-                                           condition = "input.sample_size_specification == 'Number of Cases + number of Controls'",
+                                           condition = "input.sample_size_specification == 'Number of cases + number of controls'",
                                            numericInput("n1", "Number of cases:", 
                                                         value = 10000, min = 250, max = 1000000, step = 50),
                                            numericInput("n2", "Number of controls:", 
@@ -174,9 +175,9 @@ ui <- shinyUI(tagList(
                       includeHTML("www/credits.html")
              ), # end of first rab panel (OR-RAF)
              
-             #### Power analysis tab ####
+             #### Power analysis tab ####################################################### ####
              
-             tabPanel("Design my study", id = "design_tab",
+             tabPanel("Design my study", value = "design_tab",
                       includeHTML("www/header.html"),
                       HTML("<p>We encourage users to take a "), 
                       actionButton("help_power_analysis", "quick tour of the interface"),
@@ -191,23 +192,35 @@ ui <- shinyUI(tagList(
                         
                         column(3,
                                br(),
-                               #### Step 1: target RAF and OR ####
+                               #### Step 1: model specifications ####
                                
                                introBox(
                                  wellPanel(id = "step1",
-                                           selectInput("step1_target_OR_RAF", "Step 1: I want to target a specific ...",
-                                                       list("Select a target",
+                                           selectInput("step1_model_specification", "Step 1: Model specifications",
+                                                       list("Select a model specification",
                                                             "Allele frequency and odds ratio", 
+                                                            "Disease model",
                                                             "Signal size per sample (advanced user)")),
                                            conditionalPanel(
-                                             condition = "input.step1_target_OR_RAF == 'Allele frequency and odds ratio'",
+                                             condition = "input.step1_model_specification == 'Allele frequency and odds ratio'",
                                              numericInput("target_RAF", "Target risk allele frequency (in control group):", 
                                                           value = 0.001, min = 0.001, max = 0.99999, step = 0.001),
                                              numericInput("target_OR", "Target odds ratio:", 
                                                           value = 5, min = 1.01, max = 1000000, step = 0.01)
                                            ),
                                            conditionalPanel(
-                                             condition = "input.step1_target_OR_RAF == 'Signal size per sample (advanced user)'",
+                                             condition = "input.step1_model_specification == 'Disease model'",
+                                             selectInput("target_disease_model", "Disease model:",
+                                                         list("Multiplicative", "Additive", "Dominant", "Recessive")),
+                                             numericInput("target_prevalence", "Disease prevalence in the general population:", 
+                                                          value = 0.1, min = 0.01, max = 0.99, step = 0.01),
+                                             numericInput("target_RAF_population", "Risk allele frequency in the general population:", 
+                                                          value = 0.3, min = 0.01, max = 0.99, step = 0.01),
+                                             numericInput("target_GRR", "Genotype relative risk:", 
+                                                          value = 1.2, min = 1.01, max = 100, step = 0.01)
+                                           ),
+                                           conditionalPanel(
+                                             condition = "input.step1_model_specification == 'Signal size per sample (advanced user)'",
                                              shinyWidgets::sliderTextInput(inputId = "target_w2", 
                                                                            label = "Target signal size:",
                                                                            choices = c(as.vector(outer(c(1,2,5), 10^(-6:-2))),0.1),
@@ -223,9 +236,9 @@ ui <- shinyUI(tagList(
                                  #### Step 2: constraint or fixed quantity in the study ####
                                  # only displayed if step 1 is complete
                                  
-                                 condition = "input.step1_target_OR_RAF != 'Select a target'",
+                                 condition = "input.step1_model_specification != 'Select a model specification'",
                                  wellPanel(id = "step2",
-                                   selectInput("step2_fixed_quantity", "Step 2: I have a fixed ...",
+                                   selectInput("step2_fixed_quantity", "Step 2: Sample size constraints",
                                                list("Select a constraint",
                                                     "Budget / total number of subjects", 
                                                     "Number of Cases",
@@ -253,7 +266,7 @@ ui <- shinyUI(tagList(
                                    
                                    condition = "input.step2_fixed_quantity != 'Select a constraint'",
                                    wellPanel(id = "step3",
-                                     selectInput("step3_type_I_error_criteria", "Step 3: Criteria for false discovery ...",
+                                     selectInput("step3_type_I_error_criteria", "Step 3: Criteria for false discovery",
                                                  list("Select a criterion", "Family-wise error rate (FWER)", 
                                                       #"False discovery rate (FDR)", 
                                                       "Type I error")),
@@ -292,7 +305,7 @@ ui <- shinyUI(tagList(
                                      
                                      condition = "input.step3_type_I_error_criteria != 'Select a criterion'",
                                      wellPanel(id = "step4",
-                                       selectInput("step4_type_II_error_criteria", "Step 4: Targert for non-discovery ...",
+                                       selectInput("step4_type_II_error_criteria", "Step 4: Targert for non-discovery",
                                                    list("Select a criterion", 
                                                         "Type II error / non-discovery proportion (NDP)", 
                                                         "Family-wise non-discovery rate (FWNDR)")),
@@ -345,10 +358,89 @@ ui <- shinyUI(tagList(
              ), # end of second tab panel (study design)
              
              
+             #### Disease model converter tab ################################################# ####
+             tabPanel(HTML("Disease Model Converter"),
+                      value = "disease_model_revisited",
+                      
+                      includeHTML("www/header.html"),
+                      HTML("<p>We encourage users to take a "), 
+                      actionButton("help_model_converter", "quick tour of the interface"),
+                      HTML(", check out the "),
+                      actionButton(inputId="link_to_guide_from_tab3", label="User Guide"),
+                      HTML(", and find definitions of key quantities in the "),
+                      actionButton("null", "Documentation",
+                                   onclick ="window.open('U-PASS_documentation.html', '_blank')"),
+                      
+                      fluidRow(
+                        
+                        br(),
+                        #### Disease model specifications ####
+                        
+                        column(3, offset = 0,
+                               wellPanel(id = "disease_model_specification",
+                                         selectInput("disease_model", "Disease model:",
+                                                     list("Multiplicative",
+                                                          "Additive",
+                                                          "Dominant",
+                                                          "Recessive")),
+                                         numericInput("disease_model_prevalence", "Disease prevalence in the population:", 
+                                                      value = 0.1, min = 0.01, max = 0.99, step = 0.01),
+                                         numericInput("disease_model_RAF_population", "Risk allele frequency in the population:", 
+                                                      value = 0.3, min = 0.01, max = 0.99, step = 0.01),
+                                         numericInput("disease_model_GRR", "Genotype relative risk:", 
+                                                      value = 1.5, min = 1.01, max = 100, step = 0.01),
+                                         actionButton(inputId = "use_disease_model_specification",  class = 'rightAlign', 
+                                                      label = "Go to power calculator")
+                               ) # end of disease model specifications
+                        ), # end of left column
+                        #### disease model conversions ####
+                        column(1, 
+                               br(), br(), br(), br(), br(),
+                               HTML('<center> <img src="arrow.png" width="100%" /> </center>')),
+                        column(3, offset = 0,
+                               br(), br(), br(),
+                               wellPanel(
+                                 HTML("<b>Risk allele frequency in controls:</b>"),
+                                 panel(
+                                   htmlOutput("disease_model_converter_result_f")
+                                 ),
+                                 HTML("<b>Odds ratio between allele variants:</b>"),
+                                 panel(
+                                   htmlOutput("disease_model_converter_result_R")
+                                 ),
+                                 actionButton(inputId = "use_canonical_specification",  class = 'rightAlign', 
+                                              label = htmlOutput("disease_model_converter_message"))
+                               )
+                        ) # end of right column
+                      ),
+                      br(),
+                      fluidRow(
+                        column(7, offset = 0,
+                               includeHTML("www/disease_model_converter.html"),
+                               HTML("<p>Notice that<ul><li>Disease model parameters may be incompatible. 
+                                    Try, e.g., "), 
+                               actionButton("disease_model_preset_incompatible", "an incompatible disease model"),
+                               HTML(".</li><li>Multiple disease models can map to the same set of canonical parameters. 
+                                    Try, e.g., these"), 
+                               actionButton("disease_model_preset_multiplicative", "Multiplicative"),
+                               actionButton("disease_model_preset_additive", "Additive"),
+                               actionButton("disease_model_preset_dominant", "Dominant"),
+                               actionButton("disease_model_preset_recessive", "Recessive"),
+                               HTML("models.</li></ul>"), 
+                               br(), br()
+                        )
+                      ),
+                      includeHTML("www/credits.html")
+             ), # end of disease model converter
+             
              #### Help pages ####
              
              navbarMenu("Help",
-                        tabPanel(HTML("User Guide"), 
+                        tabPanel(HTML('User Guide</a></li>
+                                      <li><a href=\"disease_models_revisited.html\" target=\"_blank\">Disease Models Revisited 
+                                      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAQElEQVR42qXKwQkAIAxDUUdxtO6/RBQkQZvSi8I/pL4BoGw/XPkh4XigPmsUgh0626AjRsgxHTkUThsG2T/sIlzdTsp52kSS1wAAAABJRU5ErkJggg=="></a></li>
+                                      <li><a href=\"U-PASS_documentation.html\" target=\"_blank\">Documentation 
+                                      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAQElEQVR42qXKwQkAIAxDUUdxtO6/RBQkQZvSi8I/pL4BoGw/XPkh4XigPmsUgh0626AjRsgxHTkUThsG2T/sIlzdTsp52kSS1wAAAABJRU5ErkJggg==">'), 
                                  value = "user_guide",
                                  fluidRow(
                                    column(6, offset = 3,
@@ -356,51 +448,8 @@ ui <- shinyUI(tagList(
                                           includeHTML("www/credits.html")
                                    )
                                  )
-                        ),
-                        #### Disease model converter ####
-                        tabPanel(HTML("Disease Models Revisited"),
-                                 value = "disease_model_revisited",
-                                 fluidRow(
-                                   #### Disease model specifications ####
-                                   column(6, offset = 3,
-                                          withMathJax(includeHTML("www/disease_model_revisited.html")),
-                                          fluidRow(
-                                            column(8, offset = 2,
-                                                   wellPanel(id = "disease_model_specification",
-                                                             selectInput("disease_model", "Select a disease model ...",
-                                                                         list("Multiplicative",
-                                                                              "Additive",
-                                                                              "Dominant",
-                                                                              "Recessive")),
-                                                             numericInput("disease_model_prevalence", "Disease prevalence in the general population:", 
-                                                                          value = 0.1, min = 0.01, max = 0.99, step = 0.01),
-                                                             numericInput("disease_model_RAF_population", "Risk allele frequency in the general population:", 
-                                                                          value = 0.3, min = 0.01, max = 0.99, step = 0.01),
-                                                             numericInput("disease_model_GRR", "Genotype relative risk:", 
-                                                                          value = 1.5, min = 1.01, max = 100, step = 0.01)
-                                                   ),
-                                                   wellPanel(
-                                                     htmlOutput("disease_model_converter_result")
-                                                   )
-                                            ) # end of small column
-                                          ), # end of subdivision of column
-                                          # column(3, br()),
-                                          fluidRow(
-                                            HTML("<p>Multiple disease models may map to the same set of core parameters. Try, e.g., "), 
-                                            actionButton("disease_model_preset_multiplicative", "Multiplicative"),
-                                            actionButton("disease_model_preset_additive", "Additive"),
-                                            actionButton("disease_model_preset_dominant", "Dominant"),
-                                            actionButton("disease_model_preset_recessive", "Recessive"),
-                                            HTML('<p>Of course, these disease models specifications also produce the same results in <a href="http://csg.sph.umich.edu/abecasis/cats/gas_power_calculator/" target="_blank">the GAS calculator</a>.'), 
-                                            br(),
-                                            br(),
-                                            includeHTML("www/credits.html")
-                                          )
-                                   ) # end of disease model specifications
-                                 ) # end of fliudRow
-                        ) # end of disease model converter
-                        
-             ),
+                        )
+             ), # end of help menu bar 
              
              #### About pages ####
              
@@ -413,7 +462,7 @@ ui <- shinyUI(tagList(
                                  )
                         ),
                         # Documentation page is inserted below the contact page
-                        tabPanel(HTML("Citation and Contact</a></li><li><a href=\"U-PASS_documentation.html\" target=\"_blank\">Documentation"), 
+                        tabPanel(HTML("Citation and Contact"), 
                                  value = "contact",
                                  fluidRow(
                                    column(6, offset = 3,
@@ -421,8 +470,7 @@ ui <- shinyUI(tagList(
                                    )
                                  )
                         )
-                        
-             )
+             ) # end of about menu bar
              
              #### page ends ####
              ) # end of navbarPage

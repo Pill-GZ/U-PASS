@@ -1,11 +1,15 @@
 ---
-title: "Disease Model Revisited"
+title: "Disease Models Revisited"
 author: "GAO Zheng"
 date: "June 15, 2019"
 bibliography: bibliography.bib
 output:
-  html_fragment:
-    self_contained: false
+  html_document:
+    theme: cosmo
+    toc: yes
+    toc_depth: 2
+    toc_float: 
+      collapsed: false
 ---
 
 ```{r setup, echo=FALSE}
@@ -23,7 +27,7 @@ Traditional power calculations for genetic association studies begin by specifiy
 - Risk allele frequency in the general population (p).
 - Disease prevalence in the general population (Prev).
 
-These disease model parameters determine the assumed joint distribution of the genotypes and phenotyes in *in the population*, shown the following table.
+These disease model and parameters determine the assumed joint distribution of the genotypes and phenotyes in *in the population*, shown in the following table.
 
 ```{r echo=FALSE}
 dt <- data.frame(matrix(c("Cases", "$\\pi_{10}$", "$\\pi_{11}$", "$\\pi_{12}$",
@@ -65,7 +69,7 @@ The sample sizes are specified with
 
 - The number of cases ($n_1$) and controls ($n_2$). Or equivalently, the fraction of cases ($\phi$) and total number of subjects ($n$).
 
-As an example, if $\phi > \text{Prev}$, the probablities are adjusted to account for over-sampling of the cases.
+As an example, if $\phi > \text{Prev}$, the probablities are adjusted to account for over-sampling of cases.
 
 ```{r echo=FALSE}
 dt <- data.frame(matrix(c("Cases", 
@@ -84,7 +88,7 @@ kable(dt, "html", escape = FALSE, align = "c") %>%
   add_header_above(c(" " = 1, "Risk allele copies" = 3))
 ```
 
-Consequently, the relative frequencies of allele type-phenotype combinations *in the study* are derived as follows.
+Consequently, the relative frequencies of allele type-phenotype combinations *in the study* are calculated as follows.
 
 ```{r echo=FALSE}
 dt <- data.frame(matrix(c("Cases", 

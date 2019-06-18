@@ -305,6 +305,49 @@ minimum.calibration.numbers <- function(n1, n2, p.val.threshold,
   return(list(left = left.threshold, right = right.threshold))
 }
 
+#### disease model converter ####
+
+disease.model.converter <- function(disease_model, RAF.population, GRR, prevalence) {
+  # Genotype frequencies (one heterozygous and two homozygous variants)
+  p.RAF.copy <- c("0" = (1 - RAF.population)^2, 
+                  "1" = 2 * RAF.population * (1 - RAF.population), 
+                  "2" = RAF.population^2)
+  
+  # relative risks determined by the disease model
+  if (disease_model == "Multiplicative") {
+    relative.risks = c("0" = 1, "1" = GRR, "2" = GRR^2)
+  } else if (disease_model == "Additive") {
+    relative.risks = c("0" = 1, "1" = GRR, "2" = 2*GRR-1)
+  } else if (disease_model == "Dominant") {
+    relative.risks = c("0" = 1, "1" = GRR, "2" = GRR)
+  } else if (disease_model == "Recessive") {
+    relative.risks = c("0" = 1, "1" = 1, "2" = GRR)
+  }
+  
+  # conditional probability of having the disease given genotypes
+  cond.prob.disease <- relative.risks * prevalence / sum(relative.risks * p.RAF.copy)
+  
+  # determine whether the disease model parameters are compatible
+  parameters.compatible <- cond.prob.disease["2"] < 1
+  
+  # if compatible, calculate the RAFs and odds ratio
+  if (parameters.compatible) {
+    # risk allele frequency in cases
+    RAF_cases <- sum(cond.prob.disease * p.RAF.copy * c(0, 1/2, 1)) / prevalence
+    # risk allele frequency in controls
+    f <- sum((1 - cond.prob.disease) * p.RAF.copy * c(0, 1/2, 1)) / (1 - prevalence)
+    # odds ratio
+    R <- RAF_cases * (1-f) / f / (1-RAF_cases)
+    conversion.result <- list(message = "Go to power calculator", 
+                              f = f, R = R)
+  } else {
+    conversion.result <- list(message = '<font color="red">Parameters incompatible!</font>', f = NA, R = NA)
+  }
+  return(conversion.result)
+}
+
+
+
 #### set plot limits and resolution ####
 
 f.lim <- c(1e-4, 1-5e-3)

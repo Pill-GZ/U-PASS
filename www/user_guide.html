@@ -7,12 +7,12 @@
 <h2>The OR-RAF diagram</h2>
 <p>U-PASS calculates statistical power based the core parameters common to models of qualitative traits:</p>
 <ul>
-<li>Sample sizes, i.e., the number of Cases, <span class="math inline">\(n_1\)</span>, and Controls, <span class="math inline">\(n_2\)</span>,</li>
-<li>Conditional distribution of risk variant among Controls, i.e., risk allele frequency (RAF) in the Control group.</li>
-<li>Odds ratio (OR) of having the defined trait among the genetic variants.</li>
+<li>Sample sizes, i.e., the number of cases, <span class="math inline">\(n_1\)</span>, and controls, <span class="math inline">\(n_2\)</span>,</li>
+<li>Conditional distribution of risk variant among controls, i.e., risk allele frequency (RAF) in the control group.</li>
+<li>Odds ratio (OR) of having the defined trait between the two allele variants.</li>
 </ul>
-<p>Users need only prescribe the sample sizes, by one of two ways provided in the first box, i.e., total sample size + fraction of Cases, or number of Cases + number of Controls.</p>
-<p>Statistical power of familiar association tests, including ncluding the likelihood ratio test, chi-square test, Welch’s t-test, and LR test for logistic regressions, have the same asymptotic power curves (see the <a href="U-PASS_documentation.html#a_test-independent_power_analysis" target="_blank">documentation</a> for details). This common power limit is calculated as a function of RAF and OR, and visualized as a heatmap in the OR-RAF diagram.</p>
+<p>Users need only prescribe the sample sizes, by one of two ways provided in the first box, i.e., total sample size + fraction of cases, or number of cases + number of controls.</p>
+<p>Statistical power of familiar association tests, including the likelihood ratio test, chi-square test, Welch’s t-test, and LR test for logistic regressions, have the same asymptotic power curves (see the <a href="U-PASS_documentation.html#a_test-independent_power_analysis" target="_blank">documentation</a> for details). This common power limit is calculated as a function of RAF and OR, and visualized as a heatmap in the OR-RAF diagram.</p>
 <center>
 <img src="user_guide_files/basics.gif" style="width:90.0%" />
 </center>
@@ -51,7 +51,7 @@
 <center>
 <img src="user_guide_files/forensics.png" alt="optional caption text" style="width:60.0%" />
 </center>
-<p>We reached out to the authors of the study <span class="citation">(Domínguez-Cruz et al. 2018)</span>, who confirmed that the RAF reported in the Catalog were based on all subjects in the study, as opposed to only the control group, while the Catalog requires that <a href="https://www.ebi.ac.uk/gwas/docs/fileheaders" target="_blank">RAF be reported in the control group only</a>. As a consequence, the RAFs are systematically overestimated, shifting the reported findings to the right in the diagram.</p>
+<p>We reached out to the authors of the study <span class="citation">(Domı'nguez-Cruz et al. 2018)</span>, who confirmed that the RAF reported in the Catalog were based on all subjects in the study, as opposed to only the control group, while the Catalog requires that <a href="https://www.ebi.ac.uk/gwas/docs/fileheaders" target="_blank">RAF be reported in the control group only</a>. As a consequence, the RAFs are systematically overestimated, shifting the reported findings to the right in the diagram.</p>
 <p>In general, we expect this aspect of our software to be useful for discovering problems with data entry and catalog curation process, as well as for assessing the reproducibility and robustness of reported findings.</p>
 </div>
 <div id="find-optimal-study-designs" class="section level2">
@@ -60,13 +60,13 @@
 <ul>
 <li>If the contraint is the total budget, i.e., total number of subjects recruited,
 <ul>
-<li>power is calculated as a function of the fraction of Cases.</li>
+<li>power is calculated as a function of the fraction of cases.</li>
 </ul></li>
-<li>If the contraint is the number of Cases,
+<li>If the contraint is the number of cases,
 <ul>
-<li>power is calculated as a function of the number of Controls.</li>
+<li>power is calculated as a function of the number of controls.</li>
 </ul></li>
-<li>If the contraint is the fraction of Cases,
+<li>If the contraint is the fraction of cases,
 <ul>
 <li>power is calculated as a function of the total number of total subjects.</li>
 </ul></li>
@@ -84,7 +84,7 @@
 <h1>References</h1>
 <div id="refs" class="references">
 <div id="ref-dominguez2018pilot">
-<p>Domínguez-Cruz, Miriam Givisay, María de Lourdes Muñoz, Armando Totomoch-Serra, María Guadalupe García-Escalante, Juan Burgueño, Nina Valadez-González, Doris Pinto-Escalantes, and Álvaro Díaz-Badillo. 2018. “Pilot Genome-Wide Association Study Identifying Novel Risk Loci for Type 2 Diabetes in a Maya Population.” <em>Gene</em> 677. Elsevier: 324–31.</p>
+<p>Domı'nguez-Cruz, Miriam Givisay, Marı'a de Lourdes Muñoz, Armando Totomoch-Serra, Marı'a Guadalupe Garcı'a-Escalante, Juan Burgueño, Nina Valadez-González, Doris Pinto-Escalantes, and Álvaro Dı'az-Badillo. 2018. “Pilot Genome-Wide Association Study Identifying Novel Risk Loci for Type 2 Diabetes in a Maya Population.” <em>Gene</em> 677. Elsevier: 324–31.</p>
 </div>
 </div>
 </div>
