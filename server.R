@@ -829,7 +829,7 @@ server <- function(input, output, session) {
             need({disease.model.converted$message == "Go to power calculator"}, 
                  "Target disesase model parameters incompatible")
           )
-          signal.size.ana.sol.f(f = disease.model.converted$f, phi = variable.phi, R = disease.model.converted$R)
+          signal.size.ana.sol.f(f = disease.model.converted$f, phi = input$fixed_phi, R = disease.model.converted$R)
         } else if (input$step1_model_specification == 'Signal size per sample (advanced user)') {
           input$target_w2
         }
