@@ -45,9 +45,11 @@ server <- function(input, output, session) {
                                      If a reported locus lies in the <b>low power region</b> (dark regions of the heatmap),
                                      the claim of statistical significance should be further investigated",
                                    "When you select a reported locus in the OR-RAF diagram, detailed information is displayed here below the diagram.",
-                                   "The power analysis is <b>model-invariant</b> and <b>test-independent</b>. 
-                                     This means that you do not need to specify a disease model, or the test of association used.<br><br>
-                                     Find out more under <a href=\"U-PASS_documentation.html#unified_asymptotic_power_analysis\" target=\"_blank\">About &#8594; Documentation &#8594; Unified power analysis."
+                                   "The power analysis is <b>model-invariant</b> and <b>test-independent</b>.<br><br>
+                                     This means that you do not need to specify a disease model 
+                                     (see <a href=\"disease_models_revisited.html\" target=\"_blank\">Help &#8594; Disease Models Revisited</a>), 
+                                     or the test of association used
+                                     (see <a href=\"U-PASS_documentation.html#unified_asymptotic_power_analysis\" target=\"_blank\">Help &#8594; Documentation &#8594; Unified power analysis</a>)."
                          ))
     ))
   }) # end of intro for OR-RAF tab
@@ -55,7 +57,7 @@ server <- function(input, output, session) {
   #### calculate number of cases (n1) and controls (n2), and the fraction of cases (phi) ####
   
   n1 <- reactive({
-    if (input$sample_size_specification == 'Number of subjects + fraction of Cases') {
+    if (input$sample_size_specification == 'Number of subjects + fraction of cases') {
       validate(need({is.integer(input$n); input$n >= 50; input$n <= 1e7}, 
                     "Number of subjects must be a positive integer between 50 and 10,000,000"))
       validate(need({floor(input$n * input$phi) >= 10}, "Number of cases must be a positive integer >= 10"))
@@ -68,7 +70,7 @@ server <- function(input, output, session) {
     }
   })
   n2 <- reactive({
-    if (input$sample_size_specification == 'Number of subjects + fraction of Cases') {
+    if (input$sample_size_specification == 'Number of subjects + fraction of cases') {
       validate(need({is.integer(input$n); input$n >= 50; input$n <= 1e7}, 
                     "Number of subjects must be a positive integer between 50 and 10,000,000"))
       validate(need({input$n - floor(input$n * input$phi) >= 10}, "Number of controls must be a positive integer >= 10"))
@@ -81,7 +83,7 @@ server <- function(input, output, session) {
     }
   })
   phi <- reactive({
-    if (input$sample_size_specification == 'Number of subjects + fraction of Cases') {
+    if (input$sample_size_specification == 'Number of subjects + fraction of cases') {
       input$phi
     } else {
       validate(
@@ -520,22 +522,26 @@ server <- function(input, output, session) {
     rintrojs::introjs(session, options = list(
       steps = data.frame(element = c("#step1", "#step2", "#step3", 
                                      "#step4", "#power_analysis_results", NA),
-                         intro = c("Specify in here the <b>RAF</b> and <b>OR</b> of the loci you wish to target.<br><br>
-                                    Find out why we do not need to specify a disease model under 
-                                    <a href=\"disease_model_revisited.html\" target=\"_blank\">Help &#8594; Disease Models Revisited.",
+                         intro = c("Use one of two ways to describe the alternative hypothesis: 
+                                     through the <b>canonical parameters</b> (RAF and OR), or alternatively, through a <b>disease model</b>.<br><br>
+                                     We also provide a tool to convert disease model to the canonical parameters. 
+                                     Find out more about these two methods of specification in 
+                                     <a href=\"disease_models_revisited.html\" target=\"_blank\">Help &#8594; Disease Models Revisited</>.",
                                    "Specify <b>constraint on sample sizes</b> here.<br><br>
-                                     It could be total budget (i.e., total number of subjects), number of Cases, or fraction of Cases among recuited subjects.",
+                                     It could be total budget (i.e., total number of subjects), number of cases, or fraction of cases among recuited subjects.",
                                    "Specify <b>false discovery control criteria</b> (FWER / Type I error rate) here.",
                                    "Specify <b>non-discovery control criteria</b> (Type II error rate / FWNDR) here.",
                                    "Results from the power calculation is displayed here.<br><br>
                                      <ul>
-                                       <li>If the contraint is <b>total budget</b>, power is shown as a function of the fraction of Cases.</li>
-                                       <li>If the contraint is <b>number of Cases</b>, power is shown as a function of the number of Controls.</li>
-                                       <li>If the contraint is <b>fraction of Cases</b>, power is shown as a function of the total number of subjects.</li>
+                                       <li>If the contraint is <b>total budget</b>, power is shown as a function of the fraction of cases.</li>
+                                       <li>If the contraint is <b>number of cases</b>, power is shown as a function of the number of controls.</li>
+                                       <li>If the contraint is <b>fraction of cases</b>, power is shown as a function of the total number of subjects.</li>
                                      </ul>",
-                                   "The power analysis is <b>model-invariant</b> and <b>test-independent</b>. 
-                                     This means that you do not need to specify a disease model, or the test of association used.<br><br>
-                                     Find out more under <a href=\"U-PASS_documentation.html#unified_asymptotic_power_analysis\" target=\"_blank\">Help &#8594; Documentation &#8594; Unified power analysis."
+                                   "The power analysis is <b>test-independent</b>. 
+                                     This means that you do not need to specify the test of association used.<br><br>
+                                     If you choose to parametrize the alternative with the cannonical parameters RAF and OR, it is also <b>model-invariant</b>.
+                                     That is, you do not have to specify a disease model.<br><br>
+                                     Find out more under <a href=\"U-PASS_documentation.html#unified_asymptotic_power_analysis\" target=\"_blank\">Help &#8594; Documentation &#8594; Unified power analysis</a>."
                          ))
     ))
   }) # end of intro for design-my-study tab
@@ -563,13 +569,13 @@ server <- function(input, output, session) {
   outputOptions(output, 'fixed_n_design', suspendWhenHidden=FALSE)
   
   fixed_n1_design <- reactive({
-    (!waiting_for_design()) && (input$step2_fixed_quantity == "Number of Cases")
+    (!waiting_for_design()) && (input$step2_fixed_quantity == "Number of cases")
   })
   output$fixed_n1_design <- reactive({fixed_n1_design()})
   outputOptions(output, 'fixed_n1_design', suspendWhenHidden=FALSE)
   
   fixed_phi_design <- reactive({
-    (!waiting_for_design()) && (input$step2_fixed_quantity == "Fraction of Cases")
+    (!waiting_for_design()) && (input$step2_fixed_quantity == "Fraction of cases")
   })
   output$fixed_phi_design <- reactive({fixed_phi_design()})
   outputOptions(output, 'fixed_phi_design', suspendWhenHidden=FALSE)
@@ -656,7 +662,7 @@ server <- function(input, output, session) {
       # calculate power as a function of Controls (assuming one allele pair per subject)
       variable.power <- pchisq(q = design.cutoff(), df = 1 , lower.tail = F, 
                                ncp = design.signal.size.per.sample * 2 * fixed.n)
-      # calculate optimal fraction of Cases
+      # calculate optimal fraction of cases
       optimal.fraction.of.cases <- variable.phi[which.max(design.signal.size.per.sample)]
       optimal.fraction.of.cases.prompt <- ifelse(max(variable.power) > design.power(), 
                                                  yes = paste("<b>Optimal Cases / Controls:</b>", 
@@ -668,7 +674,7 @@ server <- function(input, output, session) {
               type = 'scatter', mode = 'lines+markers',
               line = list(width = 4), marker = list(size = 8), 
               hoverinfo = 'text', 
-              text = paste('Fraction of Cases =', format(variable.phi, scientific = F), 
+              text = paste('Fraction of cases =', format(variable.phi, scientific = F), 
                            '\n', 'Power =', round(variable.power, digits = 3)),
               width = 700, height = 700) %>%
         layout(xaxis = list(fixedrange=FALSE, range = c(-0.01, 1.01), 
@@ -706,10 +712,10 @@ server <- function(input, output, session) {
                         text = optimal.fraction.of.cases.prompt,
                         showarrow = F, font=list(size = 20, color = toRGB("grey60")))
     }
-  }) # end of fixed Cases plotly output
+  }) # end of fixed cases plotly output
   
   
-  #### fixed Cases: power as a function of number of Controls variable.n2 ####
+  #### fixed cases: power as a function of number of Controls variable.n2 ####
   
   # input$fixed_cases
   output$optimal_design_fixed_n1 <- renderPlotly({
@@ -795,7 +801,7 @@ server <- function(input, output, session) {
                         text = required.number.of.controls.prompt,
                         showarrow = F, font=list(size = 20, color = toRGB("grey60")))
     }
-  }) # end of fixed Cases plotly output
+  }) # end of fixed cases plotly output
   
   #### fixed fraction of cases: power as a function of total subjects variable.n ####
   
@@ -890,6 +896,23 @@ server <- function(input, output, session) {
   
 #### ################ third tab: disease model converter ################ ####
   
+  #### quick start guided tours with IntroJS ####
+  
+  observeEvent(input$help_model_converter, {
+    # start IntroJS demo
+    rintrojs::introjs(session, options = list(
+      steps = data.frame(element = c("#disease_model_specification", "#use_disease_model_specification",
+                                     "#disease_model_conversion_results", "#use_canonical_specification"),
+                         intro = c("Specify the disease model and its parameters here.<br><br>
+                                     Definitions of these quantities can be found in 
+                                     <a href=\"disease_models_revisited.html\" target=\"_blank\">Help &#8594; Disease Models Revisited</a>.",
+                                   "You can copy the model specifications to the power calculator by clicking here.",
+                                   "The implied canonical parameters will be calculated here.",
+                                   "You can also copy the canonical parameters to the power calculator by clicking here."
+                         ))
+    ))
+  }) # end of intro for disease model converter tab
+  
   #### Copy model specifications to power calculator ####
   
   observeEvent(input$use_disease_model_specification, {
@@ -911,6 +934,7 @@ server <- function(input, output, session) {
   })
   
   #### disease model converter ####
+  
   disease.model.converted <- reactive({
     # grab input values
     RAF.population <- input$disease_model_RAF_population

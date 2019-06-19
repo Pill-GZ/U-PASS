@@ -222,9 +222,3 @@ They can be easily combined to produce pooled estimates.
 This universality also means that power analysis can be performed the same way, regardless of the disease models assumed.
 This paves way for the OR-RAF diagram, and systematic reviews of statistical validity of existing studies.
 
-# Disease model converter
-
-We provide users with a tool to convert disease model spcifications to the the core paremters ($f$ and $R$).
-
-We also include examples where different disease models produce the same set of core parameters; theses models are equivalent from the perspective of power analysis.
-

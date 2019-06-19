@@ -37,10 +37,10 @@ ui <- shinyUI(tagList(
                                
                                wellPanel(id = "sample_size",
                                          selectInput("sample_size_specification", "Sample size specification",
-                                                     list("Number of subjects + fraction of Cases", 
+                                                     list("Number of subjects + fraction of cases", 
                                                           "Number of cases + number of controls")),
                                          conditionalPanel(
-                                           condition = "input.sample_size_specification == 'Number of subjects + fraction of Cases'",
+                                           condition = "input.sample_size_specification == 'Number of subjects + fraction of cases'",
                                            numericInput("n", "Totoal number of subjects:", 
                                                         value = 20000, min = 500, max = 1000000, step = 100),
                                            sliderInput("phi", "Fraction of cases:", value = 1/2, min = 0.05, max = 0.95, step = .05)
@@ -155,7 +155,7 @@ ui <- shinyUI(tagList(
                         
                         #### display OR-RAF diagram ####
                         
-                        column(8, # "fixing height to avoid automatic adjustments"
+                        column(8, 
                                # textOutput("debug"),
                                div(id = "OR-RAF_diagram",
                                    tags$style(type="text/css", '#OR-RAF_diagram { width:750px; }'),
@@ -241,20 +241,20 @@ ui <- shinyUI(tagList(
                                    selectInput("step2_fixed_quantity", "Step 2: Sample size constraints",
                                                list("Select a constraint",
                                                     "Budget / total number of subjects", 
-                                                    "Number of Cases",
-                                                    "Fraction of Cases")),
+                                                    "Number of cases",
+                                                    "Fraction of cases")),
                                    conditionalPanel(
                                      condition = "input.step2_fixed_quantity == 'Budget / total number of subjects'",
-                                     numericInput("fixed_budget", "Total subjects (Cases + Controls):", 
+                                     numericInput("fixed_budget", "Total subjects (cases + controls):", 
                                                   value = 20000, min = 500, max = 1000000, step = 100)
                                    ),
                                    conditionalPanel(
-                                     condition = "input.step2_fixed_quantity == 'Number of Cases'",
-                                     numericInput("fixed_cases", "Number of Cases in study:", 
+                                     condition = "input.step2_fixed_quantity == 'Number of cases'",
+                                     numericInput("fixed_cases", "Number of cases in study:", 
                                                   value = 10000, min = 500, max = 1000000, step = 100)
                                    ),
                                    conditionalPanel(
-                                     condition = "input.step2_fixed_quantity == 'Fraction of Cases'",
+                                     condition = "input.step2_fixed_quantity == 'Fraction of cases'",
                                      sliderInput("fixed_phi", "Fraction of cases in the study:", value = 1/2, min = 0.05, max = 0.95, step = .05)
                                    )
                                  ), # end of step 2: select a constraint
@@ -359,8 +359,8 @@ ui <- shinyUI(tagList(
              
              
              #### Disease model converter tab ################################################# ####
-             tabPanel(HTML("Disease Model Converter"),
-                      value = "disease_model_revisited",
+             
+             tabPanel(HTML("Disease Model Converter"), value = "disease_model_revisited",
                       
                       includeHTML("www/header.html"),
                       HTML("<p>We encourage users to take a "), 
@@ -379,10 +379,7 @@ ui <- shinyUI(tagList(
                         column(3, offset = 0,
                                wellPanel(id = "disease_model_specification",
                                          selectInput("disease_model", "Disease model:",
-                                                     list("Multiplicative",
-                                                          "Additive",
-                                                          "Dominant",
-                                                          "Recessive")),
+                                                     list("Multiplicative", "Additive", "Dominant", "Recessive")),
                                          numericInput("disease_model_prevalence", "Disease prevalence in the population:", 
                                                       value = 0.1, min = 0.01, max = 0.99, step = 0.01),
                                          numericInput("disease_model_RAF_population", "Risk allele frequency in the population:", 
@@ -393,13 +390,15 @@ ui <- shinyUI(tagList(
                                                       label = "Go to power calculator")
                                ) # end of disease model specifications
                         ), # end of left column
+                        
                         #### disease model conversions ####
+                        
                         column(1, 
                                br(), br(), br(), br(), br(),
                                HTML('<center> <img src="arrow.png" width="100%" /> </center>')),
                         column(3, offset = 0,
                                br(), br(), br(),
-                               wellPanel(
+                               wellPanel(id = "disease_model_conversion_results",
                                  HTML("<b>Risk allele frequency in controls:</b>"),
                                  panel(
                                    htmlOutput("disease_model_converter_result_f")
@@ -410,14 +409,16 @@ ui <- shinyUI(tagList(
                                  ),
                                  actionButton(inputId = "use_canonical_specification",  class = 'rightAlign', 
                                               label = htmlOutput("disease_model_converter_message"))
-                               )
+                               ) # end of conversion output
                         ) # end of right column
-                      ),
+                      ), # enf of disease model converter
+                      
                       br(),
+                      
                       fluidRow(
                         column(7, offset = 0,
                                includeHTML("www/disease_model_converter.html"),
-                               HTML("<p>Notice that<ul><li>Disease model parameters may be incompatible. 
+                               HTML("<p>A few things to note:<ul><li>Disease model parameters may be incompatible. 
                                     Try, e.g., "), 
                                actionButton("disease_model_preset_incompatible", "an incompatible disease model"),
                                HTML(".</li><li>Multiple disease models can map to the same set of canonical parameters. 
@@ -428,8 +429,8 @@ ui <- shinyUI(tagList(
                                actionButton("disease_model_preset_recessive", "Recessive"),
                                HTML("models.</li></ul>"), 
                                br(), br()
-                        )
-                      ),
+                        ) 
+                      ), # end of comments to disease model conversions
                       includeHTML("www/credits.html")
              ), # end of disease model converter
              
@@ -462,8 +463,7 @@ ui <- shinyUI(tagList(
                                  )
                         ),
                         # Documentation page is inserted below the contact page
-                        tabPanel(HTML("Citation and Contact"), 
-                                 value = "contact",
+                        tabPanel(HTML("Citation and Contact"), value = "contact",
                                  fluidRow(
                                    column(6, offset = 3,
                                           includeHTML("www/contact.html")
