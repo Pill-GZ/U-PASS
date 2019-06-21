@@ -1,5 +1,5 @@
 ---
-title: 'Documentation for U-PASS: a unified power analysis of association tests'
+title: 'A unified power analysis of association tests'
 author: "GAO Zheng"
 date: "April 5, 2019"
 bibliography: bibliography.bib
@@ -23,10 +23,18 @@ output:
 library(kableExtra)
 ```
 
+In genetic association studies, researchers have the freedom to choose his/her favorate statistical procedure to perform hypothesis testing on the data collected.
+In this document, we investigate the natural question: does the choice of statistical test influence the power of scientific discovery?
+
+Perhaps unsurprisingly, the answer is (asymptotically) no.
+We shall quantify this common power limit, and provide practical formulas for power calculations.
+
+We recommend users review [the role played by disease models](disease_models_revisited.html){target="_blank"} before proceeding. 
+
 # Unified asymptotic power analysis {#sec:unified-analysis}
 
-In association tests for categorical phenotypes and genetic variants, counts of subjects in each phenotype-genetic variant combination are tabulated in the form of a contingency table.
-For a 2-genetic-variant-by-2-phenotype definition, we have the following table of counts.
+In association studies for qualitative traits, counts of subjects in each phenotype-genetic variant combination are tabulated in the form of a contingency table.
+For a 2-allele-variant-by-2-phenotype definition, we have the following table of counts.
 
 ```{r echo=FALSE}
 dt <- data.frame(matrix(c("Cases", "$O_{11}$", "$O_{12}$", "$n_1$",
@@ -36,23 +44,27 @@ colnames(dt) <- c("# Observations", "Variant 1", "Variant 2", "Counts by phenoty
 
 kable(dt, "html", escape = FALSE, align = "c") %>%
   kable_styling(bootstrap_options = c("hover", "responsive"), full_width = F) %>%
-  add_header_above(c(" " = 1, "Genotypes" = 2, " " = 1))
+  add_header_above(c(" " = 1, "Allele variant" = 2, " " = 1))
 ```
 
 Statistics are then calculated based on the counts, to test for associations between the genotypes and phenotypes, at levels adjusted for multiplicity.
 Performance of a test is measured in terms of power, i.e., probability of correct rejection under an alternative hypothesis.
 
-Power analysis starts by assuming an alternative, typically described by a disease model (recessive, dominant, additive, etc.).
+Power analysis starts by assuming an alternative distribution, typically (though not necessarily) described by a disease model.
 Power of a test is approximated either based on large sample asymptotics, or by simulating the empirical distribution of the statistic under the alternative.
 
+<!--
 Note that even when the disease model dictates more than two genotypes (e.g., one heterozygous and two homozygous variants in an additive model), the association tests may still be based on only two derived variants.
 This can be due to either grouping of the genotypes definitions in dominant or recessive models, or by adopting a direct comparison of the proportions of allele types between the Case and Control groups, as opposed to the proportions of zygosity.
 Indeed, the latter approach is the basis of power calculations in @skol2006joint.
+-->
 
 ## A model-invariant parametrization {#subsec:model-invariant}
 
-Regardless of the disease model assumed, the test statistics are calculated based on cell counts of the contingency table.
+<!--
+Test statistics are calculated based on cell counts of the contingency table.
 The alternative hypothesis, consequently, influences the distribution of the test statistics only through altering the distribution of the multinomial integer counts in the contingency tables.
+-->
 
 Consider 2-by-2 multinomial distributions with probability matrix $\mu = (\mu_{ij})_{2\times2}$,
 
@@ -64,7 +76,7 @@ colnames(dt) <- c("Probabilities", "Variant 1", "Variant 2", "Total by phenotype
 
 kable(dt, "html", escape = FALSE, align = "c") %>%
   kable_styling(bootstrap_options = c("hover", "responsive"), full_width = F) %>%
-  add_header_above(c(" " = 1, "Genotypes" = 2, " " = 1))
+  add_header_above(c(" " = 1, "Allele variant" = 2, " " = 1))
 ```
 
 We may assume -- by relabelling, and hence without loss of generality -- that genetic Variant 1 is positively associated with the Cases, and referred to as the risk allele / variant. 
@@ -82,10 +94,11 @@ $$
 $$
     
 An alternative hypothesis, e.g., a disease model, determines the the trio of quantities either implicitly or explicitly,
-%The fraction of Cases $\phi$ is part of the study design.
+<!-- The fraction of Cases $\phi$ is part of the study design.-->
 and therefore fully determines statistical power for a specific test at a given sample size.
 From a statistical perspective, the disease model serves no role except to specify the distribution of the counts under the alternative.
-Power may be calculated by directly prescribing the trio $(\phi, f, R)$, and the sample size.
+Power may be calculated by directly prescribing the trio $(\phi, f, R)$, and the sample sizes.
+(See, again, [Disease Models Revisited](disease_models_revisited.html){target="_blank"}.)
 
 It is worth pointing out that while disease models play no role beyond specifying the alternative, they do sometimes inform our choice of a test statistic, hence influencing statistical power in higher order contingency tables.
 These tests include, e.g., the Cochran-Armitage test, and variations thereof;
@@ -109,11 +122,11 @@ In this case, we have two binomial observations, Binom$(n_1, p_1)$ and Binom$(n_
 dt <- data.frame(matrix(c("Cases", "$p_{1}$", "$1-p_{1}$", "$n_1$",
                           "Controls", "$p_{2}$", "$1-p_{2}$", "$n_2$"), byrow = T, nrow = 2))
 
-colnames(dt) <- c("Cond. Prob.", "Variant 1", "Variant 2", "Counts by phenotype")
+colnames(dt) <- c("Cond. Prob.", "Risk allele", "Non-risk allele", "Counts by phenotype")
 
 kable(dt, "html", escape = FALSE, align = "c") %>%
   kable_styling(bootstrap_options = c("hover", "responsive"), full_width = F) %>%
-  add_header_above(c(" " = 1, "Genotypes" = 2, " " = 1))
+  add_header_above(c(" " = 1, "Allele variant" = 2, " " = 1))
 ```
 
 RAF and OR can be similarly defined,
@@ -208,11 +221,11 @@ To use this result for power calculations, we start with an alternative hypothes
 dt <- data.frame(matrix(c("Cases", "$\\frac{fR\\phi}{(fR+1-f)}$", "$\\frac{(1-f)\\phi}{(fR+1-f)}$",  "$\\phi$",
                           "Controls", "$f(1-\\phi)$", "$(1-f)(1-\\phi)$",  "$1-\\phi$"), byrow = T, nrow = 2))
 
-colnames(dt) <- c("Probabilities", "Variant 1", "Variant 2", "Total by phenotype")
+colnames(dt) <- c("Probabilities", "Risk allele", "Non-risk allele", "Total by phenotype")
 
 kable(dt, "html", escape = FALSE, align = "c") %>%
   kable_styling(bootstrap_options = c("hover", "responsive"), full_width = F) %>%
-  add_header_above(c(" " = 1, "Genotypes" = 2, " " = 1))
+  add_header_above(c(" " = 1, "Allele variant" = 2, " " = 1))
 ```
 
 Elementary algebra yields 
@@ -237,11 +250,11 @@ For rare risk alleles, this corresponds to the following table.
 dt <- data.frame(matrix(c("Cases", "$m_{1}$", "$n_{1}-m_{1}$", "$n_1$",
                           "Controls", "$0$", "$n_{2}$", "$n_2$"), byrow = T, nrow = 2))
 
-colnames(dt) <- c("# Observations", "Variant 1", "Variant 2", "Counts by phenotype")
+colnames(dt) <- c("# Observations", "Risk allele", "Non-risk allele", "Counts by phenotype")
 
 kable(dt, "html", escape = FALSE, align = "c") %>%
   kable_styling(bootstrap_options = c("hover", "responsive"), full_width = F) %>%
-  add_header_above(c(" " = 1, "Genotypes" = 2, " " = 1))
+  add_header_above(c(" " = 1, "Allele variant" = 2, " " = 1))
 ```
 
 If the p-values do not fall below the desired type I error threshold, then the rejection region (for $O_{11}$) must lie beyond $m_1$. 
@@ -254,11 +267,11 @@ For rare non-risk alleles, the most extreme observation corresponds to the follo
 dt <- data.frame(matrix(c("Cases", "$n_{1}$", "$0$", "$n_1$",
                           "Controls", "$n_2-m_2$", "$m_{2}$", "$n_2$"), byrow = T, nrow = 2))
 
-colnames(dt) <- c("# Observations", "Variant 1", "Variant 2", "Counts by phenotype")
+colnames(dt) <- c("# Observations", "Risk allele", "Non-risk allele", "Counts by phenotype")
 
 kable(dt, "html", escape = FALSE, align = "c") %>%
   kable_styling(bootstrap_options = c("hover", "responsive"), full_width = F) %>%
-  add_header_above(c(" " = 1, "Genotypes" = 2, " " = 1))
+  add_header_above(c(" " = 1, "Allele variant" = 2, " " = 1))
 ```
 
 We can similarly determine the minimum number of non-risk allele counts needed to achieve non-zero power at the given type I error target, for a given phenotype marginals $(n_1, n_2)$.

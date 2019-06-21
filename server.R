@@ -49,7 +49,7 @@ server <- function(input, output, session) {
                                      This means that you do not need to specify a disease model 
                                      (see <a href=\"disease_models_revisited.html\" target=\"_blank\">Help &#8594; Disease Models Revisited</a>), 
                                      or the test of association used
-                                     (see <a href=\"U-PASS_documentation.html#unified_asymptotic_power_analysis\" target=\"_blank\">Help &#8594; Documentation &#8594; Unified power analysis</a>)."
+                                     (see <a href=\"unified_power_analysis.html#unified_asymptotic_power_analysis\" target=\"_blank\">Help &#8594; Unified Power Analysis</a>)."
                          ))
     ))
   }) # end of intro for OR-RAF tab
@@ -539,9 +539,7 @@ server <- function(input, output, session) {
                                      </ul>",
                                    "The power analysis is <b>test-independent</b>. 
                                      This means that you do not need to specify the test of association used.<br><br>
-                                     If you choose to parametrize the alternative with the cannonical parameters RAF and OR, it is also <b>model-invariant</b>.
-                                     That is, you do not have to specify a disease model.<br><br>
-                                     Find out more under <a href=\"U-PASS_documentation.html#unified_asymptotic_power_analysis\" target=\"_blank\">Help &#8594; Documentation &#8594; Unified power analysis</a>."
+                                     Find out more under <a href=\"unified_power_analysis.html#unified_asymptotic_power_analysis\" target=\"_blank\">Help &#8594; Unified Power Analysis</a>."
                          ))
     ))
   }) # end of intro for design-my-study tab

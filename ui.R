@@ -21,11 +21,9 @@ ui <- shinyUI(tagList(
                       includeHTML("www/header.html"),
                       HTML("<p>We encourage users to take a "), 
                       actionButton("help_ORRAF", "quick tour of the interface"),
-                      HTML(", check out the "),
+                      HTML(", and check out the "),
                       actionButton(inputId="link_to_guide_from_tab1", label="User Guide"),
-                      HTML(", and find definitions of key quantities in the "),
-                      actionButton("null", "Documentation",
-                                   onclick ="window.open('U-PASS_documentation.html', '_blank')"),
+                      HTML("and detailed documentations in the help pages."),
                       
                       fluidRow(
                         
@@ -181,11 +179,9 @@ ui <- shinyUI(tagList(
                       includeHTML("www/header.html"),
                       HTML("<p>We encourage users to take a "), 
                       actionButton("help_power_analysis", "quick tour of the interface"),
-                      HTML(", check out the "),
+                      HTML(", and check out the "),
                       actionButton(inputId="link_to_guide_from_tab2", label="User Guide"),
-                      HTML(", and find definitions of key quantities in the "),
-                      actionButton("null", "Documentation",
-                                   onclick ="window.open('U-PASS_documentation.html', '_blank')"),
+                      HTML("and detailed documentations in the help pages."),
                       
                       fluidRow(
                         #### Study specifications ####
@@ -365,11 +361,9 @@ ui <- shinyUI(tagList(
                       includeHTML("www/header.html"),
                       HTML("<p>We encourage users to take a "), 
                       actionButton("help_model_converter", "quick tour of the interface"),
-                      HTML(", check out the "),
+                      HTML(", and check out the "),
                       actionButton(inputId="link_to_guide_from_tab3", label="User Guide"),
-                      HTML(", and find definitions of key quantities in the "),
-                      actionButton("null", "Documentation",
-                                   onclick ="window.open('U-PASS_documentation.html', '_blank')"),
+                      HTML("and detailed documentations in the help pages."),
                       
                       fluidRow(
                         
@@ -437,10 +431,11 @@ ui <- shinyUI(tagList(
              #### Help pages ####
              
              navbarMenu("Help",
+                        # Documentation page is inserted below the User Guide
                         tabPanel(HTML('User Guide</a></li>
                                       <li><a href=\"disease_models_revisited.html\" target=\"_blank\">Disease Models Revisited 
                                       <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAQElEQVR42qXKwQkAIAxDUUdxtO6/RBQkQZvSi8I/pL4BoGw/XPkh4XigPmsUgh0626AjRsgxHTkUThsG2T/sIlzdTsp52kSS1wAAAABJRU5ErkJggg=="></a></li>
-                                      <li><a href=\"U-PASS_documentation.html\" target=\"_blank\">Documentation 
+                                      <li><a href=\"unified_power_analysis.html\" target=\"_blank\">Unified Power Analysis 
                                       <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAQElEQVR42qXKwQkAIAxDUUdxtO6/RBQkQZvSi8I/pL4BoGw/XPkh4XigPmsUgh0626AjRsgxHTkUThsG2T/sIlzdTsp52kSS1wAAAABJRU5ErkJggg==">'), 
                                  value = "user_guide",
                                  fluidRow(
@@ -462,7 +457,6 @@ ui <- shinyUI(tagList(
                                    )
                                  )
                         ),
-                        # Documentation page is inserted below the contact page
                         tabPanel(HTML("Citation and Contact"), value = "contact",
                                  fluidRow(
                                    column(6, offset = 3,

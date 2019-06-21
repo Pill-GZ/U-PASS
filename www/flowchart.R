@@ -4,7 +4,7 @@
 png("www/flowchart.png", width = 8, height = 2.5, units = "in", res = 100)
 # par(mar = c(2,2,1,1))
 par(mar = c(0.1, 0, 0.1, 0))
-plot(c(0, 1.15), c(0, 1.02), type = 'n', axes = F, yaxs="i")
+plot(c(0, 1.1), c(0, 1.02), type = 'n', axes = F, yaxs="i")
 first_col <- 0.2
 second_col <- 0.6
 third_col <- 0.9
