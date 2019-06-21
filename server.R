@@ -514,10 +514,19 @@ server <- function(input, output, session) {
   # design-my-study tab
   observeEvent(input$help_power_analysis, {
     # Auto fill in Steps 1-4 for the IntroJS demo
-    updateSelectInput(session, "step1_model_specification", selected = "Allele frequency and odds ratio")
-    updateSelectInput(session, "step2_fixed_quantity", selected = "Budget / total number of subjects")
-    updateSelectInput(session, "step3_type_I_error_criteria", selected = "Family-wise error rate (FWER)")
-    updateSelectInput(session, "step4_type_II_error_criteria", selected = "Type II error / non-discovery proportion (NDP)")
+    if (input$step1_model_specification == "Select a model specification") {
+      updateSelectInput(session, "step1_model_specification", selected = "Allele frequency and odds ratio")
+    }
+    if (input$step2_fixed_quantity == "Select a constraint") {
+      updateSelectInput(session, "step2_fixed_quantity", selected = "Budget / total number of subjects")
+    }
+    if (input$step3_type_I_error_criteria == "Select a criterion") {
+      updateSelectInput(session, "step3_type_I_error_criteria", selected = "Family-wise error rate (FWER)")
+    }
+    if (input$step4_type_II_error_criteria == "Select a criterion") {
+      updateSelectInput(session, "step4_type_II_error_criteria", selected = "Type II error / non-discovery proportion (NDP)")
+    }
+    
     # start IntroJS demo
     rintrojs::introjs(session, options = list(
       steps = data.frame(element = c("#step1", "#step2", "#step3", 
