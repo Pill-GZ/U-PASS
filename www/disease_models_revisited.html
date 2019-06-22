@@ -1854,15 +1854,15 @@ Controls
 <div id="power-calculations-of-association-tests" class="section level2">
 <h2>Power calculations of association tests</h2>
 <p>Finally, the power of an statistical test is calculated as the probability of (a correct) rejection, assuming that the data (i.e., tabulated counts of the allele type-phenotype combinations) follow a multinomial distribution with probability matrix <span class="math inline">\(\mu\)</span> and sample size <span class="math inline">\(2n\)</span>, since each individual has a pair of alleles.</p>
-<p>Some common association tests include the likelihood ratio test, Pearson’s chi-square test, tests of zero slope coefficient in logistic regressions, as well as t-tests for equal proportions. In principal, power analysis has to be taylored to the association test used. Fortunately, many of these tests are asymptotically equivalent in terms of power, and results of the power analysis applies to all equivalent tests. We refer users to <a href="U-PASS_documentation.html" target="_blank">Documentation</a> for further details.</p>
-<p>These steps form the basis of the calculations implemented in the most existing tools, including the <a href="http://csg.sph.umich.edu/abecasis/cats/gas_power_calculator/" target="_blank">GAS calculator</a>. See (a terse) <a href="https://github.com/jenlij/GAS-power-calculator/blob/master/equations_gas_power_calc.pdf" target="_blank">documentation</a> of their <a href="https://github.com/jenlij/GAS-power-calculator/blob/master/gas_power_calculator.js" target="_blank">implementation</a>. Although not explicitly stated, the GAS calculator assumes the test of association to be the Welch t-test for equal proportions.</p>
+<p>Some common association tests include the likelihood ratio test, Pearson’s chi-square test, tests of zero slope coefficient in logistic regressions, as well as t-tests for equal proportions. In principal, power analysis has to be taylored to the association test used. Fortunately, many of these tests are asymptotically equivalent in terms of power, and results of the power analysis applies to all equivalent tests. We refer users to <a href="unified_power_analysis.html" target="_blank">Unified Power Analysis</a> for further details.</p>
+<p>These steps form the basis of the calculations implemented in the most existing tools )including the <a href="http://csg.sph.umich.edu/abecasis/cats/gas_power_calculator/" target="_blank">GAS calculator</a>, where a (terse) documentation of their <a href="https://github.com/jenlij/GAS-power-calculator/blob/master/gas_power_calculator.js" target="_blank">implementation</a> is available <a href="https://github.com/jenlij/GAS-power-calculator/blob/master/equations_gas_power_calc.pdf" target="_blank">here</a>). Although not explicitly stated, the GAS calculator assumes the test of association to be the Welch t-test for equal proportions.</p>
 <!-- **Caveat:** The final step in the power calculations does not apply to association tests performed directly on the 2-by-3 contingency tables of phenotype-genotype combinations (e.g., the [Cochran-Armitage_test](https://en.wikipedia.org/wiki/Cochran%E2%80%93Armitage_test_for_trend){target="_blank"}).
 Therefore, the GAS calculator should not be used if these tests are to be applied. --->
 </div>
 </div>
 <div id="two-modeling-approaches" class="section level1">
 <h1>Two modeling approaches</h1>
-<p>In the power calculations outlined above, the disease models are used to decribe the distribution of the data under the alternative hypothesis. Specifically, they are used to specify the conditional distributions of the allele variants, given the phenotypes. For example, the probability of observing a risk allele in the control group, <span class="math display">\[
+<p>In the power calculations outlined above, the disease models are used to decribe the distribution of the data under the alternative hypothesis. Specifically, they are used to specify the conditional distributions of the allele variants, given the phenotypes. The probability of observing a risk allele in the control group, <span class="math display">\[
 f := \mathbb{P}[\,\text{risk allele}\,|\,\text{control group}\,] 
 = \frac{\mu_{21}}{1-\phi} 
 = \frac{\pi_{22} + \pi_{21}/2}{\pi_{22} + \pi_{21} + \pi_{20}},
@@ -1883,39 +1883,68 @@ R:=\frac{\mu_{11}\mu_{22}}{\mu_{12}\mu_{21}}
 <p><br /></p>
 <p><strong>Caution</strong>: we remind readers that the risk allele frquency in the control group (<span class="math inline">\(f\)</span>) is not the same as the risk allele frequency in the general population (<span class="math inline">\(p\)</span>); odds ratio (<span class="math inline">\(R\)</span>) is also a very different quantity from genotye relative risk (GRR).</p>
 <p>It is worth noting that the mapping from the disease model and its parameters to the canonical parameters (<span class="math inline">\(f, R\)</span>) is many-to-one. That is, different disease model specifications may lead to the <em>same</em> distributions of the allele variant counts. From a statistical perspective, the disease models that map to the same set of canonical parameters are equivalent in terms of power.</p>
-<p>We provide users with a “Disease Model Converter” in the application, and demonstrate this equivalence among disease models with an example.</p>
-<p>In power calculations, we can either describe the alternative hypothesis with a disease model, or through the canonical parameters <span class="math inline">\(f\)</span> and <span class="math inline">\(R\)</span>. Both approaches are sufficient for the purpose of power analysis.</p>
-<p>While the disease models may carry additional insights into the biological process, we believe that the canonical parameters also have their unique advantages. We offer three reasons why we believe the latter approach may be preferable in practice.</p>
+<p>We provide users with a “Disease Model Converter”, and demonstrate this equivalence among disease models with an example in the application.</p>
+<div id="in-power-calculations-we-can-either-describe-the-alternative-hypothesis-with-a-disease-model-or-through-the-canonical-parameters-f-r.-both-approaches-are-sufficient-for-the-purpose-of-power-analysis." class="section level4">
+<h4>In power calculations, we can either describe the alternative hypothesis with a disease model, or through the canonical parameters (<span class="math inline">\(f, R\)</span>). Both approaches are sufficient for the purpose of power analysis.</h4>
+<p>While the disease models may carry additional insights into the biological process, the canonical parameters also have their unique advantages. We offer an incomplete list of comparisons of the two approaches, and discuss their usage in practice.</p>
+</div>
+<div id="interpretability-and-communicability" class="section level2">
+<h2>Interpretability and communicability</h2>
+<p>In general, geneticists and biostatisticians seem to agree that disease models are more transparent to interpretations. The concept of genotype relative risks, in particular, seems easier to reason about than odds ratios in the canonical parameters definition. Disease models also seem to be the de facto mode of model specification when performing power analysis for study planning and grant applications.</p>
+<p>The “nonparametric” approach to model specification through the canonical parameters is somewhat lesser known to the statistical genetics community. The canonical parameters are typically estimated and reported as outcomes of the research, but not used as inputs to the power analysis for planning purposes.</p>
+</div>
 <div id="availability-of-parameter-estimates" class="section level2">
 <h2>Availability of parameter estimates</h2>
 <p>The canonical parameters <span class="math inline">\(f\)</span> and <span class="math inline">\(R\)</span> can be estimated from data collected in the study. They are also reported and curated in GWAS catalogs such as the <a href="https://www.ebi.ac.uk/gwas/" target="_blank">NHGRI-EBI Catalog</a>.</p>
-<p>On the other hand, information regarding the disease model parameters can be hard to come by. Worse still, some parameters in the disease models cannot be estimated from the study itself.</p>
-<p>For example, the information regarding disease prevalence in population (as well as RAF in population <span class="math inline">\(p\)</span>) must be obtained from other studies or surveys targeting the general population; the study, which usually itself oversamples the cases, does not produce an estimate. Genetic association studies also rarely report the disease model parameters used. In fact, we are not aware of a GWAS catalog that reports and curates the disease models and their estimated parameters.</p>
-</div>
-<div id="robustness-against-human-errors" class="section level2">
-<h2>Robustness against human errors</h2>
-<p>The disparity in availability of parameter estimates also lead to some unintended consequences. One of them is potential incorrect usage of power calculators.</p>
-<p>Recall that the specification of a disease model requires as input the risk allele frequency (RAF) in the general population (i.e., p). The RAF reported in the <a href="https://www.ebi.ac.uk/gwas/" target="_blank">NHGRI-EBI Catalog</a>, however, refers to RAF in the control group (i.e., f). With RAF in population often unavailable, it is tempting to substitute the RAF in control group into the calculations. While the two quantities may be close when diseases prevalence and penetrance are low, their difference becomes non-negligible if either of the two conditions are violated, leading to grossly off power calculations.</p>
-<p>Performing power analysis with the canonical parameters is a not sure-fire way to prevent this human error, as the converse may also happen. However, it is still somewhat safer, since what is readily available matches what is needed as input.</p>
+<p>On the other hand, accurate information regarding the disease model parameters can be more difficult to obtain, partly because some parameters in the disease models cannot be estimated from the association studies alone.</p>
+<p>In particular, disease prevalence in population (Prev), as well as RAF in population (<span class="math inline">\(p\)</span>), must be obtained from other studies or surveys targeting the general population; the association studies, which usually themselves oversample the cases, do not produce estimates. Genetic association studies also rarely report the disease model and its parameters estimates. In fact, we are not aware of a GWAS catalog that reports and curates the disease models and their estimated parameters.</p>
+<p>This is paucity of information on disease model parameters is not an issue if we are planning to study a trait for which we have little prior knowledge. In this case, the purpose of power analysis is to determine the range of models and parameters that lead to discovery of associations, given the study designs.</p>
+<p>In contrast, in confirmatory / follow-up studies and systematic reviews, our main interest is in the statistical validity of the reported findings. Power analysis then serves to find efficient designs, and to validate the claims made. Knowledge obtained in prior studies (in the form of parameter estimates) are indeed necessary.</p>
 </div>
 <div id="robustness-against-model-misspecification" class="section level2">
 <h2>Robustness against model misspecification</h2>
-<p>Disease models are useful in as mush as they are help us understand the biology behind the observations. Unfortunately, like all models, they can be misspecified. For example, the following genotype relative risks, <span class="math display">\[
+<p>Disease models are useful in as mush as they help us understand the biology behind the data we observe. Unfortunately, like all models, they can be misspecified. For example, the following genotype relative risks, <span class="math display">\[
 \frac{\pi_{10}}{\pi_{10} + \pi_{20}} : \frac{\pi_{11}}{\pi_{11} + \pi_{21}} : \frac{\pi_{12}}{\pi_{12} + \pi_{22}}
 = 1 : 3 : 4,
 \]</span> does not follow any of the common disease models. In this case, different studies may come up with different disease models (say, Dominant and Additive), and of course, different parameter estimates.</p>
-<p>Suppose a researcher wishes to perform a meta analysis or confirmatory experiment of the existing results, where the literature reports inconsistent estimates of disease models and parameters, s/he would a have a difficult time pooling the information from these different sources. And even when they are pooled, the resulting model usually does not fall in one of the familiar categories – there is no existing tool with which to perform power analysis. The researcher will likely have to forgo the information from one model, and use estimates from only the other.</p>
-<p>On the other hand, the canonical parameters are invariant to the disease model choices. They can also be easily combined to produce pooled estimates. This universality allows us to perform power analysis in a unified fashion, regardless of the disease models assumed. This also paves the way for the “OR-RAF diagram”, as well as systematic reviews of statistical validity of existing studies.</p>
+<p>Suppose a researcher wishes to perform a meta analysis or confirmatory experiment of the existing results, where the literature reports inconsistent estimates of disease models and parameters, she / he would a have a difficult time pooling the information from these different sources. And even when they are pooled, the resulting model usually does not fall in one of the familiar categories — there is no existing tool with which to perform power analysis. The researcher will likely have to forgo the information from one model, and use estimates from only the other.</p>
+<p>On the other hand, the canonical parameters are invariant to the disease model choices, and accomadate models falling outside the usual categories. They can also be easily combined to produce pooled estimates. This universality allows us to perform power analysis in a unified fashion, regardless of the disease models assumed. This also paves the way for the “OR-RAF diagram”, as well as systematic reviews of statistical validity of existing studies.</p>
+</div>
+<div id="robustness-against-human-errors" class="section level2">
+<h2>Robustness against human errors</h2>
+<p>The disparity in availability of parameter estimates we mentioned earlier can lead to unintended consequences, one of which is potentially incorrect usage of power calculators.</p>
+<p>This issue, although minor, affects correctness of the results from power analysis.</p>
+<p>Recall that the specification of a disease model requires as input the risk allele frequency (RAF) in the general population (<span class="math inline">\(p\)</span>). The RAF reported in the <a href="https://www.ebi.ac.uk/gwas/" target="_blank">NHGRI-EBI Catalog</a>, in contrast, refers to RAF in the control group (<span class="math inline">\(f\)</span>). With RAF in population often unavailable, it is tempting to substitute the RAF in control group into the calculations. While the two quantities may be close when diseases prevalence and penetrance are low, their difference becomes non-negligible if either of the two conditions are violated, leading to grossly distorted results.</p>
+<p>Performing power analysis with the canonical parameters is a not sure-fire way to prevent this human error (as the converse could also happen). However, it is perhaps more robust to such mistakes, since what is readily available matches with what is required as input.</p>
 </div>
 <div id="compatibility-of-parameters" class="section level2">
 <h2>Compatibility of parameters</h2>
-<p>We mentioned above that the mapping from the disease models to the canonical parameters is many-to-one, therefore making the disease models unidentifiable from the allelic tables.</p>
-<p>Adding to this complexity, not all values of the disease model parameter combinations are valid. For example, in a multiplicative model, the parameters <span class="math display">\[
+<p>We make another minor comment regarding practical usage of disease models.</p>
+<!-- We mentioned above that the mapping from the disease models to the canonical parameters is many-to-one, therefore making the disease models unidentifiable from the allelic tables. -->
+<p>We caution users that not all values of the disease model parameter combinations are valid. For example, in a multiplicative model, the parameters <span class="math display">\[
 p = 0.1, \quad \text{Prev} = 0.5, \quad \text{GRR} = 1.5,
-\]</span> would result in the conditional probability of having two risk allele copies greater than 1. (In this case, the GAS calculator would produces the error message: “I don’t like the genetic model you requested!”, without explicitly pointing to the compatibility issue.)</p>
+\]</span> would result in the conditional probability of having two risk allele copies greater than 1. (In this case, the <a href="http://csg.sph.umich.edu/abecasis/cats/gas_power_calculator/" target="_blank">GAS calculator</a> would produce the error message: “I don’t like the genetic model you requested!”, without explicitly pointing to the compatibility issue.)</p>
 <p>Although an experienced geneticist would immediately notice the impossibilty of the disease model parameter combinations, these contradictions may not be obvious to the untrained eye. The end user of the software – experienced or not – is ultimately responsible for inputting valid values when specifying a disease model.</p>
-<p>On the other hand, parameter compatibility is not an problem for the set of canonical parameters. Any combination of <!-- $$f\in(0,1), \quad R\in(0,+\infty), \quad \phi\in(0,1), \quad \text{and} \quad n\in\mathbb{N_+}$$ ---> <span class="math display">\[f\in(0,1), \quad \text{and} \quad R\in(0,+\infty)\]</span> is valid, making them arguably the easier option to work with.</p>
+<p>On the other hand, any combination of <!-- $$f\in(0,1), \quad R\in(0,+\infty), \quad \phi\in(0,1), \quad \text{and} \quad n\in\mathbb{N_+}$$ ---> <span class="math display">\[f\in(0,1), \quad \text{and} \quad R\in(0,+\infty)\]</span> is valid. Parameter compatibility is not an problem for the set of canonical parameters.</p>
 </div>
+</div>
+<div id="when-to-use-which" class="section level1">
+<h1>When to use which?</h1>
+<p>Depending on the use cases, either approach may have an edge. Neither is decidedly better than the other.</p>
+<p>In view of the discussions above, we propose the following general guideline for power analysis in genetic association studies.</p>
+<ul>
+<li>When designing an association study where little to no prior information is available:
+<ul>
+<li>Either approach is valid.</li>
+<li>Disease models are easier to interpret and communicate.</li>
+</ul></li>
+<li>When designing a follow-up / confirmatory study, or conducting a systematic review:
+<ul>
+<li>Choose the approach for which parameter estimates are available, or of better quality.</li>
+<li>Typically the canonical parameters are better estimated, reported, and curated.</li>
+</ul></li>
+</ul>
+<p>Of course, there are always exceptions to these rules. The minor comments we made about the two approaches should not be taken as criticisms, but rather as warnings for users of the power analysis tools. In either approach, care needs to be exercised in order to produce valid results.</p>
 </div>
 
 
