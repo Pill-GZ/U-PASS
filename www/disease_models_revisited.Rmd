@@ -142,7 +142,7 @@ In principal, power analysis has to be taylored to the association test used.
 Fortunately, many of these tests are asymptotically equivalent in terms of power, and results of the power analysis applies to all equivalent tests. 
 We refer users to [Unified Power Analysis](unified_power_analysis.html){target="_blank"} for further details.
 
-These steps form the basis of the calculations implemented in the most existing tools )including the [GAS calculator](http://csg.sph.umich.edu/abecasis/cats/gas_power_calculator/){target="_blank"},
+These steps form the basis of the calculations implemented in the most existing tools (including the [GAS calculator](http://csg.sph.umich.edu/abecasis/cats/gas_power_calculator/){target="_blank"},
 where a (terse) documentation of their [implementation](https://github.com/jenlij/GAS-power-calculator/blob/master/gas_power_calculator.js){target="_blank"} is available [here](https://github.com/jenlij/GAS-power-calculator/blob/master/equations_gas_power_calc.pdf){target="_blank"}). 
 Although not explicitly stated, the GAS calculator assumes the test of association to be the Welch t-test for equal proportions.
 
@@ -259,7 +259,7 @@ However, it is perhaps more robust to such mistakes, since what is readily avail
 
 ## Compatibility of parameters
 
-We make another minor comment regarding practical usage of disease models.
+We make another minor comment regarding correct usage of disease models.
 
 <!-- We mentioned above that the mapping from the disease models to the canonical parameters is many-to-one, therefore making the disease models unidentifiable from the allelic tables. -->
 
@@ -282,8 +282,7 @@ Parameter compatibility is not an problem for the set of canonical parameters.
 
 # When to use which?
 
-Depending on the use cases, either approach may have an edge.
-Neither is decidedly better than the other. 
+We believe that either approach may be preferred, depending on the use cases.
 
 In view of the discussions above, we propose the following general guideline for power analysis in genetic association studies.
 
@@ -291,10 +290,10 @@ In view of the discussions above, we propose the following general guideline for
     - Either approach is valid.
     - Disease models are easier to interpret and communicate.
 - When designing a follow-up / confirmatory study, or conducting a systematic review:
-    - Choose the approach for which parameter estimates are available, or of better quality.
+    - Choose the approach for which the parameter estimates are available, or of better quality.
     - Typically the canonical parameters are better estimated, reported, and curated.
 
-Of course, there are always exceptions to these rules.
-The minor comments we made about the two approaches should not be taken as criticisms, but rather as warnings for users of the power analysis tools.
+Of course, there are exceptions to these rules.
+The minor comments we made about the two approaches should not be taken as criticisms, but rather as warnings to users of the power analysis tools.
 In either approach, care needs to be exercised in order to produce valid results.
 

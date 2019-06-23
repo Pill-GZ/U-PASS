@@ -1855,7 +1855,7 @@ Controls
 <h2>Power calculations of association tests</h2>
 <p>Finally, the power of an statistical test is calculated as the probability of (a correct) rejection, assuming that the data (i.e., tabulated counts of the allele type-phenotype combinations) follow a multinomial distribution with probability matrix <span class="math inline">\(\mu\)</span> and sample size <span class="math inline">\(2n\)</span>, since each individual has a pair of alleles.</p>
 <p>Some common association tests include the likelihood ratio test, Pearson’s chi-square test, tests of zero slope coefficient in logistic regressions, as well as t-tests for equal proportions. In principal, power analysis has to be taylored to the association test used. Fortunately, many of these tests are asymptotically equivalent in terms of power, and results of the power analysis applies to all equivalent tests. We refer users to <a href="unified_power_analysis.html" target="_blank">Unified Power Analysis</a> for further details.</p>
-<p>These steps form the basis of the calculations implemented in the most existing tools )including the <a href="http://csg.sph.umich.edu/abecasis/cats/gas_power_calculator/" target="_blank">GAS calculator</a>, where a (terse) documentation of their <a href="https://github.com/jenlij/GAS-power-calculator/blob/master/gas_power_calculator.js" target="_blank">implementation</a> is available <a href="https://github.com/jenlij/GAS-power-calculator/blob/master/equations_gas_power_calc.pdf" target="_blank">here</a>). Although not explicitly stated, the GAS calculator assumes the test of association to be the Welch t-test for equal proportions.</p>
+<p>These steps form the basis of the calculations implemented in the most existing tools (including the <a href="http://csg.sph.umich.edu/abecasis/cats/gas_power_calculator/" target="_blank">GAS calculator</a>, where a (terse) documentation of their <a href="https://github.com/jenlij/GAS-power-calculator/blob/master/gas_power_calculator.js" target="_blank">implementation</a> is available <a href="https://github.com/jenlij/GAS-power-calculator/blob/master/equations_gas_power_calc.pdf" target="_blank">here</a>). Although not explicitly stated, the GAS calculator assumes the test of association to be the Welch t-test for equal proportions.</p>
 <!-- **Caveat:** The final step in the power calculations does not apply to association tests performed directly on the 2-by-3 contingency tables of phenotype-genotype combinations (e.g., the [Cochran-Armitage_test](https://en.wikipedia.org/wiki/Cochran%E2%80%93Armitage_test_for_trend){target="_blank"}).
 Therefore, the GAS calculator should not be used if these tests are to be applied. --->
 </div>
@@ -1919,7 +1919,7 @@ R:=\frac{\mu_{11}\mu_{22}}{\mu_{12}\mu_{21}}
 </div>
 <div id="compatibility-of-parameters" class="section level2">
 <h2>Compatibility of parameters</h2>
-<p>We make another minor comment regarding practical usage of disease models.</p>
+<p>We make another minor comment regarding correct usage of disease models.</p>
 <!-- We mentioned above that the mapping from the disease models to the canonical parameters is many-to-one, therefore making the disease models unidentifiable from the allelic tables. -->
 <p>We caution users that not all values of the disease model parameter combinations are valid. For example, in a multiplicative model, the parameters <span class="math display">\[
 p = 0.1, \quad \text{Prev} = 0.5, \quad \text{GRR} = 1.5,
@@ -1930,7 +1930,7 @@ p = 0.1, \quad \text{Prev} = 0.5, \quad \text{GRR} = 1.5,
 </div>
 <div id="when-to-use-which" class="section level1">
 <h1>When to use which?</h1>
-<p>Depending on the use cases, either approach may have an edge. Neither is decidedly better than the other.</p>
+<p>We believe that either approach may be preferred, depending on the use cases.</p>
 <p>In view of the discussions above, we propose the following general guideline for power analysis in genetic association studies.</p>
 <ul>
 <li>When designing an association study where little to no prior information is available:
@@ -1940,11 +1940,11 @@ p = 0.1, \quad \text{Prev} = 0.5, \quad \text{GRR} = 1.5,
 </ul></li>
 <li>When designing a follow-up / confirmatory study, or conducting a systematic review:
 <ul>
-<li>Choose the approach for which parameter estimates are available, or of better quality.</li>
+<li>Choose the approach for which the parameter estimates are available, or of better quality.</li>
 <li>Typically the canonical parameters are better estimated, reported, and curated.</li>
 </ul></li>
 </ul>
-<p>Of course, there are always exceptions to these rules. The minor comments we made about the two approaches should not be taken as criticisms, but rather as warnings for users of the power analysis tools. In either approach, care needs to be exercised in order to produce valid results.</p>
+<p>Of course, there are always exceptions to these rules. The minor comments we made about the two approaches should not be taken as criticisms, but rather as warnings to users of the power analysis tools. In either approach, care needs to be exercised in order to produce valid results.</p>
 </div>
 
 
