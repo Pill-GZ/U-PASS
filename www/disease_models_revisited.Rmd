@@ -1,6 +1,6 @@
 ---
 title: "Disease Models Revisited"
-author: "GAO Zheng"
+# author: "GAO Zheng"
 date: "June 15, 2019"
 bibliography: bibliography.bib
 output:
@@ -27,7 +27,7 @@ We shall first briefly recall the main steps of a typical power analysis for gen
 
 A typical power analysis for genetic association studies begin by specifiying an alternative hypothesis through a disease model (dominant, recessive, multiplicative, additive, etc.), which assumes:
 
-- The genotye relative risks (GRR).
+- The genotype relative risks (GRR).
 - Risk allele frequency in the general population (p).
 - Disease prevalence in the general population (Prev).
 
@@ -58,7 +58,7 @@ $$
 
 where GRR is strictly greater than 1 under the alternative, and equal to 1 under the null hypothesis.
 
-The disease prevalence determines the sum of the prababilities of cases in the population,
+The disease prevalence determines the sum of the probabilities of cases in the population,
 
 $$
 \pi_{10} + \pi_{11} + \pi_{12} = \text{Prev}.
@@ -95,7 +95,7 @@ kable(dt, "html", escape = FALSE, align = "c") %>%
   add_header_above(c(" " = 1, "Risk allele copies" = 3))
 ```
 
-As an example, if $\phi > \text{Prev}$, the probablities are adjusted to account for over-sampling of cases.
+As an example, if $\phi > \text{Prev}$, the probabilities are adjusted to account for over-sampling of cases.
 
 The relative frequencies of allele type-phenotype combinations *in the study* are then calculated as follows.
 
@@ -138,7 +138,7 @@ kable(dt, "html", escape = FALSE, align = "c") %>%
 Finally, the power of an statistical test is calculated as the probability of (a correct) rejection, assuming that the data (i.e., tabulated counts of the allele type-phenotype combinations) follow a multinomial distribution with probability matrix $\mu$ and sample size $2n$, since each individual has a pair of alleles.
 
 Some common association tests include the likelihood ratio test, Pearson's chi-square test, tests of zero slope coefficient in logistic regressions, as well as t-tests for equal proportions.
-In principal, power analysis has to be taylored to the association test used.
+In principal, power analysis has to be tailored to the association test used.
 Fortunately, many of these tests are asymptotically equivalent in terms of power, and results of the power analysis applies to all equivalent tests. 
 We refer users to [Unified Power Analysis](unified_power_analysis.html){target="_blank"} for further details.
 
@@ -146,12 +146,12 @@ These steps form the basis of the calculations implemented in the most existing 
 where a (terse) documentation of their [implementation](https://github.com/jenlij/GAS-power-calculator/blob/master/gas_power_calculator.js){target="_blank"} is available [here](https://github.com/jenlij/GAS-power-calculator/blob/master/equations_gas_power_calc.pdf){target="_blank"}). 
 Although not explicitly stated, the GAS calculator assumes the test of association to be the Welch t-test for equal proportions.
 
-<!-- **Caveat:** The final step in the power calculations does not apply to association tests performed directly on the 2-by-3 contingency tables of phenotype-genotype combinations (e.g., the [Cochran-Armitage_test](https://en.wikipedia.org/wiki/Cochran%E2%80%93Armitage_test_for_trend){target="_blank"}).
+<!-- **Caveat:** The final step in the power calculations does not apply to association tests performed directly on the 2-by-3 contingency tables of phenotype-genotype combinations (e.g., the [Cochran-Armitage test](https://en.wikipedia.org/wiki/Cochran%E2%80%93Armitage_test_for_trend){target="_blank"}).
 Therefore, the GAS calculator should not be used if these tests are to be applied. --->
 
 # Two modeling approaches
 
-In the power calculations outlined above, the disease models are used to decribe the distribution of the data under the alternative hypothesis.
+In the power calculations outlined above, the disease models are used to describe the distribution of the data under the alternative hypothesis.
 Specifically, they are used to specify the conditional distributions of the allele variants, given the phenotypes.
 The probability of observing a risk allele in the control group,
 $$
@@ -174,14 +174,14 @@ Power of association tests, therefore, depends on (and only on) the set of "cano
 - Odds ratio (R) of having the defined trait between the two allele variants.
 - One of the two equivalent ways of parametrizing the sample sizes.
 
-The following diagram illustrates the common process of power analysis implemneted in existing power calculators.
+The following diagram illustrates the common process of power analysis implemented in existing power calculators.
 
 <center>
 ![](flowchart.png){width=90%}
 </center>
 <br />
 
-**Caution**: we remind readers that the risk allele frquency in the control group ($f$) is not the same as the risk allele frequency in the general population ($p$); odds ratio ($R$) is also a very different quantity from genotye relative risk (GRR).
+**Caution**: we remind readers that the risk allele frequency in the control group ($f$) is not the same as the risk allele frequency in the general population ($p$); odds ratio ($R$) is also a very different quantity from genotype relative risk (GRR).
 
 It is worth noting that the mapping from the disease model and its parameters to the canonical parameters ($f, R$) is many-to-one.
 That is, different disease model specifications may lead to the *same* distributions of the allele variant counts.
@@ -238,7 +238,7 @@ she / he would a have a difficult time pooling the information from these differ
 And even when they are pooled, the resulting model usually does not fall in one of the familiar categories --- there is no existing tool with which to perform power analysis.
 The researcher will likely have to forgo the information from one model, and use estimates from only the other.
 
-On the other hand, the canonical parameters are invariant to the disease model choices, and accomadate models falling outside the usual categories. 
+On the other hand, the canonical parameters are invariant to the disease model choices, and accommodate models falling outside the usual categories. 
 They can also be easily combined to produce pooled estimates.
 This universality allows us to perform power analysis in a unified fashion, regardless of the disease models assumed.
 This also paves the way for the "OR-RAF diagram", as well as systematic reviews of statistical validity of existing studies.
@@ -271,7 +271,7 @@ $$
 would result in the conditional probability of having two risk allele copies greater than 1.
 (In this case, the [GAS calculator](http://csg.sph.umich.edu/abecasis/cats/gas_power_calculator/){target="_blank"} would produce the error message: "I don't like the genetic model you requested!", without explicitly pointing to the compatibility issue.)
 
-Although an experienced geneticist would immediately notice the impossibilty of the disease model parameter combinations, these contradictions may not be obvious to the untrained eye.
+Although an experienced geneticist would immediately notice the impossibility of the disease model parameter combinations, these contradictions may not be obvious to the untrained eye.
 The end user of the software -- experienced or not -- is ultimately responsible for inputting valid values when specifying a disease model.
 
 On the other hand, any combination of 
@@ -293,7 +293,7 @@ In view of the discussions above, we propose the following general guideline for
     - Choose the approach for which the parameter estimates are available, or of better quality.
     - Typically the canonical parameters are better estimated, reported, and curated.
 
-Of course, there are exceptions to these rules.
+There are, of course, exceptions to these rules.
 The minor comments we made about the two approaches should not be taken as criticisms, but rather as warnings to users of the power analysis tools.
 In either approach, care needs to be exercised in order to produce valid results.
 

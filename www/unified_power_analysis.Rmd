@@ -1,6 +1,6 @@
 ---
-title: 'A unified power analysis of association tests'
-author: "GAO Zheng"
+title: 'A Unified Power Analysis of Association Tests'
+# author: "GAO Zheng"
 date: "April 5, 2019"
 bibliography: bibliography.bib
 output:
@@ -23,7 +23,7 @@ output:
 library(kableExtra)
 ```
 
-In genetic association studies, researchers have the freedom to choose his/her favorate statistical procedure to perform hypothesis testing on the data collected.
+In genetic association studies, researchers have the freedom to choose his/her favorite statistical procedure to perform hypothesis testing on the data collected.
 In this document, we investigate the natural question: does the choice of statistical test influence the power of scientific discovery?
 
 Perhaps unsurprisingly, the answer is (asymptotically) no.
@@ -92,12 +92,11 @@ $$
 $$
 \text{R} := \frac{\mu_{11}}{\mu_{21}}\Big/\frac{\mu_{12}}{\mu_{22}} = \frac{\mu_{11}\mu_{22}}{\mu_{12}\mu_{21}}.
 $$
-    
-An alternative hypothesis, e.g., a disease model, determines the the trio of quantities either implicitly or explicitly,
-<!-- The fraction of Cases $\phi$ is part of the study design.-->
+
+An alternative hypothesis, e.g., a disease model, determines the the trio of quantities implicitly,
+%The fraction of Cases $\phi$ is part of the study design.
 and therefore fully determines statistical power for a specific test at a given sample size.
-From a statistical perspective, the disease model serves no role except to specify the distribution of the counts under the alternative.
-Power may be calculated by directly prescribing the trio $(\phi, f, R)$, and the sample sizes.
+Power can also be calculated by directly prescribing the trio $(\phi, f, R)$, and the sample size.
 (See, again, [Disease Models Revisited](disease_models_revisited.html){target="_blank"}.)
 
 It is worth pointing out that while disease models play no role beyond specifying the alternative, they do sometimes inform our choice of a test statistic, hence influencing statistical power in higher order contingency tables.
@@ -105,7 +104,7 @@ These tests include, e.g., the Cochran-Armitage test, and variations thereof;
 see @gonzalez2008maximizing, @li2008efficient, for further examples where tests are tailored to disease models. 
 
 We make the important distinction between RAF **in the Control group** ($f$), versus RAF **in the study** ($\mu_{11}+\mu_{21}$), and RAF **in the general population**.
-Throughout this work, RAF refers to the risk allele frequency in the Control group, consistent with the reporting standards of the NHGRI-EBI Catalog [@macarthur2016new].
+In the following sections, unless otherwise stated, RAF will refer to the risk allele frequency in the Control group, consistent with the reporting standards of the NHGRI-EBI Catalog [@macarthur2016new].
 
 ## Conditional vs unconditional tests {#subsec:conditional}
 
