@@ -45,10 +45,10 @@ server <- function(input, output, session) {
                                      If a reported locus lies in the <b>low power region</b> (dark regions of the heatmap),
                                      the claim of statistical significance should be further investigated",
                                    "When you select a reported locus in the OR-RAF diagram, detailed information is displayed here below the diagram.",
-                                   "The power analysis is <b>model-invariant</b> and <b>test-independent</b>.<br><br>
+                                   "The power analysis is <b>disease model-invariant</b> and <b>test-independent</b>.<br><br>
                                      This means that you do not need to specify a disease model 
                                      (see <a href=\"disease_models_revisited.html\" target=\"_blank\">Help &#8594; Disease Models Revisited</a>), 
-                                     or the test of association used
+                                     and the results apply to a wide range of association tests 
                                      (see <a href=\"unified_power_analysis.html#unified_asymptotic_power_analysis\" target=\"_blank\">Help &#8594; Unified Power Analysis</a>)."
                          ))
     ))
@@ -546,8 +546,7 @@ server <- function(input, output, session) {
                                        <li>If the contraint is <b>number of cases</b>, power is shown as a function of the number of controls.</li>
                                        <li>If the contraint is <b>fraction of cases</b>, power is shown as a function of the total number of subjects.</li>
                                      </ul>",
-                                   "The power analysis is <b>test-independent</b>. 
-                                     This means that you do not need to specify the test of association used.<br><br>
+                                   "The results of the power analysis apply to a wide range of association tests.<br><br>
                                      Find out more under <a href=\"unified_power_analysis.html#unified_asymptotic_power_analysis\" target=\"_blank\">Help &#8594; Unified Power Analysis</a>."
                          ))
     ))
@@ -974,7 +973,7 @@ server <- function(input, output, session) {
   })
   
   output$disease_model_converter_message <- renderText({ disease.model.converted()$message })
-  output$disease_model_converter_result_f <- renderText({ format(round(disease.model.converted()$f, 3), nsmall = 3) })
+  output$disease_model_converter_result_f <- renderText({ format(disease.model.converted()$f, scientific = F, digits = 3) })
   output$disease_model_converter_result_R <- renderText({ format(round(disease.model.converted()$R, 3), nsmall = 3) })
   
   #### Some pre-loaded disease models settings ####

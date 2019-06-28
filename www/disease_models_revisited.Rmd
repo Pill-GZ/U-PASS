@@ -283,6 +283,19 @@ Parameter compatibility is not an problem for the set of canonical parameters.
 # When to use which?
 
 We believe that either approach may be preferred, depending on the use cases.
+Recall that power analysis is useful in at least three scenarios:
+
+1. *In planning for an exploratory study, where little is known about the associations.* 
+
+    In this case, the model parameters are unknown to the researcher. The goal is to find out the range of disease models and parameters that are discoverable given the study designs. Power analysis is also to some extent exploratory in nature.
+
+2. *In planning for a confirmatory study, where something is known about the associations and one wishes to validate the findings with an efficient design.*
+    
+    In this case, the model parameters or the canonical parameters Are known, and the study design variables are what we are solving for. The goal of power analysis is to provide a set of efficient study designs with sufficient power.
+
+3. *In reviewing the reported findings and verify the statistical validity of the claims made.*
+
+    In the third case, one looks to find out whether the claims of statistical significance are congruent with the evidence from data. A claim supported by very weak or contradictory evidence should invite further investigations. In this case, both the parameter estimates and the study designs have to be available.
 
 In view of the discussions above, we propose the following general guideline for power analysis in genetic association studies.
 
@@ -294,6 +307,6 @@ In view of the discussions above, we propose the following general guideline for
     - Typically the canonical parameters are better estimated, reported, and curated.
 
 There are, of course, exceptions to these rules.
-The minor comments we made about the two approaches should not be taken as criticisms, but rather as warnings to users of the power analysis tools.
+The minor comments we made about the two approaches should not be taken as criticisms, but rather as reminders of the potential pitfalls in power analysis.
 In either approach, care needs to be exercised in order to produce valid results.
 

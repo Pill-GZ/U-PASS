@@ -93,10 +93,10 @@ $$
 \text{R} := \frac{\mu_{11}}{\mu_{21}}\Big/\frac{\mu_{12}}{\mu_{22}} = \frac{\mu_{11}\mu_{22}}{\mu_{12}\mu_{21}}.
 $$
 
-An alternative hypothesis, e.g., a disease model, determines the the trio of quantities implicitly,
+An alternative hypothesis, e.g., a disease model, determines the canonical parameters $(f, R)$ implicitly,
 %The fraction of Cases $\phi$ is part of the study design.
-and therefore fully determines statistical power for a specific test at a given sample size.
-Power can also be calculated by directly prescribing the trio $(\phi, f, R)$, and the sample size.
+and therefore fully determines statistical power for a specific test at given sample sizes.
+Alternatively, power can also be calculated by directly prescribing the canonical parameters and the sample sizes.
 (See, again, [Disease Models Revisited](disease_models_revisited.html){target="_blank"}.)
 
 It is worth pointing out that while disease models play no role beyond specifying the alternative, they do sometimes inform our choice of a test statistic, hence influencing statistical power in higher order contingency tables.
@@ -146,11 +146,11 @@ Alternative hypotheses may be formed as in the multinomial case with parameters 
 Finally, we mention the assumptions behind the Fisher's exact test.
 The Fisher exact test conditions on the number of observations of both the phenotype variants and genetic variants, leading to a hypergeometric distribution of the first cell count $O_{11}$ given the marginals $n_1$, $n_2$, and $O_{11}+O_{21}$, under the null hypothesis.
 We found no easy parametrizations of alternative hypotheses under this framework.
-Indeed, existing power calculations for Fisher's exact test resort to simulations under the the two-binomial assumptions [@smyth2017].
+Indeed, existing power calculations for Fisher's exact test resort to simulations under the two-binomial assumptions [@smyth2017].
 
 We refer interested readers to the recent work by @ripamonti2017contemporary and @choi2015elucidating which elucidate the controversies regarding the choices of conditioning when performing statistical inferences on 2-by-2 contingency tables.
 We do not attempt to resolve the controversies in this work.
-Our goal is to state clearly the assumptions behind the tests, and and show the asymptotic equivalence in terms of power, under their respective assumptions.
+Our goal is to state clearly the assumptions behind the tests, and show the asymptotic equivalence in terms of power, under their respective assumptions.
 
 ## A test-independent power analysis {#subsec:power-calculation}
 
@@ -215,7 +215,7 @@ It allows us to chart findings from different studies employing the applicable t
 In particular, for large samples, tests for zero slopes in logistic regressions should report approximately the same set of loci as Welch's t-tests for equal proportions on the same dataset, after the same family-wise error rate adjustments.
 The estimated odds ratios (in the case of logistic regression, estimate slopes exponentiated) and RAF's, when charted on the OR-RAF diagram, should also follow the same power limits.
 
-To use this result for power calculations, we start with an alternative hypothesis, defined by the core parameters $(\phi, f, R)$, and sample size $n$.
+To use this result for power calculations, we start with an alternative hypothesis, defined by the canonical parameters $(f, R)$, and sample sizes $(\phi, n)$.
 ```{r echo=FALSE}
 dt <- data.frame(matrix(c("Cases", "$\\frac{fR\\phi}{(fR+1-f)}$", "$\\frac{(1-f)\\phi}{(fR+1-f)}$",  "$\\phi$",
                           "Controls", "$f(1-\\phi)$", "$(1-f)(1-\\phi)$",  "$1-\\phi$"), byrow = T, nrow = 2))

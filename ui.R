@@ -301,7 +301,7 @@ ui <- shinyUI(tagList(
                                      
                                      condition = "input.step3_type_I_error_criteria != 'Select a criterion'",
                                      wellPanel(id = "step4",
-                                       selectInput("step4_type_II_error_criteria", "Step 4: Targert for non-discovery",
+                                       selectInput("step4_type_II_error_criteria", "Step 4: Target for non-discovery",
                                                    list("Select a criterion", 
                                                         "Type II error / non-discovery proportion (NDP)", 
                                                         "Family-wise non-discovery rate (FWNDR)")),
@@ -356,7 +356,7 @@ ui <- shinyUI(tagList(
              
              #### Disease model converter tab ################################################# ####
              
-             tabPanel(HTML("Disease Model Converter"), value = "disease_model_revisited",
+             tabPanel(HTML("Disease model converter"), value = "disease_model_converter",
                       
                       includeHTML("www/header.html"),
                       HTML("<p>We encourage users to take a "), 
@@ -375,9 +375,9 @@ ui <- shinyUI(tagList(
                                          selectInput("disease_model", "Disease model:",
                                                      list("Multiplicative", "Additive", "Dominant", "Recessive")),
                                          numericInput("disease_model_prevalence", "Disease prevalence in the population:", 
-                                                      value = 0.1, min = 0.01, max = 0.99, step = 0.01),
+                                                      value = 0.1, min = 0, max = 0.99, step = 0.01),
                                          numericInput("disease_model_RAF_population", "Risk allele frequency in the population:", 
-                                                      value = 0.3, min = 0.01, max = 0.99, step = 0.01),
+                                                      value = 0.3, min = 0, max = 0.99, step = 1e-5),
                                          numericInput("disease_model_GRR", "Genotype relative risk:", 
                                                       value = 1.5, min = 1.01, max = 100, step = 0.01),
                                          actionButton(inputId = "use_disease_model_specification",  class = 'rightAlign', 
