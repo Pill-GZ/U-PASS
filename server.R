@@ -542,9 +542,9 @@ server <- function(input, output, session) {
                                    "Specify <b>non-discovery control criteria</b> (Type II error rate / FWNDR) here.",
                                    "Results from the power calculation is displayed here.<br><br>
                                      <ul>
-                                       <li>If the contraint is <b>total budget</b>, power is shown as a function of the fraction of cases.</li>
-                                       <li>If the contraint is <b>number of cases</b>, power is shown as a function of the number of controls.</li>
-                                       <li>If the contraint is <b>fraction of cases</b>, power is shown as a function of the total number of subjects.</li>
+                                       <li>If the constraint is <b>total budget</b>, power is shown as a function of the fraction of cases.</li>
+                                       <li>If the constraint is <b>number of cases</b>, power is shown as a function of the number of controls.</li>
+                                       <li>If the constraint is <b>fraction of cases</b>, power is shown as a function of the total number of subjects.</li>
                                      </ul>",
                                    "The results of the power analysis apply to a wide range of association tests.<br><br>
                                      Find out more under <a href=\"unified_power_analysis.html#unified_asymptotic_power_analysis\" target=\"_blank\">Help &#8594; Unified Power Analysis</a>."

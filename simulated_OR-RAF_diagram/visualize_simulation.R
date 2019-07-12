@@ -153,9 +153,23 @@ power.mat <- function(n1, n2, phi, p.val.threhold) {
   pchisq(q = cutoff, df = 1, ncp = signal.mat(n1, n2, phi), lower.tail = F)
 }
 
+#### perform finite sample adjustments ####
+
+finite.sample.correction <- function(power.matrix, RV.curves, f.vec) {
+  for (i in 1:100) {
+    low.power.left <- as.numeric(RV.curves$f.vec.left[i] > f.vec)
+    low.power.left[is.na(low.power.left)] <- 0
+    power.matrix[i,] <- pmin(power.matrix[i,], 1 - low.power.left)
+    low.power.right <- as.numeric(RV.curves$f.vec.right[i] < f.vec)
+    low.power.right[is.na(low.power.right)] <- 0
+    power.matrix[i,] <- pmin(power.matrix[i,], 1 - low.power.left)
+  }
+  power.matrix
+}
+
 #### load results from simulations ####
 
-#load(file = "~/Research_office/MyWork/U-PASS/Shiny/power/simulated_OR-RAF_diagram/simulate_diagram_mat_p5e-5.Rdata")
+# load(file = "~/Research_office/MyWork/U-PASS/Shiny/power/simulated_OR-RAF_diagram/simulate_diagram_mat_p5e-5.Rdata")
 load(file = "~/Research_office/MyWork/U-PASS/Shiny/power/simulated_OR-RAF_diagram/simulate_diagram_mat_p5e-8.Rdata")
 
 #### visualize simulation results in a OR-RAF diagram ####
@@ -163,18 +177,27 @@ load(file = "~/Research_office/MyWork/U-PASS/Shiny/power/simulated_OR-RAF_diagra
 library("plotly")
 
 n <- 200000
-phi <- 0.85
+phi <- 0.5
 n1 <- n * phi; n2 <- n * (1-phi)
 p.val.threhold <- 5e-8
+RV.curves <- rare.variant.curves(n1, n2, p.val.threhold)
+
 plot.option <- 'difference'
+perform.correction <- F
 
 if (plot.option == 'empirical') {
   plot.mat <- simulate_mat[[as.character(n)]][[as.character(phi)]]
 } else if (plot.option == 'theoretical') {
   plot.mat <- power.mat(n1 = n1, n2 = n2, phi = phi, p.val.threhold = p.val.threhold)
+  if (perform.correction) {
+    plot.mat <- finite.sample.correction(plot.mat, RV.curves, f.vec)
+  }
 } else if (plot.option == 'difference') {
-  plot.mat  <- abs(power.mat(n1 = n1, n2 = n2, phi = phi, p.val.threhold = p.val.threhold) -
-    simulate_mat[[as.character(n)]][[as.character(phi)]])
+  theoretical.power <- power.mat(n1 = n1, n2 = n2, phi = phi, p.val.threhold = p.val.threhold)
+  if (perform.correction) {
+    theoretical.power <- finite.sample.correction(theoretical.power, RV.curves, f.vec)
+  }
+  plot.mat  <- abs(theoretical.power - simulate_mat[[as.character(n)]][[as.character(phi)]])
 }
 
 p <- plot_ly(x = x.adj(f.vec), y = y.adj.plotly(R.vec), 
@@ -213,7 +236,6 @@ p <- plot_ly(x = x.adj(f.vec), y = y.adj.plotly(R.vec),
                                 "/", format(n2/2, scientific = FALSE), "</b>"), showarrow = F, 
                   font=list(size = 40, color = toRGB("grey70")))
 
-RV.curves <- rare.variant.curves(n1, n2, p.val.threhold)
 
 # if (plot.option == 'theoretical') {
 #   p <- p %>% 
@@ -239,7 +261,6 @@ p
 
 #### calculate deviations between theory and simulation ####
 
-
 n.vec <- 2*10^(2:5)
 phi.vec <- c(0.05, 0.15, 0.25, 0.5, 0.85)
 MAD.mat <- matrix(nrow = length(n.vec), ncol = length(phi.vec))
@@ -250,14 +271,21 @@ rownames(MAD.sd.mat) <- n.vec
 colnames(MAD.sd.mat) <- phi.vec
 
 p.val.threhold <- 5e-8
+perform.correction <- F
 for (n in n.vec) {
   for (phi in phi.vec) {
     n1 <- n * phi; n2 <- n * (1-phi)
-    MAD <- abs(power.mat(n1 = n1, n2 = n2, phi = phi, p.val.threhold = p.val.threhold) -
-                 simulate_mat[[as.character(n)]][[as.character(phi)]])
+    theoretical.power <- power.mat(n1 = n1, n2 = n2, phi = phi, p.val.threhold = p.val.threhold)
+    if (perform.correction) {
+      theoretical.power <- finite.sample.correction(theoretical.power, RV.curves, f.vec)
+    }
+    MAD <- abs(theoretical.power - simulate_mat[[as.character(n)]][[as.character(phi)]])
     MAD.mat[as.character(n), as.character(phi)]  <- mean(MAD)
     MAD.sd.mat[as.character(n), as.character(phi)]  <- sd(MAD)
   }
 }
 
-
+library(fields)
+image.plot(MAD.mat)
+# MAD.mat5 <-MAD.mat
+# MAD.sd.mat5 <-MAD.sd.mat
