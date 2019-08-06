@@ -47,9 +47,13 @@
 <h2>Review and forensics of reported findings</h2>
 <p>The unified power analysis allows us to examine results from different studies employing different models and applicable tests, in the same diagram, with the same power limits. It allows for a systematic review of reported findings for their statistical validity.</p>
 <p>In particular, a reported association predicted to have low power given the study’s sample size – lying in the dark regions of the OR-RAF diagram – while not impossible, invites further scrutiny. It should be noted that a reported association predicted to have high power is not automatically accurate, as survival bias induced by multiple testing may inflate the reported OR and RAF estimates.</p>
+<center>
+<img src="user_guide_files/forensics2.png" alt="optional caption text" style="width:60.0%" />
+</center>
+<p>The figure above shows such a study where misalignment was identified <span class="citation">(Haryono et al. 2015)</span>. The study, though may very well be valid, calls for further scrutiny of its statistical methodologies given the apparent incongruity of its conclusions at the reported the sample sizes.</p>
 <p>Studies where reported associations show misalignment with the predicted powered curves may be further investigated for potential problems in the data curation process. The following figure shows one such study, where gross misalignment was identified.</p>
 <center>
-<img src="user_guide_files/forensics.png" alt="optional caption text" style="width:60.0%" />
+<img src="user_guide_files/forensics1.png" alt="optional caption text" style="width:60.0%" />
 </center>
 <p>We reached out to the authors of the study <span class="citation">(Domı'nguez-Cruz et al. 2018)</span>, who confirmed that the RAF reported in the Catalog were based on all subjects in the study, as opposed to only the control group, while the Catalog requires that <a href="https://www.ebi.ac.uk/gwas/docs/fileheaders" target="_blank">RAF be reported in the control group only</a>. As a consequence, the RAFs are systematically overestimated, shifting the reported findings to the right in the diagram.</p>
 <p>In general, we expect this aspect of our software to be useful for discovering problems with data entry and catalog curation process, as well as for assessing the reproducibility and robustness of reported findings.</p>
@@ -92,6 +96,9 @@
 <div id="refs" class="references">
 <div id="ref-dominguez2018pilot">
 <p>Domı'nguez-Cruz, Miriam Givisay, Marı'a de Lourdes Muñoz, Armando Totomoch-Serra, Marı'a Guadalupe Garcı'a-Escalante, Juan Burgueño, Nina Valadez-González, Doris Pinto-Escalantes, and Álvaro Dı'az-Badillo. 2018. “Pilot Genome-Wide Association Study Identifying Novel Risk Loci for Type 2 Diabetes in a Maya Population.” <em>Gene</em> 677. Elsevier: 324–31.</p>
+</div>
+<div id="ref-haryono2015pilot">
+<p>Haryono, SJ, IG Datasena, WB Santosa, R Mulyarahardja, and K Sari. 2015. “A Pilot Genome-Wide Association Study of Breast Cancer Susceptibility Loci in Indonesia.” <em>Asian Pacific Journal of Cancer Prevention: APJCP</em> 16 (6): 2231–5.</p>
 </div>
 </div>
 </div>

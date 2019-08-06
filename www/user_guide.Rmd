@@ -67,11 +67,18 @@ It allows for a systematic review of reported findings for their statistical val
 In particular, a reported association predicted to have low power given the study's sample size -- lying in the dark regions of the OR-RAF diagram -- while not impossible, invites further scrutiny. 
 It should be noted that a reported association predicted to have high power is not automatically accurate, as survival bias induced by multiple testing may inflate the reported OR and RAF estimates.
 
+<center>
+![optional caption text](user_guide_files/forensics2.png){width=60%}
+</center>
+
+The figure above shows such a study where misalignment was identified [@haryono2015pilot].
+The study, though may very well be valid, calls for further scrutiny of its statistical methodologies given the apparent incongruity of its conclusions at the reported the sample sizes.
+
 Studies where reported associations show misalignment with the predicted powered curves may be further investigated for potential problems in the data curation process.
 The following figure shows one such study, where gross misalignment was identified.
 
 <center>
-![optional caption text](user_guide_files/forensics.png){width=60%}
+![optional caption text](user_guide_files/forensics1.png){width=60%}
 </center>
 
 We reached out to the authors of the study [@dominguez2018pilot], who confirmed that the RAF reported in the Catalog were based on all subjects in the study, as opposed to only the control group,
