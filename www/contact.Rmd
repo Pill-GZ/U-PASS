@@ -9,20 +9,17 @@ output:
 
 # Citation
 
-This work is currently under review.
-A preprint is available on [bioRxiv](https://www.biorxiv.org/content/early/2019/04/13/605766){target="_blank"}.
+This work has been accepted at [Bioinformatics](https://academic.oup.com/bioinformatics/advance-article/doi/10.1093/bioinformatics/btz637/5545977){target="_blank"}.
+<!-- A preprint is available on [bioRxiv](https://www.biorxiv.org/content/early/2019/04/13/605766){target="_blank"}. -->
 
 ```
-@article {Gao605766,
+@article {gao2019upass,
 	author = {Gao, Zheng and Terhorst, Jonathan and Hout, Cristopher Van and Stoev, Stilian},
 	title = {U-PASS: unified power analysis and forensics for qualitative traits in genetic association studies},
-	elocation-id = {605766},
 	year = {2019},
-	doi = {10.1101/605766},
-	publisher = {Cold Spring Harbor Laboratory},
-	URL = {https://www.biorxiv.org/content/early/2019/04/13/605766},
-	eprint = {https://www.biorxiv.org/content/early/2019/04/13/605766.full.pdf},
-	journal = {bioRxiv}
+	publisher = {Oxford University Press},
+	URL = {https://doi.org/10.1093/bioinformatics/btz637},
+	journal = {Bioinformatics}
 }
 ```
 
